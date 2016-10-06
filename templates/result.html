@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <title>Title</title>
+
+    <style>
+        .container{
+            width : 1350px;
+        }
+
+        .header-body{
+            display : flex;
+        }
+
+        .panel-container {
+            padding-top : 30px;
+            display : flex;
+        }
+
+        .panel-default {
+            width : 50%;
+            float : left;
+            margin-bottom : 10px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-container">
+            <div class="title">
+                <h2>Result</h2>
+            </div>
+            <div class="header-body">
+                <h3>Similar Lilne Count : </h3>&nbsp;&nbsp;<h3 id="lineCnt"></h3>
+            </div>
+            <div class="header-body">
+                <h3>Similar Percentage : </h3>&nbsp;&nbsp;<h3 id="linePer"></h3><h3>%</h3>
+            </div>
+        </div>
+        <div class="panel-container">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">board.js</h3>
+                </div>
+                <div class="panel-body">
+                    <table>
+                    {% for line in origin %}
+                        {% if list[loop.index]!=-1 %}
+                        <tr><td id="o_{{loop.index}}" onclick="update(this);" style="background-color : #ff0000">{{loop.index}} : {{line}}</td></tr>
+                        {% else %}
+                        <tr><td id="o_{{loop.index}}" onclick="update(this);">{{loop.index}} : {{line}}</td></tr>
+                        {% endif %}
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel panel-default" style="margin-left : 15px">
+                <div class="panel-heading">
+                    <h3 class="panel-title">anonymity.js</h3>
+                </div>
+                <div class="panel-body">
+                    <table>
+                    {% for line in compare %}
+                        {% if list2[loop.index]!=-1 %}
+                        <tr><td id="c_{{loop.index}}" onclick="update(this);" style="background-color : #ff0000">{{loop.index}} : {{line}}</td></tr>
+                        {% else %}
+                        <tr><td id="c_{{loop.index}}" onclick="update(this);">{{loop.index}} : {{line}}</td></tr>
+                        {% endif %}
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+<script type="text/javascript">
+    var isOriginal = "o";
+    var isCompare = "c";
+    var similarLine = {{list}};
+    var isChoose = false;
+    var chooseLine = {type : null, line : -1};
+    var lineCount = {{lineCount}};
+
+    updateNumber();
+
+    function updateNumber(){
+        document.getElementById("lineCnt").innerHTML = lineCount;
+        document.getElementById("linePer").innerHTML = (lineCount * 100 / similarLine.length).toFixed(2);
+    }
+
+    function update(id){
+        var temp = id.id.split('_');
+        var type;
+        if(temp[0] == "o")
+            type = isOriginal;
+        else
+            type = isCompare;
+
+        var id = temp[1];
+
+        if(isChoose){
+            if(chooseLine.type == isOriginal){
+                if(type == isOriginal){
+                    alert("choose compare line please");
+                    return;
+                }
+                if(isSelected(type, id)){
+                    alert("choose not selected line");
+                    return;
+                }
+                setSelected(type, id, true);
+                similarLine[chooseLine.line] = id;
+                alert("select : o : " + chooseLine.line + ", c : " + id);
+                isChoose = false;
+                lineCount+=1;
+                updateNumber();
+                return;
+            }
+            if(type == isCompare){
+                alert("choose original line please");
+                return;
+            }
+            if(isSelected(type, id)){
+                alert("choose not selected line");
+                return;
+            }
+            setSelected(type, id, true);
+            similarLine[id] = chooseLine.line;
+            alert("select : o : " + chooseLine.line + ", c : " + id);
+            isChoose = false;
+            lineCount+=1;
+            updateNumber();
+            return;
+        }
+
+        if(type==isOriginal){
+            if(isSelected(type, id)){
+                // 비교본 선택 해제
+                alert("deselect o : " + id + ", c : " + similarLine[id]);
+                setSelected(type, id, false);
+                setSelected(isCompare, similarLine[id], false);
+                lineCount-=1;
+                updateNumber();
+                return;
+            }
+            // 비교본 선택
+            setSelected(type, id, true);
+            isChoose = true;
+            chooseLine.type = isOriginal;
+            chooseLine.line = id;
+            return;
+        }
+        if(isSelected(type, id)){
+            // 원본 해제
+            alert("deselect o : " + id + ", c : " + getOriginalLine(id));
+            setSelected(type, id, false);
+            setSelected(isOriginal, getOriginalLine(id), false);
+            lineCount-=1;
+            updateNumber();
+            return;
+        }
+        // 원본 선택
+        setSelected(type, id, true);
+        isChoose = true;
+        chooseLine.type = isCompare;
+        chooseLine.line = id;
+        return;
+    }
+
+    function setSelected(type, id, flag){
+        if(flag){
+            document.getElementById(type+"_"+id).style.backgroundColor = '#ff0000';
+            return;
+        }
+        document.getElementById(type+"_"+id).style.backgroundColor = "";
+        return;
+    }
+
+    function isSelected(type, id){
+        if(document.getElementById(type+"_"+id).style.backgroundColor!=""){
+            return true;
+        }
+        return false;
+    }
+
+    function getOriginalLine(id){
+        var len = similarLine.length;
+        for(i=1; i<=len; i++){
+            if(similarLine[i] == id)
+                return i;
+        }
+        return -1;
+    }
+
+</script>
