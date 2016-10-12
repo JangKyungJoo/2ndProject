@@ -27,6 +27,7 @@ import sys
 import json
 import requests
 
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -142,7 +143,7 @@ def tuple():
         origin_file_list = list()
         comp_file_list = list()
 
-        
+
         
     return render_template('/board/tuple.html', projName=projName)
 
