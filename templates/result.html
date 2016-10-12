@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:https="http://www.w3.org/1999/xhtml">
 <head>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     <meta charset="UTF-8">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <title>Title</title>
@@ -15,14 +16,41 @@
         }
 
         .panel-container {
-            padding-top : 30px;
+            padding-top : 20px;
             display : flex;
         }
 
         .panel-default {
-            width : 50%;
+            width : 40%;
             float : left;
             margin-bottom : 10px;
+        }
+
+        .panel-body {
+            height : 100vh;
+            overflow : auto;
+            white-space : nowrap;
+        }
+
+        .panel-summary{
+            width : 190px;
+            height : 200px;
+            padding : 0px;
+        }
+
+        .summary{
+            float : left;
+            padding : 5px;
+            overflow : auto;
+            white-space : nowrap;
+        }
+
+        .summary-table{
+            width : 80px;
+            height : 200px;
+            border : 1px;
+            border-color : black;
+            border-style : outset;
         }
 
     </style>
@@ -34,25 +62,42 @@
                 <h2>Result</h2>
             </div>
             <div class="header-body">
-                <h3>Similar Lilne Count : </h3>&nbsp;&nbsp;<h3 id="lineCnt"></h3>
-            </div>
-            <div class="header-body">
                 <h3>Similar Percentage : </h3>&nbsp;&nbsp;<h3 id="linePer"></h3><h3>%</h3>
+                <h3 style="padding-left : 15px;">Line Count : </h3>&nbsp;&nbsp;<h3>{{lineCount}}</h3>
+                <h3 style="padding-left : 15px;">Same Line Count : </h3>&nbsp;&nbsp;<h3 id="sameLine"></h3>
+                <h3 style="padding-left : 15px;">Similar Line Count : </h3>&nbsp;&nbsp;<h3 id="similarLine"></h3>
             </div>
         </div>
+        <div style="text-align:right;">
+            <input class="btn btn-default" id="mode" type="button" value="to Update Mode">
+        </div>
         <div class="panel-container">
-            <div class="panel panel-default">
+            <div class="panel panel-default panel-summary">
+                <div class="panel-body" style="padding:0px">
+                    <div class="summary">
+                        <table class="summary-table">
+                            {% for line in origin %}
+                            <tr><td id="os_{{loop.index}}"></td></tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                    <div class="summary">
+                        <table class="summary-table">
+                            {% for line in compare %}
+                            <tr><td id="cs_{{loop.index}}"></td></tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default" style="margin-left : 15px">
                 <div class="panel-heading">
                     <h3 class="panel-title">board.js</h3>
                 </div>
-                <div class="panel-body">
+                <div class="panel-body" id="origin">
                     <table>
                     {% for line in origin %}
-                        {% if list[loop.index]!=-1 %}
-                        <tr><td id="o_{{loop.index}}" onclick="update(this);" style="background-color : #ff0000">{{loop.index}} : {{line}}</td></tr>
-                        {% else %}
-                        <tr><td id="o_{{loop.index}}" onclick="update(this);">{{loop.index}} : {{line}}</td></tr>
-                        {% endif %}
+                        <tr><td id="ol_{{loop.index}}" style="padding-right:3px;">{{loop.index}}</td><td id="o_{{loop.index}}">{{line}}</td></tr>
                         {% endfor %}
                     </table>
                 </div>
@@ -62,14 +107,10 @@
                 <div class="panel-heading">
                     <h3 class="panel-title">anonymity.js</h3>
                 </div>
-                <div class="panel-body">
+                <div class="panel-body" id="compare">
                     <table>
                     {% for line in compare %}
-                        {% if list2[loop.index]!=-1 %}
-                        <tr><td id="c_{{loop.index}}" onclick="update(this);" style="background-color : #ff0000">{{loop.index}} : {{line}}</td></tr>
-                        {% else %}
-                        <tr><td id="c_{{loop.index}}" onclick="update(this);">{{loop.index}} : {{line}}</td></tr>
-                        {% endif %}
+                        <tr><td id="cl_{{loop.index}}" style="padding-right:3px;">{{loop.index}}</td><td id="c_{{loop.index}}">{{line}}</td></tr>
                         {% endfor %}
                     </table>
                 </div>
@@ -82,20 +123,87 @@
 <script type="text/javascript">
     var isOriginal = "o";
     var isCompare = "c";
-    var similarLine = {{list}};
+    var result = {{list}}; // 원본 결과
     var isChoose = false;
     var chooseLine = {type : null, line : -1};
     var lineCount = {{lineCount}};
+    var similarCount = {{similarCount}};
+    var sameCount = {{sameCount}};
+    var READ_MODE = 1;
+    var UPDATE_MODE = 2;
+    var SAME = 1;
+    var SIMILARY = 2;
+    var modifyList = [];
 
-    updateNumber();
+    init();
+    var nowMode = READ_MODE;
+
+    function init(){
+        var len = result.length;
+        console.log(len);
+        for (var i = 0; i<len; i++){
+            if(result[i][2]==SAME){
+                $("#o_"+result[i][0]).css('background-color', '#ff0000');
+                $("#c_"+result[i][1]).css('background-color', '#ff0000');
+                $("#os_"+result[i][0]).css('background-color', '#ff0000');
+                $("#cs_"+result[i][1]).css('background-color', '#ff0000');
+            }else{
+                $("#o_"+result[i][0]).css('background-color', '#ffff99');
+                $("#c_"+result[i][1]).css('background-color', '#ffff99');
+                $("#os_"+result[i][0]).css('background-color', '#ffff99');
+                $("#cs_"+result[i][1]).css('background-color', '#ffff99');
+            }
+        }
+        updateNumber();
+    }
+
+    function setSelected(type, id, flag){
+        var target = type + "_" + id;
+        if(flag){
+            $("#"+target).css('background-color', '#ff0000');
+            return;
+        }
+        $("#"+target).css('background-color', '');
+        return;
+    }
 
     function updateNumber(){
-        document.getElementById("lineCnt").innerHTML = lineCount;
-        document.getElementById("linePer").innerHTML = (lineCount * 100 / similarLine.length).toFixed(2);
+        $("#similarLine").text(similarCount);
+        $("#sameLine").text(sameCount);
+        $("#linePer").text(((sameCount + similarCount) * 100 / lineCount).toFixed(2));
+    }
+
+    // 비교본 라인으로 원본 라인 검색
+    function searchOriginLine(id){
+        var len = result.length;
+        for(var i=0; i<len; i++){
+            if(result[i][1]==id)
+                return result[i][0];
+        }
+        return -1;
+    }
+
+    // 원본 라인으로 비교본 라인 검색
+    function searchCompareLine(id){
+        var len = result.length;
+        for(var i=0; i<len; i++){
+            if(result[i][0]==id)
+                return result[i][1];
+        }
+        return -1;
+    }
+
+    function searchIndex(id){
+        var len = result.length;
+        for(var i=0; i<len; i++){
+            if(result[i][0]==id)
+                return i;
+        }
+        return -1;
     }
 
     function update(id){
-        var temp = id.id.split('_');
+        var temp = id.split('_');
         var type;
         if(temp[0] == "o")
             type = isOriginal;
@@ -104,9 +212,14 @@
 
         var id = temp[1];
 
+        // second click
         if(isChoose){
             if(chooseLine.type == isOriginal){
                 if(type == isOriginal){
+                    if(chooseLine.line==id){
+                        isChoose = false;
+                        return;
+                    }
                     alert("choose compare line please");
                     return;
                 }
@@ -114,15 +227,20 @@
                     alert("choose not selected line");
                     return;
                 }
+                // add new same line
                 setSelected(type, id, true);
-                similarLine[chooseLine.line] = id;
-                alert("select : o : " + chooseLine.line + ", c : " + id);
+                result.push(chooseLine.line, id, SAME);
                 isChoose = false;
                 lineCount+=1;
                 updateNumber();
+                alert("select : o : " + chooseLine.line + ", c : " + id);
                 return;
             }
             if(type == isCompare){
+                if(chooseLine.line==id){
+                    isChoose = false;
+                    return;
+                }
                 alert("choose original line please");
                 return;
             }
@@ -130,21 +248,24 @@
                 alert("choose not selected line");
                 return;
             }
+            // add new same line
             setSelected(type, id, true);
-            similarLine[id] = chooseLine.line;
-            alert("select : o : " + chooseLine.line + ", c : " + id);
+            result.push(new Array(id, chooseLine.line, SAME));
             isChoose = false;
             lineCount+=1;
             updateNumber();
+            alert("select : o : " + chooseLine.line + ", c : " + id);
             return;
         }
 
+        // first click
         if(type==isOriginal){
             if(isSelected(type, id)){
-                // 비교본 선택 해제
-                alert("deselect o : " + id + ", c : " + similarLine[id]);
+                // 비교본 선택 해제, delete from list
+                alert("deselect o : " + id + ", c : " + searchCompareLine(id));
                 setSelected(type, id, false);
-                setSelected(isCompare, similarLine[id], false);
+                setSelected(isCompare, searchCompareLine(id), false);
+                result.splice(searchIndex(id), 1);
                 lineCount-=1;
                 updateNumber();
                 return;
@@ -157,10 +278,11 @@
             return;
         }
         if(isSelected(type, id)){
-            // 원본 해제
-            alert("deselect o : " + id + ", c : " + getOriginalLine(id));
+            // 원본 해제, delete from list
+            alert("deselect o : " + searchOriginLine(id) + ", c : " + id);
             setSelected(type, id, false);
-            setSelected(isOriginal, getOriginalLine(id), false);
+            setSelected(isOriginal, searchOriginLine(id), false);
+            result.splice(searchIndex(searchOriginLine(id)), 1);
             lineCount-=1;
             updateNumber();
             return;
@@ -173,15 +295,6 @@
         return;
     }
 
-    function setSelected(type, id, flag){
-        if(flag){
-            document.getElementById(type+"_"+id).style.backgroundColor = '#ff0000';
-            return;
-        }
-        document.getElementById(type+"_"+id).style.backgroundColor = "";
-        return;
-    }
-
     function isSelected(type, id){
         if(document.getElementById(type+"_"+id).style.backgroundColor!=""){
             return true;
@@ -189,13 +302,75 @@
         return false;
     }
 
-    function getOriginalLine(id){
-        var len = similarLine.length;
-        for(i=1; i<=len; i++){
-            if(similarLine[i] == id)
-                return i;
-        }
-        return -1;
+    function showClickLine(id){
+        // TODO : hint line
+        $("#"+id).css('background-color', '#a9c3da');
     }
 
+    var DELAY = 500, clicks = 0, timer = null;
+
+    $(function(){
+
+        $("td").on("click", function(e){
+            var id = $(this).attr('id');
+            var temp = id.split('_');
+            var type = temp[0];
+            clicks++;  //count clicks
+
+            if(type=="o" || type=="c"){
+                if(clicks === 1) {
+                    timer = setTimeout(function() {
+                        // update only in update mode by single click
+                        if(nowMode == UPDATE_MODE)
+                            update(id);
+                        clicks = 0;
+
+                    }, DELAY);
+
+                } else {
+                    clearTimeout(timer);
+                    clicks = 0;
+
+                    // focus to matched line by double click
+                    if(type == "o"){
+                        var myElement = document.getElementById('o_' + searchCompareLine(temp[1]));
+                        var topPos = myElement.offsetTop;
+                        document.getElementById('compare').scrollTop = topPos;
+                        return;
+                    }
+                    var dest = searchOriginLine(temp[1]);
+                    var myElement = document.getElementById('o_' + dest);
+                    var topPos = myElement.offsetTop;
+                    document.getElementById('origin').scrollTop = topPos;
+                }
+
+            }else if(type=="os" || type=="cs"){
+                if(type == "os"){
+                    var myElement = document.getElementById('o_' + temp[1]);
+                    var topPos = myElement.offsetTop;
+                    document.getElementById('origin').scrollTop = topPos;
+                    return;
+                }
+                var myElement = document.getElementById('c_' + temp[1]);
+                var topPos = myElement.offsetTop;
+                document.getElementById('compare').scrollTop = topPos;
+            }
+        })
+        .on("dblclick", function(e){
+            e.preventDefault();  //cancel system double-click event
+        });
+
+        $("#mode").click(function(){
+            if(nowMode==READ_MODE){
+                nowMode = UPDATE_MODE;
+                alert('change to update mode');
+                $("#mode").val('to Read Mode');
+                return;
+            }
+            alert('change to read mode');
+            $("#mode").val('to Update Mode');
+            nowMode = READ_MODE;
+        });
+
+    });
 </script>

@@ -46,7 +46,11 @@ def submit():
             file.save(path)
         return redirect(url_for('upload'))
 
-
+"""
+@app.route('/result/{projectid}/{pairid}', methods=["GET"])
+def result():
+    return render_template()
+"""
 
 @app.route('/', methods=["GET"])
 def home():
@@ -55,22 +59,24 @@ def home():
     charToken = [',', '.', '/', ';', '*', '(', ')', '-', '_', '&', '%']
     originList = []
     compareList = []
-    compareLine = [-1]    # 비교본 입장에서 오름차순으로 저장한 유사 라인 정보
     lines = origin.readlines()
     for line in lines:
         originList.append(line)
     lines = compare.readlines()
     for line in lines:
-        compareLine.append(-1)
         compareList.append(line)
 
-    lineCount = 0
+    SAME = 1;
+    SIMILAR = 2;
+
+    similarLineCount = 0
+    sameLineCount = 0
     originlineNum = 1
     comparelineNum = 1
-    similarLine = [-1]    # 원본 입장에서 오름차순으로 저장한 유사 라인 정보
     tempPercent = 0
+    result = []         # 원본라인 / 비교본라인 / 유형(동일, 유사)
+
     for oline in originList:
-        similarLine.append(-1)
         if oline != "":
             for cline in compareList:
                 if cline != "":
@@ -81,39 +87,41 @@ def home():
                         for ctoken in cword:
                             if otoken == ctoken and otoken not in charToken:
                                 tokenCount += 1
-                    if tokenCount > 2 and (tokenCount / len(oword)) > 0.3 :
+                    # 완전 일치
+                    if tokenCount >= 2 and tokenCount == len(oword):
+                        print('same : %d, %d' % (originlineNum, comparelineNum))
+                        if len(result) == 0:
+                            result.append([originlineNum, comparelineNum, SAME])
+                            sameLineCount += 1
+                        elif result[len(result)-1][0] == originlineNum:
+                            result[len(result)-1] = [originlineNum, comparelineNum, SAME]
+                        else:
+                            result.append([originlineNum, comparelineNum, SAME])
+                            sameLineCount+=1
+
+                    # 유사
+                    elif tokenCount > 2 and (tokenCount / len(oword)) > 0.3 :
                         print ('similar : %d, %d' %(originlineNum, comparelineNum))
-                        if similarLine[originlineNum] == -1:
-                            similarLine[originlineNum] = comparelineNum
-                            tempPercent = tokenCount / len(oword)
-                            lineCount += 1
-                        else:
+                        if len(result) == 0:
+                            result.append([originlineNum, comparelineNum, SIMILAR])
+                            similarLineCount += 1
+                        elif result[len(result)-1][0] == originlineNum:
                             if tokenCount / len(oword) > tempPercent:
-                                similarLine[originlineNum] = comparelineNum
-                                tempPercent = tokenCount / len(oword)
-                    elif tokenCount == 2 and tokenCount / len(oword) == 1:
-                        print('similar : %d, %d' % (originlineNum, comparelineNum))
-                        if similarLine[originlineNum] == -1:
-                            similarLine[originlineNum] = comparelineNum
-                            tempPercent = tokenCount / len(oword)
-                            lineCount += 1
+                                result[len(result)-1] = [originlineNum, comparelineNum, SIMILAR]
                         else:
-                            if tokenCount / len(oword) > tempPercent:
-                                similarLine[originlineNum] = comparelineNum
-                                tempPercent = tokenCount / len(oword)
+                            result.append([originlineNum, comparelineNum, SIMILAR])
+                            similarLineCount+=1
+
                 comparelineNum += 1
             comparelineNum = 1
             tempPercent = 0
         originlineNum += 1
 
-    # similarLine으로부터 compareLine 생성
-    cnt = 1
-    for line in similarLine:
-        if line!=-1:
-            compareLine[line] = cnt
-        cnt+=1
+    # 비교본의 라인으로 오름차순 list
+    #compare = sorted(result, key=lambda x: x[1])
 
-    return render_template("result.html", origin = originList, compare = compareList, lineCount = lineCount, list = similarLine, list2 = compareLine)
+    # 원본소스코드 / 비교본 소스코드 / 원본 총 라인수 / 동일 라인수 / 유사 라인수 / 원본 기준 결과 / 비교본 기준 결과
+    return render_template("result.html", origin = originList, compare = compareList, lineCount = len(originList), sameCount = sameLineCount, similarCount = similarLineCount, list = result)
 
 
 @app.route('/post', methods=["POST"])
