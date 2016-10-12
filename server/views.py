@@ -139,8 +139,10 @@ def tuple():
         return redirect(url_for('dashboard'))
     else:
         projName = session['project']
-        file_dict = dict()
-        # ???
+        origin_file_list = list()
+        comp_file_list = list()
+
+        
         
     return render_template('/board/tuple.html', projName=projName)
 
