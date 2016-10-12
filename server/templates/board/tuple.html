@@ -124,82 +124,95 @@
           <div class="">
             <div class="page-title">
               <div class="title_left">
-                <h3>비교쌍 생성 </h3>
+                <h3>{{projName}} - 비교쌍 생성 </h3>
               </div>
 
             <div class="clearfix"></div>
-            
+
             <div class="row">
               <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="col-md-6 col-sm-6 col-xs-12">
-                <div class="x_panel">
-                  <div class="x_title">
-                    <h2>원본 파일 업로드</h2>
-                    <ul class="nav navbar-right panel_toolbox">
-                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
-                      </li>
-                      <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
-                        <ul class="dropdown-menu" role="menu">
-                          <li><a href="#">Settings 1</a>
-                          </li>
-                          <li><a href="#">Settings 2</a>
-                          </li>
-                        </ul>
-                      </li>
-                      <li><a class="close-link"><i class="fa fa-close"></i></a>
-                      </li>
-                    </ul>
-                    <div class="clearfix"></div>
+                  <div class="x_panel">
+                    <div class="x_title">
+                      <h2>원본 파일 업로드</h2>
+                      <ul class="nav navbar-right panel_toolbox">
+                        <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                        </li>
+                        <li class="dropdown">
+                          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                          <ul class="dropdown-menu" role="menu">
+                            <li><a href="#">Settings 1</a>
+                            </li>
+                            <li><a href="#">Settings 2</a>
+                            </li>
+                          </ul>
+                        </li>
+                        <li><a class="close-link"><i class="fa fa-close"></i></a>
+                        </li>
+                      </ul>
+                      <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                      <p>한 개 이상의 원본 파일을 업로드해주세요</p>
+                      <form action="tuple.html" method="PUT" class="dropzone">
+                        <input id="_csrf_token" name="_csrf_token" type=hidden value="{{ csrf_token() }}">
+                      </form>
+                      <br />
+                    </div>
                   </div>
-                  <div class="x_content">
-                    <p>한 개 이상의 원본 파일을 업로드해주세요</p>
-                    <form action="tuple.html" method="PUT" class="dropzone">
-                      <input id="_csrf_token" name="_csrf_token" type=hidden value="{{ csrf_token() }}">
-                    </form>
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                  </div>
-                </div>
                 </div>
                 <div class="col-md-6 col-sm-6 col-xs-12">
-                <div class="x_panel">
-                  <div class="x_title">
-                    <h2>비교 파일 업로드</h2>
-                    <ul class="nav navbar-right panel_toolbox">
-                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
-                      </li>
-                      <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
-                        <ul class="dropdown-menu" role="menu">
-                          <li><a href="#">Settings 1</a>
-                          </li>
-                          <li><a href="#">Settings 2</a>
-                          </li>
-                        </ul>
-                      </li>
-                      <li><a class="close-link"><i class="fa fa-close"></i></a>
-                      </li>
-                    </ul>
-                    <div class="clearfix"></div>
+                  <div class="x_panel">
+                    <div class="x_title">
+                      <h2>비교 파일 업로드</h2>
+                      <ul class="nav navbar-right panel_toolbox">
+                        <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                        </li>
+                        <li class="dropdown">
+                          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                          <ul class="dropdown-menu" role="menu">
+                            <li><a href="#">Settings 1</a>
+                            </li>
+                            <li><a href="#">Settings 2</a>
+                            </li>
+                          </ul>
+                        </li>
+                        <li><a class="close-link"><i class="fa fa-close"></i></a>
+                        </li>
+                      </ul>
+                      <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                      <p>한 개 이상의 비교 파일을 업로드해주세요</p>
+                      <form action="tuple.html" method="PUT" class="dropzone">
+                        <input id="_csrf_token" name="_csrf_token" type=hidden value="{{ csrf_token() }}">
+                      </form>
+                      <br />
+                    </div>
                   </div>
-                  <div class="x_content">
-                    <p>한 개 이상의 비교 파일을 업로드해주세요</p>
-                    <form action="tuple.html" method="PUT" class="dropzone">
-                      <input id="_csrf_token" name="_csrf_token" type=hidden value="{{ csrf_token() }}">
-                    </form>
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                  </div>
-                </div>
                 </div>
               </div>
               </div>
-
+              
+              <div class="row">
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                  <div class="radio">
+                    <label>
+                      <input type="radio" checked="" value="option1" id="optionsRadios1" name="optionsRadios"> 같은 이름 파일 비교
+                    </label>
+                  </div>
+                  <div class="radio">
+                    <label>
+                      <input type="radio" value="option2" id="optionsRadios2" name="optionsRadios"> 전체 파일 비교
+                    </label>
+                  </div>
+                  <div class="radio">
+                    <label>
+                      <input type="radio" value="option3" id="optionsRadios3" name="optionsRadios"> 사용자 지정 비교
+                    </label>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

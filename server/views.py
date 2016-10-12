@@ -114,7 +114,7 @@ def dashboard():
             return redirect(url_for('tuple'))
 
         elif modal_type == "delete":
-            
+
             password = request.form.get('password')
             if not user_data.verify_password(password):
                 pass
@@ -133,13 +133,16 @@ def dashboard():
 @login_required
 def tuple():
 
+    projName = ""
+
     if not session['project'] or session['project'] == "":
         return redirect(url_for('dashboard'))
     else:
+        projName = session['project']
         file_dict = dict()
         # ???
-
-    return render_template('/board/tuple.html')
+        
+    return render_template('/board/tuple.html', projName=projName)
 
 
 @app.route('/logout', methods=['GET',   'POST'])
