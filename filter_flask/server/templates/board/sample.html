@@ -1,0 +1,266 @@
+<html>
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Dashboard</title>
+
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/patternlock.css') }}">
+  <script src="{{url_for ('static', filename='js/patternlock.js') }}"></script>
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='gentelella/vendors/bootstrap/dist/css/bootstrap.min.css')}}">
+
+  <!-- Font Awesome -->
+  <link type="text/css" href="{{url_for('static', filename='gentelella/vendors/font-awesome/css/font-awesome.min.css')}}" rel="stylesheet">
+
+  <!-- iCheck -->
+  <link type="text/css" href="{{url_for('static', filename='gentelella/vendors/iCheck/skins/flat/green.css')}}" rel="stylesheet">
+  <!-- bootstrap-progressbar -->
+  <link type="text/css" href="{{url_for('static', filename='gentelella/vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css')}}" rel="stylesheet">
+  <!-- jVectorMap -->
+  <link type="text/css" href="{{url_for('static', filename='gentelella/production/css/maps/jquery-jvectormap-2.0.3.css')}}" rel="stylesheet"/>
+
+  <!-- Custom Theme Style -->
+  <link type="text/css" href="{{url_for('static', filename='gentelella/build/css/custom.min.css')}}" rel="stylesheet">
+
+  <!-- Modal setting -->
+  <style>
+  .modal {
+    text-align: center;
+  }
+  @media screen and (min-width: 768px) {
+    .modal:before {
+      display: inline-block;
+      vertical-align: middle;
+      content: " ";
+      height: 100%;
+    }
+  }
+  .modal-dialog {
+    display: inline-block;
+    text-align: left;
+    vertical-align: middle;
+  }
+  .modal-header, h4, .close {
+      background-color: #5cb85c;
+      color:white !important;
+      text-align: center;
+      font-size: 30px;
+  }
+  .modal-footer {
+      background-color: #f9f9f9;
+  }
+  </style>
+
+</head>
+<body class="nav-md">
+  <div class="container body">
+      <div class="main_container">
+        <div class="col-md-3 left_col">
+          <div class="left_col scroll-view">
+            <div class="navbar nav_title" style="border: 0;">
+              <a href="dashboard" class="site_title"><i class="fa fa-paw"></i> <span>Passer</span></a>
+            </div>
+
+            <div class="clearfix"></div>
+            
+            <!-- menu profile quick info -->  
+            <div class="profile">
+              <div class="profile_pic">
+                <img src="{{url_for('static', filename='gentelella/production/images/img.jpg')}}" alt="..." class="img-circle profile_img">
+              </div>
+              <div class="profile_info">
+                <span>환영합니다</span>
+                <h2>{{session['email']}}</h2>
+              </div>
+            </div>
+            <!-- /menu profile quick info -->
+            <br />
+
+           <!-- sidebar menu -->
+          <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+            <div class="menu_section">
+              <br/><br/><br/><br/>
+              <h3>서버</h3>
+              <ul class="nav side-menu">
+                <li><a href="server_list"><i class="fa fa-edit"></i> 서버 리스트 </a>
+                </li>
+                <li><a href="send_query"><i class="fa fa-desktop"></i> 명령어 전송 </a>
+                </li>
+                <!-- <li><a><i class="fa fa-table"></i> 보안 감사 <span class="fa fa-chevron-down"></span></a>
+                   <ul class="nav child_menu">
+                    <li><a href="audit">보안 감사</a></li>
+                   </ul>
+                </li> -->
+                <li><a><i class="fa fa-bar-chart-o"></i> 레포트 <span class="fa fa-chevron-down"></span></a>
+                   <ul class="nav child_menu">
+                    <li><a href="report_total_server">전체서버 레포트</a></li>
+                    <li><a href="report_audit">공격탐지 레포트</a></li>
+                    <li><a href="report_password">패스워드 이용기록 레포트</a></li>
+                    <li><a href="report_security">보안감사 레포트</a></li>
+                    <li><a href="report_change">패스워드 변경이력 레포트</a></li>
+                   </ul>
+                </li>
+              </ul>
+            </div>
+            {% if session['user'].is_admin == True %}
+            <div class="menu_section">
+              <h3>대시 보드</h3>
+              <ul class="nav side-menu">
+                <li><a href="dashboard"><i class="fa fa-home"></i> 대시보드 </a>
+                </li>
+              </ul>
+            </div>
+            <div class="menu_section">
+              <h3>관리자 메뉴</h3>
+              <ul class="nav side-menu">
+                <li><a><i class="fa fa-clone"></i> 설정 <span class="fa fa-chevron-down"></span></a>
+                   <ul class="nav child_menu">
+                    <li><a href="settings_policy">패스워드 정책 설정</a></li>
+                    <li><a href="settings_server_manage">서버 관리</a></li>
+                    <li><a href="settings_group_manage">그룹 관리</a></li>
+                    <li><a href="settings_user_manage">유저 관리</a></li>
+                    <!-- <li><a href="settings_report">이전 기록 출력</a></li> -->
+                   </ul>
+                </li>
+                <li><a><i class="fa fa-bug"></i> 로그 <span class="fa fa-chevron-down"></span></a>
+                   <ul class="nav child_menu">
+                    <li><a href="log_password_change">비밀번호 변경 이력 로그</a></li>
+                    <li><a href="log_password">비밀번호 이용 내역 로그</a></li>
+                    <li><a href="log_audit">공격 탐지 내역 로그</a></li>
+                    <li><a href="log_share">공유 내역 로그</a></li>
+                   </ul>
+                </li>
+              </ul>
+            </div>
+            {% endif %}
+          </div>
+          <!-- /sidebar menu -->
+
+            <!-- /menu footer buttons -->
+            <div class="sidebar-footer hidden-small">
+              <a data-toggle="tooltip" data-placement="top" title="Settings">
+                <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+              </a>
+              <a data-toggle="tooltip" data-placement="top" title="FullScreen">
+                <span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span>
+              </a>
+              <a data-toggle="tooltip" data-placement="top" title="Lock">
+                <span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span>
+              </a>
+              <a data-toggle="tooltip" data-placement="top" title="Logout">
+                <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
+              </a>
+            </div>
+            <!-- /menu footer buttons -->
+          </div>
+        </div>
+
+        <!-- top navigation -->
+        <div class="top_nav">
+          <div class="nav_menu">
+            <nav class="" role="navigation">
+              <div class="nav toggle">
+                <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+              </div>
+
+              <ul class="nav navbar-nav navbar-right">
+                <li class="">
+                  <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                    <img src="{{url_for('static', filename='gentelella/production/images/img.jpg')}}" alt="">{{session['email']}}
+                    <span class=" fa fa-angle-down"></span>
+                  </a>
+                  <ul class="dropdown-menu dropdown-usermenu pull-right">
+                    <li><a href="javascript:;"> 패턴 변경 </a></li>
+                    <li>
+                      <a href="javascript:;"> 기기 등록 해제 </a>
+                    </li>
+                    <li><a href="../logout"><i class="fa fa-sign-out pull-right"></i> 로그아웃</a></li>
+                  </ul>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+        <!-- /top navigation -->
+        
+        <!-- page content -->
+        <div class="right_col" role="main">
+          <div class="">
+            <div class="page-title">
+              <div class="title_left">
+                <h3>서버 목록</h3>
+              </div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="">
+              <div class="col-md-12 col-sm-12 col-xs-12">
+
+              </div>
+            </div>
+          </div>
+          <!-- <footer>
+            <div class="pull-right">
+              Gentelella - Bootstrap Admin Template by <a href="https://colorlib.com">Colorlib</a>
+            </div>
+            <div class="clearfix"></div>
+          </footer> -->
+        </div>
+        <!-- /page content -->
+      
+    </div>
+  </div>
+
+  <!-- jQuery -->
+  <script src="{{url_for('static', filename='gentelella/vendors/jquery/dist/jquery.min.js')}}"></script>
+  <!-- Bootstrap -->
+  <script src="{{url_for('static', filename='gentelella/vendors/bootstrap/dist/js/bootstrap.min.js')}}"></script>
+  <!-- FastClick -->
+  <script src="{{url_for('static', filename='gentelella/vendors/fastclick/lib/fastclick.js')}}"></script>
+  <!-- NProgress -->
+  <script src="{{url_for('static', filename='gentelella/vendors/nprogress/nprogress.js')}}"></script>
+  <!-- Chart.js -->
+  <script src="{{url_for('static', filename='gentelella/vendors/Chart.js/dist/Chart.min.js')}}"></script>
+  <!-- gauge.js -->
+  <script src="{{url_for('static', filename='gentelella/vendors/bernii/gauge.js/dist/gauge.min.js')}}"></script>
+  <!-- bootstrap-progressbar -->
+  <script src="{{url_for('static', filename='gentelella/vendors/bootstrap-progressbar/bootstrap-progressbar.min.js')}}"></script>
+  <!-- iCheck -->
+  <script src="{{url_for('static', filename='gentelella/vendors/iCheck/icheck.min.js')}}"></script>
+  <!-- Skycons -->
+  <script src="{{url_for('static', filename='gentelella/vendors/skycons/skycons.js')}}"></script>
+  <!-- Flot -->
+  <script src="{{url_for('static', filename='gentelella/vendors/Flot/jquery.flot.js')}}"></script>
+  <script src="{{url_for('static', filename='gentelella/vendors/Flot/jquery.flot.pie.js')}}"></script>
+  <script src="{{url_for('static', filename='gentelella/vendors/Flot/jquery.flot.time.js')}}"></script>
+  <script src="{{url_for('static', filename='gentelella/vendors/Flot/jquery.flot.stack.js')}}"></script>
+  <script src="{{url_for('static', filename='gentelella/vendors/Flot/jquery.flot.resize.js')}}"></script>
+  <!-- Flot plugins -->
+  <script src="{{url_for('static', filename='gentelella/production/js/flot/jquery.flot.orderBars.js')}}"></script>
+  <script src="{{url_for('static', filename='gentelella/production/js/flot/date.js')}}"></script>
+  <script src="{{url_for('static', filename='gentelella/production/js/flot/jquery.flot.spline.js')}}"></script>
+  <script src="{{url_for('static', filename='gentelella/production/js/flot/curvedLines.js')}}"></script>
+  <!-- jVectorMap -->
+  <script src="{{url_for('static', filename='gentelella/production/js/maps/jquery-jvectormap-2.0.3.min.js')}}"></script>
+  <!-- bootstrap-daterangepicker -->
+  <script src="{{url_for('static', filename='gentelella/production/js/moment/moment.min.js')}}"></script>
+  <script src="{{url_for('static', filename='gentelella/production/js/datepicker/daterangepicker.js')}}"></script>
+
+  <!-- morris.js -->
+  <script src="{{url_for('static', filename='gentelella/vendors/raphael/raphael.min.js')}}"></script>
+  <script src="{{url_for('static', filename='gentelella/vendors/morris.js/morris.min.js')}}"></script>
+
+  <!-- Custom Theme Scripts -->
+  <script src="{{url_for('static', filename='gentelella/build/js/custom.min.js')}}"></script>
+
+  
+
+</body>
+</html>
