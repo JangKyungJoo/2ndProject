@@ -17,7 +17,7 @@
 
   <!-- Bootstrap -->
   <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='gentelella/vendors/bootstrap/dist/css/bootstrap.min.css')}}">
-
+  
   <!-- Font Awesome -->
   <link type="text/css" href="{{url_for('static', filename='gentelella/vendors/font-awesome/css/font-awesome.min.css')}}" rel="stylesheet">
 
@@ -85,41 +85,10 @@
                 </li>
                 <li><a href="tuple"><i class="fa fa-desktop"></i> 비교쌍 생성 </a>
                 </li>
-                <!-- <li><a><i class="fa fa-table"></i> 보안 감사 <span class="fa fa-chevron-down"></span></a>
-                   <ul class="nav child_menu">
-                    <li><a href="audit">보안 감사</a></li>
-                   </ul>
-                </li> -->
-                <!-- <li><a><i class="fa fa-bar-chart-o"></i> 레포트 <span class="fa fa-chevron-down"></span></a>
-                   <ul class="nav child_menu">
-                    <li><a href="report_total_server">전체서버 레포트</a></li>
-                    <li><a href="report_audit">공격탐지 레포트</a></li>
-                    <li><a href="report_password">패스워드 이용기록 레포트</a></li>
-                    <li><a href="report_security">보안감사 레포트</a></li>
-                    <li><a href="report_change">패스워드 변경이력 레포트</a></li>
-                   </ul>
-                </li> -->
               </ul>
             </div>
           </div>
           <!-- /sidebar menu -->
-
-            <!-- /menu footer buttons -->
-            <div class="sidebar-footer hidden-small">
-              <a data-toggle="tooltip" data-placement="top" title="Settings">
-                <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
-              </a>
-              <a data-toggle="tooltip" data-placement="top" title="FullScreen">
-                <span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span>
-              </a>
-              <a data-toggle="tooltip" data-placement="top" title="Lock">
-                <span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span>
-              </a>
-              <a data-toggle="tooltip" data-placement="top" title="Logout">
-                <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
-              </a>
-            </div>
-            <!-- /menu footer buttons -->
           </div>
         </div>
 
@@ -214,7 +183,7 @@
                           <td>{{project.date}}</td>
                           
                           <td>
-                          <form role="form" method="POST" name="form" class="pure-form pure-form-stacked">
+                          <form role="form" method="POST" submit="/tuple" name="form" class="pure-form pure-form-stacked">
                               <input id="_csrf_token" name="_csrf_token" type=hidden value="{{ csrf_token() }}">
                               <input id="modal_type" name="modal_type" type=hidden value="connect">
                               <input id="projName" name="projName" type="hidden" value="{{project.projName}}">
@@ -256,17 +225,17 @@
                   </div>
             </div>
           </div>
-          <!-- <footer>
-            <div class="pull-right">
-              Gentelella - Bootstrap Admin Template by <a href="https://colorlib.com">Colorlib</a>
-            </div>
-            <div class="clearfix"></div>
-          </footer> -->
+          
         </div>
         <!-- /page content -->
-      
     </div>
   </div>
+  <footer>
+    <div class="pull-right">
+      Gentelella - Bootstrap Admin Template by <a href="https://colorlib.com">Colorlib</a>
+    </div>
+    <div class="clearfix"></div>
+  </footer>
   
   <!-- FastClick -->
   <script src="{{url_for('static', filename='gentelella/vendors/fastclick/lib/fastclick.js')}}"></script>

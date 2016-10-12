@@ -27,6 +27,17 @@ import sys
 import json
 import requests
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'email' in session:
+            pass
+        else:
+            return redirect(url_for('login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 @app.before_request
 def csrf_protect():
     if request.method == "POST":
@@ -44,6 +55,10 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
+    # new_u = People('3ncag3', '3ncag3@gmail.com', 'Djfrdjfg1!', True);
+    # db.session.add(new_u)
+    # db.session.commit()
+
     if 'email' in session and 'auth' in session:
         if session['auth'] == "true":
             return redirect(url_for('dashboard'))
@@ -66,6 +81,7 @@ def login():
 
 
 @app.route('/board/dashboard', methods=['GET', 'POST'])
+@login_required
 def dashboard():
     if not session or 'auth' not in session:
         session.clear()
@@ -76,6 +92,7 @@ def dashboard():
     else:
         user_data = People.query.filter(People.pEmail==session['email']).first()
         project_list = Project.query.filter(Project.pNum==user_data.pNum).all()
+        session['project'] = ""
 
     if request.method=='POST':
         modal_type = request.form.get('modal_type')
@@ -91,10 +108,13 @@ def dashboard():
             return redirect(url_for('dashboard'))
 
         elif modal_type == "connect":
-            
-            pass
-        elif modal_type == "delete":
 
+            projName = request.form.get('projName')
+            session['project'] = projName
+            return redirect(url_for('tuple'))
+
+        elif modal_type == "delete":
+            
             password = request.form.get('password')
             if not user_data.verify_password(password):
                 pass
@@ -110,24 +130,20 @@ def dashboard():
 
 
 @app.route('/board/tuple', methods=['GET', 'POST'])
+@login_required
 def tuple():
-    if request.method == 'GET':
+
+    if not session['project'] or session['project'] == "":
         return redirect(url_for('dashboard'))
-    if request.method == 'POST':
-
-        for origin_file in origin_folder:
-            pass
-        for comp_file in comp_folder:
-            pass
-
+    else:
         file_dict = dict()
-
         # ???
 
     return render_template('/board/tuple.html')
 
 
 @app.route('/logout', methods=['GET',   'POST'])
+@login_required
 def logout():
     session.clear()
     return redirect(url_for('login'))

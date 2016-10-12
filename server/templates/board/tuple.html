@@ -21,6 +21,9 @@
   <!-- Font Awesome -->
   <link type="text/css" href="{{url_for('static', filename='gentelella/vendors/font-awesome/css/font-awesome.min.css')}}" rel="stylesheet">
 
+  <!-- Dropzone.js -->
+  <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='gentelella/vendors/dropzone/dist/min/dropzone.min.css')}}">
+
   <!-- Custom Theme Style -->
   <link type="text/css" href="{{url_for('static', filename='gentelella/build/css/custom.min.css')}}" rel="stylesheet">
 
@@ -76,50 +79,19 @@
             <br />
 
             <!-- sidebar menu -->
-          <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
-            <div class="menu_section">
-              <br/><br/><br/><br/>
-              <h3>서버</h3>
-              <ul class="nav side-menu">
-                <li><a href="dashboard"><i class="fa fa-edit"></i> 프로젝트 리스트 </a>
-                </li>
-                <li><a href="tuple"><i class="fa fa-desktop"></i> 비교쌍 생성 </a>
-                </li>
-                <!-- <li><a><i class="fa fa-table"></i> 보안 감사 <span class="fa fa-chevron-down"></span></a>
-                   <ul class="nav child_menu">
-                    <li><a href="audit">보안 감사</a></li>
-                   </ul>
-                </li> -->
-                <!-- <li><a><i class="fa fa-bar-chart-o"></i> 레포트 <span class="fa fa-chevron-down"></span></a>
-                   <ul class="nav child_menu">
-                    <li><a href="report_total_server">전체서버 레포트</a></li>
-                    <li><a href="report_audit">공격탐지 레포트</a></li>
-                    <li><a href="report_password">패스워드 이용기록 레포트</a></li>
-                    <li><a href="report_security">보안감사 레포트</a></li>
-                    <li><a href="report_change">패스워드 변경이력 레포트</a></li>
-                   </ul>
-                </li> -->
-              </ul>
+            <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+              <div class="menu_section">
+                <br/><br/><br/><br/>
+                <h3>서버</h3>
+                <ul class="nav side-menu">
+                  <li><a href="dashboard"><i class="fa fa-edit"></i> 프로젝트 리스트 </a>
+                  </li>
+                  <li><a href="tuple"><i class="fa fa-desktop"></i> 비교쌍 생성 </a>
+                  </li>
+                </ul>
+              </div>
             </div>
-          </div>
           <!-- /sidebar menu -->
-
-            <!-- /menu footer buttons -->
-            <div class="sidebar-footer hidden-small">
-              <a data-toggle="tooltip" data-placement="top" title="Settings">
-                <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
-              </a>
-              <a data-toggle="tooltip" data-placement="top" title="FullScreen">
-                <span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span>
-              </a>
-              <a data-toggle="tooltip" data-placement="top" title="Lock">
-                <span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span>
-              </a>
-              <a data-toggle="tooltip" data-placement="top" title="Logout">
-                <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
-              </a>
-            </div>
-            <!-- /menu footer buttons -->
           </div>
         </div>
 
@@ -152,210 +124,108 @@
           <div class="">
             <div class="page-title">
               <div class="title_left">
-                <h3>프로젝트 목록</h3>
+                <h3>비교쌍 생성 </h3>
               </div>
-            </div>
 
             <div class="clearfix"></div>
             
-            <div class="">
+            <div class="row">
               <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="col-md-6 col-sm-6 col-xs-12">
                 <div class="x_panel">
                   <div class="x_title">
-                    <h2><i class="fa fa-bars"></i> 프로젝트 리스트 </h2>
-                    <button id="btn_admin_add" class="btn btn-default pull-right" type="button" data-toggle="modal" data-target="#insertModal">추가</button>
-
-                    <div id="insertModal" class="modal fade" role="dialog">
-                      <div class="modal-dialog">
-                        <!-- Modal content-->
-                        <div class="modal-content">
-                          <div class="modal-body" style="padding:40px 50px;">
-                            <form role="form" method="POST" submit="/settings_server_manage">
-                              <input id="_csrf_token" name="_csrf_token" type=hidden value="{{ csrf_token() }}">
-                              
-                              <div class="form-group">
-                                <label for="projName"><span class="glyphicon glyphicon-user"></span>프로젝트 이름</label>
-                                <input type="text" class="form-control" id="projName" name="projName" placeholder="프로젝트 이름" required>
-                              </div>
-
-                              <input id="modal_type" name="modal_type" type=hidden value="insert">
-                              <button type="submit" class="btn btn-success btn-block">
-                              <span class="glyphicon glyphicon-off"></span> 제출</button>
-                            </form>
-                          </div>
-                          <div class="modal-footer">
-                          <button type="button" class="btn btn-danger btn-default" data-dismiss="modal">
-                          <span class="glyphicon glyphicon-remove"></span>취소</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-
+                    <h2>원본 파일 업로드</h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li><a href="#">Settings 1</a>
+                          </li>
+                          <li><a href="#">Settings 2</a>
+                          </li>
+                        </ul>
+                      </li>
+                      <li><a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
                     <div class="clearfix"></div>
                   </div>
                   <div class="x_content">
-                    <table id="datatable" class="table table-striped jambo_table" style="width:100%">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>프로젝트 이름</th>
-                          <th>생성 날짜</th>
-                          <th>선택</th>
-                          <th>삭제</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {% set index = 0 %}
-                        {% for project in project_list %}
-                        <tr>
-                          <td scope="row">{{index+1}}</td>
-                          <td>{{project.projName}}</td>
-                          <td>{{project.date}}</td>
-                          
-                          <td>
-                          <form id="form" name="form" class="pure-form pure-form-stacked">
-                              <input id="_csrf_token" name="_csrf_token" type=hidden value="{{ csrf_token() }}">
-                              <input id="modal_type" name="modal_type" type=hidden value="connect">
-                              <input id="projName" name="projName" type="hidden" value="{{project.projName}}">
-                              <button type="submit" class="btn btn-primary btn-xs">선택</button>
-                          </form>
-                          </td>
-                          
-                          <td><button type="button" class="btn btn-dark btn-xs" data-toggle="modal" data-target="#deleteModal{{index}}">삭제</button></td>
-                          
-                          <div id="deleteModal{{index}}" class="modal fade" role="dialog">
-                            <div class="modal-dialog">
-                              <!-- Modal content-->
-                              <div class="modal-content">
-                                <div class="modal-body" style="padding:40px 50px;">
-                                  <form role="form" method="POST" submit="/settings_user_manage">
-                                    <input id="_csrf_token" name="_csrf_token" type=hidden value="{{ csrf_token() }}">
-                                    <input id="modal_type" name="modal_type" type=hidden value="delete">
-                                    <input id="projName" name="projName" type="hidden" value="{{project.projName}}">
-                                    <div class="form-group">
-                                      <label for="password"><span class="glyphicon glyphicon-user"></span>패스워드</label>
-                                      <input type="text" class="form-control" id="password" name="password" placeholder="패스워드 입력" required>
-                                    </div>
-                                    <button type="submit" class="btn btn-success btn-block">
-                                    <span class="glyphicon glyphicon-off"></span> 삭제</button>
-                                  </form>
-                                </div>
-                                <div class="modal-footer">
-                                <button type="button" class="btn btn-danger btn-default" data-dismiss="modal">
-                                <span class="glyphicon glyphicon-remove"></span>취소</button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </tr>
-                        {% set index = index + 1 %}
-                        {% endfor %}
-                      </tbody>
-                    </table>
+                    <p>한 개 이상의 원본 파일을 업로드해주세요</p>
+                    <form action="tuple.html" method="PUT" class="dropzone">
+                      <input id="_csrf_token" name="_csrf_token" type=hidden value="{{ csrf_token() }}">
+                    </form>
+                    <br />
+                    <br />
+                    <br />
+                    <br />
                   </div>
+                </div>
+                </div>
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                <div class="x_panel">
+                  <div class="x_title">
+                    <h2>비교 파일 업로드</h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li><a href="#">Settings 1</a>
+                          </li>
+                          <li><a href="#">Settings 2</a>
+                          </li>
+                        </ul>
+                      </li>
+                      <li><a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                    <p>한 개 이상의 비교 파일을 업로드해주세요</p>
+                    <form action="tuple.html" method="PUT" class="dropzone">
+                      <input id="_csrf_token" name="_csrf_token" type=hidden value="{{ csrf_token() }}">
+                    </form>
+                    <br />
+                    <br />
+                    <br />
+                    <br />
+                  </div>
+                </div>
+                </div>
+              </div>
+              </div>
+
             </div>
           </div>
-          <!-- <footer>
-            <div class="pull-right">
-              Gentelella - Bootstrap Admin Template by <a href="https://colorlib.com">Colorlib</a>
-            </div>
-            <div class="clearfix"></div>
-          </footer> -->
         </div>
         <!-- /page content -->
-      
     </div>
   </div>
-  
+  <footer>
+    <div class="pull-right">
+      Gentelella - Bootstrap Admin Template by <a href="https://colorlib.com">Colorlib</a>
+    </div>
+    <div class="clearfix"></div>
+  </footer>
+
+  <!-- jQuery -->
+  <script src="{{url_for('static', filename='gentelella/vendors/jquery/dist/jquery.min.js')}}"></script>
+  <!-- Bootstrap -->
+  <script src="{{url_for('static', filename='gentelella/vendors/bootstrap/dist/js/bootstrap.min.js')}}"></script>
   <!-- FastClick -->
   <script src="{{url_for('static', filename='gentelella/vendors/fastclick/lib/fastclick.js')}}"></script>
   <!-- NProgress -->
   <script src="{{url_for('static', filename='gentelella/vendors/nprogress/nprogress.js')}}"></script>
-  <!-- Datatables -->
-  <script src="{{url_for('static', filename='gentelella/vendors/datatables.net/js/jquery.dataTables.min.js')}}"></script>
-  <script src="{{url_for('static', filename='gentelella/vendors/datatables.net-bs/js/dataTables.bootstrap.min.js')}}"></script>
-  <script src="{{url_for('static', filename='gentelella/vendors/datatables.net-buttons/js/dataTables.buttons.min.js')}}"></script>
-  <script src="{{url_for('static', filename='gentelella/vendors/datatables.net-buttons-bs/js/buttons.bootstrap.min.js')}}"></script>
-  <script src="{{url_for('static', filename='gentelella/vendors/datatables.net-buttons/js/buttons.flash.min.js')}}"></script>
-  <script src="{{url_for('static', filename='gentelella/vendors/datatables.net-buttons/js/buttons.html5.min.js')}}"></script>
-  <script src="{{url_for('static', filename='gentelella/vendors/datatables.net-buttons/js/buttons.print.min.js')}}"></script>
-  <script src="{{url_for('static', filename='gentelella/vendors/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js')}}"></script>
-  <script src="{{url_for('static', filename='gentelella/vendors/datatables.net-keytable/js/dataTables.keyTable.min.js')}}"></script>
-  <script src="{{url_for('static', filename='gentelella/vendors/datatables.net-responsive/js/dataTables.responsive.min.js')}}"></script>
-  <script src="{{url_for('static', filename='gentelella/vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js')}}"></script>
-  <script src="{{url_for('static', filename='gentelella/vendors/datatables.net-scroller/js/datatables.scroller.min.js')}}"></script>
-  <script src="{{url_for('static', filename='gentelella/vendors/jszip/dist/jszip.min.js')}}"></script>
-  <script src="{{url_for('static', filename='gentelella/vendors/pdfmake/build/pdfmake.min.js')}}"></script>
-  <script src="{{url_for('static', filename='gentelella/vendors/pdfmake/build/vfs_fonts.js')}}"></script>
+  <!-- Dropzone.js -->
+  <script src="{{url_for('static', filename='gentelella/vendors/dropzone/dist/min/dropzone.min.js')}}"></script>
 
   <!-- Custom Theme Scripts -->
   <script src="{{url_for('static', filename='gentelella/build/js/custom.min.js')}}"></script>
-  
-  <script>
-    $(document).ready(function() {
-      var handleDataTableButtons = function() {
-        if ($("#datatable-buttons").length) {
-          $("#datatable-buttons").DataTable({
-            dom: "Bfrtip",
-            buttons: [
-              {
-                extend: "copy",
-                className: "btn-sm"
-              },
-              {
-                extend: "csv",
-                className: "btn-sm"
-              },
-              {
-                extend: "excel",
-                className: "btn-sm"
-              },
-              {
-                extend: "pdfHtml5",
-                className: "btn-sm"
-              },
-              {
-                extend: "print",
-                className: "btn-sm"
-              },
-            ],
-            responsive: true
-          });
-        }
-      };
-
-      TableManageButtons = function() {
-        "use strict";
-        return {
-          init: function() {
-            handleDataTableButtons();
-          }
-        };
-      }();
-      $('#datatable').dataTable();
-      $('#datatable-keytable').DataTable({
-        keys: true
-      });
-
-      $('#datatable-responsive').DataTable();
-
-      $('#datatable-scroller').DataTable({
-        ajax: "js/datatables/json/scroller-demo.json",
-        deferRender: true,
-        scrollY: 380,
-        scrollCollapse: true,
-        scroller: true
-      });
-
-      var table = $('#datatable-fixed-header').DataTable({
-        fixedHeader: true
-      });
-
-      TableManageButtons.init();
-
-    });
-  </script>
 
 </body>
 </html>

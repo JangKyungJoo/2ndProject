@@ -50,7 +50,7 @@ def page_move(list_num, num):
     pages = get_page_list(int(list_num))
 
     print pages
-
+    
     return render_template('ex.html', file_names=files,
                            end=len(files), page_num=num, page_list_num=list_num, pages=pages)
 
