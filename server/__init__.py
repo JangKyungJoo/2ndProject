@@ -1,6 +1,7 @@
 import os
 import random
 import string
+
 from flask import Flask
 from flask import session
 from flask_sqlalchemy import SQLAlchemy
@@ -26,3 +27,4 @@ app.config.update(SESSION_COOKIE_NAME = 'server_session')
 db = SQLAlchemy(app, session_options={"autoflush": False})
 
 import server.views
+import server.result
