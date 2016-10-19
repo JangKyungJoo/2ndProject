@@ -89,7 +89,7 @@ class Result(db.Model):
         self.compLine = compLine
         self.count = count
         self.rType = rType
-
+        
     def __repr__(self):
         return '<Result %r>' % self.resultID
 

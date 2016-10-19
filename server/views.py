@@ -24,6 +24,7 @@ import base64
 import sys
 import json
 import requests
+import zipfile
 
 
 def login_required(f):
@@ -99,7 +100,8 @@ def dashboard():
         elif modal_type == "insert":
 
             projName = request.form.get('projName')
-            new_project = Project(projName, user_data.pID)
+            projDesc = request.form.get('projDesc')
+            new_project = Project(projName, projDesc, user_data.pID)
             db.session.add(new_project)
             db.session.commit()
 
@@ -144,28 +146,55 @@ def proj_info():
     else:
         projName = session['project']
         project = Project.query.filter(Project.projName==projName).first()
+        user = People.query.filter(People.pID==project.pID).first()
+        user_name = user.pName
+        projDesc = project.projDesc
+        fileNum = project.fileNum
+        if fileNum is None:
+            file_desc = "no file"
+        else:
+            file_desc = fileNum
+
+        date = project.date
+        update_time = project.update
 
 
-    return render_template('/board/proj_info.html')
+    return render_template('/board/proj_info.html',
+        projName=projName, projDesc=projDesc, 
+        fileNum=fileNum, date=date, file_desc=file_desc,
+        user_name=user_name, update_time=update_time)
 
 
 @app.route('/board/file_upload', methods=['GET', 'POST'])
 @login_required
 def file_upload():
-
+    
     projName = ""
 
     if not session['project'] or session['project'] == "":
         return redirect(url_for('dashboard'))
     else:
         projName = session['project']
-        
+
         if request.method == 'POST':
 
             file = request.files['file']
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+                file_type = request.form.get('file_type')
+
+                if file_type == "origin_file":
+                    file_list = zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'r')
+                    print (file_list.namelist(), file=sys.stderr)
+                    origin_file_list = file_list
+                elif file_type == "compare_file":
+                    file_list = zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'r')
+                    print (file_list.namelist(), file=sys.stderr)
+                    compare_file_list = file_list
+                else:
+                    print ("upload type error", file=sys.stderr)
             else:
                 print ("only zip file", file=sys.stderr)
 
@@ -183,7 +212,7 @@ def tuple():
     else:
         projName = session['project']
         origin_file_list = list()
-        comp_file_list = list()
+        compare_file_list = list()
         
     return render_template('/board/tuple.html', projName=projName)
 
