@@ -83,6 +83,8 @@
               <ul class="nav side-menu">
                 <li><a href="dashboard"><i class="fa fa-edit"></i> 프로젝트 리스트 </a>
                 </li>
+                <li><a href="file_upload"><i class="fa fa-file-zip-o"></i> 파일 업로드 </a>
+                </li>
                 <li><a href="tuple"><i class="fa fa-desktop"></i> 비교쌍 생성 </a>
                 </li>
               </ul>
@@ -140,11 +142,13 @@
                         <div class="modal-content">
                           <div class="modal-body" style="padding:40px 50px;">
                             <form role="form" method="POST" submit="/settings_server_manage">
-                              <input id="_csrf_token" name="_csrf_token" type=hidden value="{{ csrf_token() }}">
-                              
                               <div class="form-group">
                                 <label for="projName"><span class="glyphicon glyphicon-user"></span>프로젝트 이름</label>
                                 <input type="text" class="form-control" id="projName" name="projName" placeholder="프로젝트 이름" required>
+                              </div>
+                              <div class="form-group">
+                                <label for="projDesc"><span class="glyphicon glyphicon-list-alt"></span>프로젝트 설명</label>
+                                <input type="text" class="form-control" id="projDesc" name="projDesc" placeholder="프로젝트 설명" required>
                               </div>
 
                               <input id="modal_type" name="modal_type" type=hidden value="insert">
@@ -184,7 +188,6 @@
                           
                           <td>
                           <form role="form" method="POST" submit="/tuple" name="form" class="pure-form pure-form-stacked">
-                              <input id="_csrf_token" name="_csrf_token" type=hidden value="{{ csrf_token() }}">
                               <input id="modal_type" name="modal_type" type=hidden value="connect">
                               <input id="projName" name="projName" type="hidden" value="{{project.projName}}">
                               <button type="submit" class="btn btn-primary btn-xs">선택</button>
@@ -199,7 +202,6 @@
                               <div class="modal-content">
                                 <div class="modal-body" style="padding:40px 50px;">
                                   <form role="form" method="POST" submit="/dashboard">
-                                    <input id="_csrf_token" name="_csrf_token" type=hidden value="{{ csrf_token() }}">
                                     <input id="modal_type" name="modal_type" type=hidden value="delete">
                                     <input id="projName" name="projName" type="hidden" value="{{project.projName}}">
                                     <div class="form-group">

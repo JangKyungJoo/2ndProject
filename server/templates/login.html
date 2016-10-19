@@ -51,7 +51,6 @@
         </div>
         <div class="modal-body" style="padding:40px 50px;">
           <form role="form" method="POST" submit="/login">
-            <input id=_csrf_token name=_csrf_token type=hidden value="{{ csrf_token() }}">
             <div class="form-group">
               <label for="username"><span class="glyphicon glyphicon-user"></span> Username</label>
               <input type="text" class="form-control" id="username" name="username" placeholder="Enter email" required>

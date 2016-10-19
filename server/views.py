@@ -10,9 +10,7 @@ from server.models import Result
 from functools import wraps
 from flask import render_template
 from flask import send_from_directory
-from flask import request
-from flask import redirect
-from flask import url_for
+from flask import request, redirect, url_for
 from flask import session
 from flask import make_response
 from flask import abort
@@ -39,12 +37,11 @@ def login_required(f):
     return decorated_function
 
 
-@app.before_request
-def csrf_protect():
-    if request.method == "POST":
-        token = session.pop('_csrf_token', None)
-        if not token or token != request.form.get('_csrf_token'):
-            abort(403)
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = set(['zip'])
+
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 
 @app.route('/')
@@ -59,7 +56,7 @@ def login():
     # new_u = People('3ncag3', '3ncag3@gmail.com', 'Djfrdjfg1!', True);
     # db.session.add(new_u)
     # db.session.commit()
-
+    
     if 'email' in session and 'auth' in session:
         if session['auth'] == "true":
             return redirect(url_for('dashboard'))
@@ -92,7 +89,7 @@ def dashboard():
         return redirect(url_for('login'))
     else:
         user_data = People.query.filter(People.pEmail==session['email']).first()
-        project_list = Project.query.filter(Project.pNum==user_data.pNum).all()
+        project_list = Project.query.filter(Project.pID==user_data.pID).all()
         session['project'] = ""
 
     if request.method=='POST':
@@ -102,7 +99,7 @@ def dashboard():
         elif modal_type == "insert":
 
             projName = request.form.get('projName')
-            new_project = Project(projName, user_data.pNum)
+            new_project = Project(projName, user_data.pID)
             db.session.add(new_project)
             db.session.commit()
 
@@ -112,7 +109,7 @@ def dashboard():
 
             projName = request.form.get('projName')
             session['project'] = projName
-            return redirect(url_for('tuple'))
+            return redirect(url_for('file_upload'))
 
         elif modal_type == "delete":
 
@@ -121,13 +118,43 @@ def dashboard():
                 pass
             else:
                 projName = request.form.get('projName')
-                proj = Project.query.filter(Project.projName==projName).filter(Project.pNum==user_data.pNum).first()
+                proj = Project.query.filter(Project.projName==projName).filter(Project.pID==user_data.pID).first()
                 db.session.delete(proj)
                 db.session.commit()
 
                 return redirect(url_for('dashboard'))   
 
     return render_template('/board/dashboard.html', user_data=user_data, project_list=project_list)
+
+
+@app.route('/board/proj_info', methods=['GET', 'POST'])
+@login_required
+def proj_info():
+
+    return render_template('/board/proj_info.html')
+
+
+@app.route('/board/file_upload', methods=['GET', 'POST'])
+@login_required
+def file_upload():
+
+    projName = ""
+
+    if not session['project'] or session['project'] == "":
+        return redirect(url_for('dashboard'))
+    else:
+        projName = session['project']
+        
+        if request.method == 'POST':
+
+            file = request.files['file']
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            else:
+                print ("only zip file", file=sys.stderr)
+
+    return render_template('/board/file_upload.html', projName=projName)
 
 
 @app.route('/board/tuple', methods=['GET', 'POST'])
@@ -142,8 +169,6 @@ def tuple():
         projName = session['project']
         origin_file_list = list()
         comp_file_list = list()
-
-
         
     return render_template('/board/tuple.html', projName=projName)
 

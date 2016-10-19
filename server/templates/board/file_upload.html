@@ -126,9 +126,9 @@
           <div class="">
             <div class="page-title">
               <div class="title_left">
-                <h3>{{projName}} - 비교쌍 생성 </h3>
+                <h3>{{projName}} - 파일 업로드 </h3>
               </div>
-
+              
             <div class="clearfix"></div>
 
             <div class="row">
@@ -155,8 +155,9 @@
                       <div class="clearfix"></div>
                     </div>
                     <div class="x_content">
-                      <p>한 개 이상의 원본 파일을 업로드해주세요</p>
-                      <form action="tuple.html" method="PUT" class="dropzone">
+                      <p>.zip형식의 원본 파일을 업로드해주세요</p>
+                      <form action="/board/file_upload" method="POST" class="dropzone" id="origin_dropzone" name="origin_dropzone">
+                      <input type="hidden" id="type" name="type" value="origin_file">
                       </form>
                       <br />
                     </div>
@@ -184,8 +185,9 @@
                       <div class="clearfix"></div>
                     </div>
                     <div class="x_content">
-                      <p>한 개 이상의 비교 파일을 업로드해주세요</p>
-                      <form action="tuple.html" method="PUT" class="dropzone">
+                      <p>.zip형식의 비교 파일을 업로드해주세요</p>
+                      <form action="/board/file_upload" method="POST" class="dropzone" id="compare_dropzone" name="compare_dropzone">
+                        <input type="hidden" id="type" name="type" value="compare_file">
                       </form>
                       <br />
                     </div>
@@ -195,22 +197,8 @@
               </div>
               
               <div class="row">
-                <div class="col-md-12 col-sm-12 col-xs-12">
-                  <div class="radio">
-                    <label>
-                      <input type="radio" checked="" value="option1" id="optionsRadios1" name="optionsRadios"> 같은 이름 파일 비교
-                    </label>
-                  </div>
-                  <div class="radio">
-                    <label>
-                      <input type="radio" value="option2" id="optionsRadios2" name="optionsRadios"> 전체 파일 비교
-                    </label>
-                  </div>
-                  <div class="radio">
-                    <label>
-                      <input type="radio" value="option3" id="optionsRadios3" name="optionsRadios"> 사용자 지정 비교
-                    </label>
-                  </div>
+                <div class="col-md-12 col-sm-12 col-xs-12 pull-right">
+                  <button type="button" class="btn btn-default">업로드 완료</button>
                 </div>
               </div>
             </div>
@@ -239,6 +227,32 @@
 
   <!-- Custom Theme Scripts -->
   <script src="{{url_for('static', filename='gentelella/build/js/custom.min.js')}}"></script>
+
+
+  <script>
+   $(document).ready(function(){
+
+    Dropzone.options.origin_dropzone = {
+      paramName: "file", // The name that will be used to transfer the file
+      acceptedFiles: ".zip",
+      maxFiles: 1,
+      accept: function(file, done) {
+        done();
+      }
+    };
+
+    Dropzone.options.compare_dropzone = {
+      paramName: "file", // The name that will be used to transfer the file
+      acceptedFiles: ".zip",
+      maxFiles: 1,
+      accept: function(file, done) {
+        done();
+      }
+    };
+
+  });
+
+  </script>
 
 </body>
 </html>

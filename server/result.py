@@ -1,3 +1,4 @@
+#-*- coding: utf-8 -*-
 from flask import Flask, request, render_template
 
 app = Flask(__name__, static_folder='static', static_url_path='')
@@ -108,4 +109,4 @@ def post():
     return request.form.get("data", "1", int)
 
 
-app.run(debug=True, host='0.0.0.0', port=8888)
+# app.run(debug=True, host='0.0.0.0', port=8888)
