@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:https="http://www.w3.org/1999/xhtml">
+<head>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <meta charset="UTF-8">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <style>
+        .container{
+            width : 1400px;
+            padding-left : 10px;
+            padding-right : 10px;
+        }
+
+        .header-body{
+            display : flex;
+        }
+
+        .header-container{
+            padding-left : 30px;
+            padding-right : 30px;
+        }
+
+        .panel-container {
+            padding-top : 20px;
+            display : flex;
+        }
+
+        .panel-default {
+            width : 40%;
+            display : inline-block;
+            margin-bottom : 10px;
+        }
+
+        .panel-body {
+            height : 100vh;
+            overflow : auto;
+            white-space : nowrap;
+            padding-left : 5px;
+            padding-right : 5px;
+        }
+
+        .panel-summary{
+            width : 300px;
+            height : 100%;
+            padding : 0px;
+        }
+
+        .summary{
+            display : inline-block;
+            padding : 5px;
+            overflow : auto;
+            white-space : nowrap;
+        }
+
+        .summary-table{
+            width : 110px;
+            height : 300px;
+            border : 1px;
+            border-color : black;
+            border-style : outset;
+        }
+
+        .index{
+            border-right : solid 1px #dddddd;
+            text-align : right;
+            padding-right : 3px;
+        }
+
+         .unselectable {
+            -moz-user-select:none;
+            -webkit-user-select:none;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-container">
+            <div class="title">
+                <h2>Result</h2>
+            </div>
+            <div class="header-body">
+                <h3>Similar Percentage : </h3>&nbsp;&nbsp;<h3 id="linePer"></h3><h3>%</h3>
+                <h3 style="padding-left : 15px;">Line Count : </h3>&nbsp;&nbsp;<h3>{{lineCount}}</h3>
+                <h3 style="padding-left : 15px;">Same Line Count : </h3>&nbsp;&nbsp;<h3 id="sameLine"></h3>
+                <h3 style="padding-left : 15px;">Similar Line Count : </h3>&nbsp;&nbsp;<h3 id="similarLine"></h3>
+            </div>
+        </div>
+        <div class="panel-container">
+            <div class="panel panel-summary panel-default">
+                    <div class="summary">
+                        <table class="summary-table">
+                            {% for line in origin %}
+                            <tr><td id="os_{{loop.index}}"></td></tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                    <div class="summary">
+                        <table class="summary-table">
+                            {% for line in compare %}
+                            <tr><td id="cs_{{loop.index}}"></td></tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+            </div>
+            <div class="panel panel-default" style="margin-left : 15px">
+                <div class="panel-heading">
+                    <h3 class="panel-title">board.js</h3>
+                </div>
+                <div class="panel-body" id="origin">
+                    <table class="unselectable">
+                    {% for line in origin %}
+                        <tr><td id="ol_{{loop.index}}" class="index"><font color="#999999">{{loop.index}}</font></td><td id="o_{{loop.index}}" style="padding-left:3px">{{line}}</td></tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel panel-default" style="margin-left : 15px">
+                <div class="panel-heading">
+                    <h3 class="panel-title">anonymity.js</h3>
+                </div>
+                <div class="panel-body" id="compare">
+                    <table>
+                    {% for line in compare %}
+                        <tr><td id="cl_{{loop.index}}" class="index"><font color="#999999">{{loop.index}}</font></td><td id="c_{{loop.index}}" style="padding-left:3px">{{line}}</td></tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+<script type="text/javascript">
+    var isOriginal = "o";
+    var isCompare = "c";
+    var result = {{list}}; // 원본 결과
+    var isChoose = false;
+    var chooseLine = {type : null, line : -1, background : ""};
+    var lineCount = {{lineCount}};
+    var similarCount = {{similarCount}};
+    var sameCount = {{sameCount}};
+    var SAME = 1;
+    var SIMILARY = 2;
+    var SELECT = 3;
+    var REMOVE = 4;
+    var ADD = 5;
+    var modifyList = [];
+    var colors = {sameColor : "#ff0000", similarColor : "#ffb6c1", selectColor : "#ffff99", removeColor : "#c0c0c0", addColor : "#3399ff"};
+
+    init();
+
+    function init(){
+        var len = result.length;
+        for (var i = 0; i<len; i++){
+            if(result[i][2]==SAME){
+                $("#o_"+result[i][0]).css('background-color', colors.sameColor);
+                $("#c_"+result[i][1]).css('background-color', colors.sameColor);
+                $("#os_"+result[i][0]).css('background-color', colors.sameColor);
+                $("#cs_"+result[i][1]).css('background-color', colors.sameColor);
+            }else{
+                $("#o_"+result[i][0]).css('background-color', colors.similarColor);
+                $("#c_"+result[i][1]).css('background-color', colors.similarColor);
+                $("#os_"+result[i][0]).css('background-color', colors.similarColor);
+                $("#cs_"+result[i][1]).css('background-color', colors.similarColor);
+            }
+        }
+        updateNumber();
+    }
+
+    function setSelected(type, id, flag){
+        var target = type + "_" + id;
+        var summary = type + "s_" + id;
+        if(flag == SELECT){
+            $("#"+target).css('background-color', colors.selectColor);
+            $("#"+summary).css('background-color', colors.selectColor);
+            return;
+        }
+        if(flag == ADD){
+            $("#"+target).css('background-color', colors.addColor);
+            $("#"+summary).css('background-color', colors.addColor);
+            return;
+        }
+        if(flag == REMOVE){
+            $("#"+target).css('background-color', colors.removeColor);
+            $("#"+summary).css('background-color', colors.removeColor);
+            return;
+        }
+        $("#"+target).css('background-color', chooseLine.background);
+        $("#"+summary).css('background-color', chooseLine.background);
+        return;
+    }
+
+    function updateNumber(){
+        $("#similarLine").text(similarCount);
+        $("#sameLine").text(sameCount);
+        $("#linePer").text(((sameCount + similarCount) * 100 / lineCount).toFixed(2));
+    }
+
+    // 비교본 라인으로 원본 라인 검색
+    function searchOriginLine(id){
+        var len = result.length;
+        for(var i=0; i<len; i++){
+            if(result[i][1]==id)
+                return result[i][0];
+        }
+        return -1;
+    }
+
+    // 원본 라인으로 비교본 라인 검색
+    function searchCompareLine(id){
+        var len = result.length;
+        for(var i=0; i<len; i++){
+            if(result[i][0]==id)
+                return result[i][1];
+        }
+        return -1;
+    }
+
+    function searchIndex(id){
+        var len = result.length;
+        for(var i=0; i<len; i++){
+            if(result[i][0]==id)
+                return i;
+        }
+        return -1;
+    }
+
+    function clearSelect(){
+        isChoose = false;
+        chooseLine.background = "";
+    }
+
+    function update(id){
+        var temp = id.split('_');
+        var type;
+        if(temp[0] == "o")
+            type = isOriginal;
+        else
+            type = isCompare;
+
+        var id = temp[1];
+
+        // second click
+        if(isChoose){
+            if(chooseLine.type == isOriginal){
+                if(type == isOriginal){
+                    if(isSelected(type, id)){
+                        // 비교본 선택 해제, delete from list
+                        alert("deselect o : " + id + ", c : " + searchCompareLine(id));
+                        setSelected(type, chooseLine.line, -1);
+                        setSelected(type, id, REMOVE);
+                        setSelected(isCompare, searchCompareLine(id), REMOVE);
+                        result.splice(searchIndex(id), 1);
+                        lineCount-=1;
+                        updateNumber();
+                        clearSelect();
+                        return;
+                    }
+                    setSelected(type, chooseLine.line, -1);
+                    chooseLine.line = id;
+                    chooseLine.background = toHex(document.getElementById(type+"_"+id).style.backgroundColor);
+                    setSelected(type, id, SELECT);
+                    return;
+                }
+                if(isSelected(type, id)){
+                    alert("choose not selected line");
+                    return;
+                }
+                // add new same line
+                setSelected(type, id, ADD);
+                setSelected(chooseLine.type, chooseLine.line, ADD);
+                result.push(new Array(chooseLine.line, id, SAME));
+                isChoose = false;
+                lineCount+=1;
+                updateNumber();
+                alert("select : o : " + chooseLine.line + ", c : " + id);
+                return;
+            }
+            if(type == isCompare){
+                if(isSelected(type, id)){
+                    // 원본 해제, delete from list
+                    alert("deselect o : " + searchOriginLine(id) + ", c : " + id);
+                    setSelected(type, chooseLine.line, -1);
+                    setSelected(type, id, REMOVE);
+                    setSelected(isOriginal, searchOriginLine(id), REMOVE);
+                    result.splice(searchIndex(searchOriginLine(id)), 1);
+                    lineCount-=1;
+                    updateNumber();
+                    clearSelect();
+                    return;
+                }
+                setSelected(type, chooseLine.line, -1);
+                chooseLine.line = id;
+                chooseLine.background = toHex(document.getElementById(type+"_"+id).style.backgroundColor);
+                setSelected(type, id, SELECT);
+                return;
+            }
+            if(isSelected(type, id)){
+                alert("choose not selected line");
+                return;
+            }
+            // add new same line
+            setSelected(type, id, ADD);
+            setSelected(chooseLine.type, chooseLine.line, ADD);
+            result.push(new Array(id, chooseLine.line, SAME));
+            isChoose = false;
+            lineCount+=1;
+            updateNumber();
+            alert("select : o : " + chooseLine.line + ", c : " + id);
+            return;
+        }
+
+        // first click
+        if(type==isOriginal){
+            if(isSelected(type, id)){
+                // 원본 && 비교본 선택 해제, delete from list
+                alert("deselect o : " + id + ", c : " + searchCompareLine(id));
+                setSelected(type, id, REMOVE);
+                setSelected(isCompare, searchCompareLine(id), REMOVE);
+                result.splice(searchIndex(id), 1);
+                lineCount-=1;
+                updateNumber();
+                return;
+            }
+            // 원본 선택
+            isChoose = true;
+            chooseLine.type = isOriginal;
+            chooseLine.line = id;
+            chooseLine.background = toHex(document.getElementById(type+"_"+id).style.backgroundColor);
+            setSelected(type, id, SELECT);
+            return;
+        }
+        if(isSelected(type, id)){
+            // 원본 && 비교본 해제, delete from list
+            alert("deselect o : " + searchOriginLine(id) + ", c : " + id);
+            setSelected(type, id, REMOVE);
+            setSelected(isOriginal, searchOriginLine(id), REMOVE);
+            result.splice(searchIndex(searchOriginLine(id)), 1);
+            lineCount-=1;
+            updateNumber();
+            return;
+        }
+        // 비교본 선택
+        isChoose = true;
+        chooseLine.type = isCompare;
+        chooseLine.line = id;
+        chooseLine.background = toHex(document.getElementById(type+"_"+id).style.backgroundColor);
+        setSelected(type, id, SELECT);
+        return;
+    }
+
+    function isSelected(type, id){
+        var color = toHex(document.getElementById(type+"_"+id).style.backgroundColor);
+        if(color == colors.removeColor || color == colors.selectColor || color=="")
+            return false;
+        return true;
+    }
+
+    function toHex(colorval) {
+        if(colorval == "")
+            return "";
+        var parts = colorval.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+        delete(parts[0]);
+        for (var i = 1; i <= 3; ++i) {
+            parts[i] = parseInt(parts[i]).toString(16);
+            if (parts[i].length == 1) parts[i] = '0' + parts[i];
+        }
+        color = '#' + parts.join('');
+
+        return color;
+    }
+
+    var DELAY = 500, clicks = 0, timer = null;
+
+    $(function(){
+
+        $("td").on("click", function(e){
+            var id = $(this).attr('id');
+            var temp = id.split('_');
+            var type = temp[0];
+            clicks++;  //count clicks
+
+            if(type=="o" || type=="c"){
+                if(clicks === 1) {
+                    timer = setTimeout(function() {
+                        update(id);
+                        clicks = 0;
+
+                    }, DELAY);
+
+                } else {
+                    clearTimeout(timer);
+                    clicks = 0;
+
+                    // focus to matched line by double click
+                    if(type == "o"){
+                        var myElement = document.getElementById('c_' + searchCompareLine(temp[1]));
+                        var topPos = myElement.offsetTop;
+                        document.getElementById('compare').scrollTop = topPos;
+                        return;
+                    }
+                    var dest = searchOriginLine(temp[1]);
+                    var myElement = document.getElementById('o_' + dest);
+                    var topPos = myElement.offsetTop;
+                    document.getElementById('origin').scrollTop = topPos;
+                }
+
+            }else if(type=="os" || type=="cs"){
+                if(type == "os"){
+                    var myElement = document.getElementById('o_' + temp[1]);
+                    var topPos = myElement.offsetTop;
+                    document.getElementById('origin').scrollTop = topPos;
+                    return;
+                }
+                var myElement = document.getElementById('c_' + temp[1]);
+                var topPos = myElement.offsetTop;
+                document.getElementById('compare').scrollTop = topPos;
+            }
+        })
+        .on("dblclick", function(e){
+            e.preventDefault();  //cancel system double-click event
+        });
+    });
+</script>

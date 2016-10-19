@@ -1,62 +1,38 @@
-#-*- coding: utf-8 -*-
 from flask import Flask, request, render_template
-from flask import url_for
-from werkzeug.utils import secure_filename, redirect
-from server import app
-import os
 
+app = Flask(__name__, static_folder='static', static_url_path='')
 
-
-# app = Flask(__name__, static_folder='static', static_url_path='')
-UPLOAD_FOLDER = "/Users/kyungjoo/Downloads/test"
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'pptx', 'zip'])
-
-def readFirst():
-    f = open("/Users/kyungjoo/Documents/Document/Maestro-backend/maestro/routes/board.js", 'r')
-    lines = f.readlines()
-    result = []
-    for line in lines:
-        result.append(line)
-    f.close()
-    return result
-
-
-def readSecond():
-    f = open("/Users/kyungjoo/Documents/Document/Maestro-backend/maestro/routes/anonymity.js", 'r')
-    lines = f.readlines()
-    result = []
-    for line in lines:
-        result.append(line)
-    f.close()
-    return result
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
-
-
-@app.route('/upload', methods=["GET"])
-def upload():
-    files = os.listdir(UPLOAD_FOLDER)
-    return render_template("upload.html", files = files)
-
-@app.route('/upload/submit', methods=["POST"])
-def submit():
-    file = request.files['files']
-    if file:
-        filename = secure_filename(file.filename)
-        if allowed_file(filename):
-            path = UPLOAD_FOLDER + "/" + filename
-            file.save(path)
-        return redirect(url_for('upload'))
-
-"""
-@app.route('/result/{projectid}/{pairid}', methods=["GET"])
-def result():
-    return render_template()
-"""
 
 @app.route('/result', methods=["GET"])
-def home():
+def result():
+    result = []
+    result.append(["SearchActivity.java", "ExploreActivity.java", 89.12, ""])
+    result.append(["hello.java", "world.java", 80.07, "2016-10-17"])
+    result.append(["helloWorld.c", "Byeworld.c", 89.12, ""])
+    result.append(["MainActivity.java", "MainActivity.java", 89.12, ""])
+    result.append(["MainFragment.java", "MainFragment.java", 85.45, "2016-05-12"])
+    result.append(["result.py", "Result.py", 89.12, ""])
+    result.append(["hello.java", "world.java", 45.07, "2016-10-17"])
+    result.append(["helloWorld.c", "Byeworld.c", 89.12, ""])
+    result.append(["MainActivity.java", "MainActivity.java", 89.12, ""])
+    result.append(["MainFragment.java", "MainFragment.java", 85.45, "2016-05-12"])
+    result.append(["Register.js", "Register.js", 77.77, ""])
+    result.append(["hello.java", "world.java", 34.45, "2016-10-17"])
+    result.append(["helloWorld.c", "Byeworld.c", 89.12, ""])
+    result.append(["MainActivity.java", "MainActivity.java", 89.12, ""])
+    result.append(["main.c", "main.c", 85.45, "2016-05-12"])
+    result.append(["DetailActivity.java", "ResultActivity.java", 89.12, ""])
+    result.append(["hello.java", "world.java", 80.07, "2016-10-17"])
+    result.append(["helloWorld.c", "Byeworld.c", 89.12, ""])
+    result.append(["MainActivity.java", "MainActivity.java", 89.12, ""])
+    result.append(["MainFragment.java", "MainFragment.java", 85.45, "2016-05-12"])
+
+    return render_template("result.html", result = result, count = len(result))
+
+
+@app.route('/result/<projectid>/<pairid>', methods=["GET"])
+def detail(projectid, pairid):
+
     origin = open("/Users/kyungjoo/Documents/Document/Maestro-backend/maestro/routes/board.js", 'r')
     compare = open("/Users/kyungjoo/Documents/Document/Maestro-backend/maestro/routes/anonymity.js", 'r')
     charToken = [',', '.', '/', ';', '*', '(', ')', '-', '_', '&', '%']
@@ -124,9 +100,12 @@ def home():
     #compare = sorted(result, key=lambda x: x[1])
 
     # 원본소스코드 / 비교본 소스코드 / 원본 총 라인수 / 동일 라인수 / 유사 라인수 / 원본 기준 결과 / 비교본 기준 결과
-    return render_template("result.html", origin = originList, compare = compareList, lineCount = len(originList), sameCount = sameLineCount, similarCount = similarLineCount, list = result)
+    return render_template("detail.html", origin = originList, compare = compareList, lineCount = len(originList), sameCount = sameLineCount, similarCount = similarLineCount, list = result)
 
 
 @app.route('/post', methods=["POST"])
 def post():
     return request.form.get("data", "1", int)
+
+
+app.run(debug=True, host='0.0.0.0', port=8888)
