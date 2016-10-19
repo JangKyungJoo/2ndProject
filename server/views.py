@@ -79,7 +79,7 @@ def login():
         return render_template('login.html')
 
 
-@app.route('/board/dashboard', methods=['GET', 'POST'])
+@app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
     if not session or 'auth' not in session:
@@ -132,10 +132,10 @@ def dashboard():
 
                 return redirect(url_for('dashboard'))   
 
-    return render_template('/board/dashboard.html', user_data=user_data, project_list=project_list)
+    return render_template('/dashboard.html', user_data=user_data, project_list=project_list)
 
 
-@app.route('/board/proj_info', methods=['GET', 'POST'])
+@app.route('/proj_info', methods=['GET', 'POST'])
 @login_required
 def proj_info():
 
@@ -159,13 +159,13 @@ def proj_info():
         update_time = project.update
 
 
-    return render_template('/board/proj_info.html',
+    return render_template('/proj_info.html',
         projName=projName, projDesc=projDesc, 
         fileNum=fileNum, date=date, file_desc=file_desc,
         user_name=user_name, update_time=update_time)
 
 
-@app.route('/board/file_upload', methods=['GET', 'POST'])
+@app.route('/file_upload', methods=['GET', 'POST'])
 @login_required
 def file_upload():
     
@@ -184,24 +184,24 @@ def file_upload():
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
                 file_type = request.form.get('file_type')
-
+                
                 if file_type == "origin_file":
-                    file_list = zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'r')
+                    file_list = zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                     print (file_list.namelist(), file=sys.stderr)
-                    origin_file_list = file_list
+                    file_list.extractall(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin'))
                 elif file_type == "compare_file":
-                    file_list = zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'r')
+                    file_list = zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], 'filename'))
                     print (file_list.namelist(), file=sys.stderr)
-                    compare_file_list = file_list
+                    file_list.extractall(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare'))
                 else:
                     print ("upload type error", file=sys.stderr)
             else:
                 print ("only zip file", file=sys.stderr)
 
-    return render_template('/board/file_upload.html', projName=projName)
+    return render_template('/file_upload.html', projName=projName)
 
 
-@app.route('/board/tuple', methods=['GET', 'POST'])
+@app.route('/tuple', methods=['GET', 'POST'])
 @login_required
 def tuple():
 
@@ -213,8 +213,10 @@ def tuple():
         projName = session['project']
         origin_file_list = list()
         compare_file_list = list()
+
+
         
-    return render_template('/board/tuple.html', projName=projName)
+    return render_template('/tuple.html', projName=projName)
 
 
 @app.route('/logout', methods=['GET',   'POST'])

@@ -1,7 +1,8 @@
 #-*- coding: utf-8 -*-
 from flask import Flask, request, render_template
+from server import app
 
-app = Flask(__name__, static_folder='static', static_url_path='')
+# app = Flask(__name__, static_folder='static', static_url_path='')
 
 
 @app.route('/result', methods=["GET"])
