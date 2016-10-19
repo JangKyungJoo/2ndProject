@@ -105,6 +105,12 @@ def dashboard():
 
             return redirect(url_for('dashboard'))
 
+        elif modal_type == "info":
+
+            projName = request.form.get('projName')
+            session['project'] = projName
+            return redirect(url_for('proj_info'))
+
         elif modal_type == "connect":
 
             projName = request.form.get('projName')
@@ -130,6 +136,15 @@ def dashboard():
 @app.route('/board/proj_info', methods=['GET', 'POST'])
 @login_required
 def proj_info():
+
+    projName = ""
+
+    if not session['project'] or session['project'] == "":
+        return redirect(url_for('dashboard'))
+    else:
+        projName = session['project']
+        project = Project.query.filter(Project.projName==projName).first()
+
 
     return render_template('/board/proj_info.html')
 
