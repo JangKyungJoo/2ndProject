@@ -5,13 +5,7 @@ import filter
 
 import sys
 
-from server import db
-
-sys.path.append('../')
-from server.models import Result
-
 app = Flask(__name__)
-
 
 taskList = []
 taskDict = {}
@@ -25,7 +19,7 @@ def hello_world():
 
 @app.route('/file', methods=['POST'])
 def temp():
-    global taskList, taskArgs, taskDict
+    global taskList, taskArgs, taskDict, output
 
     originFile = request.files['originfile']
     compFile = request.files['compfile']
@@ -33,38 +27,55 @@ def temp():
     originFile = originFile.stream.read()
     compFile = compFile.stream.read()
 
-    ft = filter.Hi(originFile, compFile)
+    # ft = filter.Hi(originFile, compFile)
+    lineNumInfo = []
+    for i in range(len(originFile.split('\n'))):
+        lineNumInfo.append(i)
+    '''
+    ft = filter.Filter(originFile)
+    ft.file, list = ft.deleteComment(['//', '\n'], list)
+    ft.file, list = ft.deleteComment(['/*', '*/'], list)
+    ft.file, list = filter.deleteLineFeed(ft.file, list)
+    ft.file, list = ft.tokenizing(list)
+    '''
 
-    checkFunction = filter.OrderedCheck(ft.originToken, ft.compToken)
+    rc = filter.RemoveComment()
+    rc.setInput([originFile, ['/*', '*/']])
+    rc.setLineNumInfo(lineNumInfo)
+    originFile, list = rc.process()
 
-    taskList = [ft.deleteComment, ft.calcSimilarity]
-    taskDict = {ft.calcSimilarity: [ft.tokenizing], ft.tokenizing: [ft.listing]}
-    taskArgs = {ft.deleteComment: [('//', '\n'), ('/*', '*/')], ft.listing: [()],
-                ft.tokenizing: [()], ft.calcSimilarity: [(checkFunction,)]}
+    # print ft.file, list
+    # for i in range(len(ft.file)):
+    # print i+1, ft.file[i]
+    # file = ft.tokenizing()
+    # for i in range(len(file)):
+    # print i+1, file[i]
 
-    for task in taskList:
-        res = process(task)
+    preprocess_filter = [filter.RemoveComment(), filter.RemoveBlank(), filter.Tokenizing()]
 
-    print res
+    inputs = [[originFile, ['/*', '*/']], [compFile, ['/*', '*/']]]
+    outputs = []
+    for input in inputs:
+        for task in preprocess_filter:
+            task.setInput(input)
+            task.setLineNumInfo(lineNumInfo)
+            output, lineNumInfo = task.process()
+            input = output
+        outputs.append([output, lineNumInfo])
 
-    new_result = Result(originFile, compFile, res[1], 1)
-    db.session.add(new_result)
-    db.session.commit()
+    for i in range(len(outputs[1][0])):
+        print i+1, outputs[1][0][i], outputs[1][1][i]+1
 
-    del ft
-    del checkFunction
+    checkFunction = filter.OrderedCheck()
 
-    return str(res)
+    compare = filter.Compare(checkFunction)
+    compare.setInput(outputs[0][0], outputs[1][0])
+    ret = compare.process()
 
+    print ret
 
-def process(task):
-    for n in taskDict.get(task, []):
-        process(n)
+    return ''
 
-    for argument in taskArgs[task]:
-        res = task(*argument)
-
-    return res
 
 if __name__ == '__main__':
     app.run()
