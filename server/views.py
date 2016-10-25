@@ -26,8 +26,21 @@ import json
 import requests
 import zipfile
 
+"""
+    ~~~~~~~~~
+    Views.py
+    ~~~~~~~~~    
+"""
+
 
 def login_required(f):
+    ''' 주요 기능 사용과 관련하여 로그인 체크를 진행하는 함수.
+
+        login check가 필요한 부분에
+        @login_required를 입력하여 사용
+
+    '''
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'email' in session:
@@ -39,6 +52,11 @@ def login_required(f):
 
 
 def allowed_file(filename):
+    ''' file extention 필터링 함수
+
+        (now) only .zip allowed
+    '''
+
     ALLOWED_EXTENSIONS = set(['zip'])
 
     return '.' in filename and \
@@ -47,17 +65,23 @@ def allowed_file(filename):
 
 @app.route('/')
 def index():
+    '''
+        서비스 접속 시 세션 상태에 맞게 리다이렉트가 시작되는 페이지
+    '''
     if 'email' not in session or 'auth' not in session:
         return redirect(url_for('login'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    '''
+        로그인 페이지
+    '''
     error = None
     # new_u = People('3ncag3', '3ncag3@gmail.com', 'Djfrdjfg1!', True);
     # db.session.add(new_u)
     # db.session.commit()
-    
+
     if 'email' in session and 'auth' in session:
         if session['auth'] == "true":
             return redirect(url_for('dashboard'))
@@ -82,6 +106,19 @@ def login():
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
+    '''
+        프로젝트 선택 화면
+        
+
+        :modal_type insert: 프로젝트 생성
+
+        :modal_type info: 프로젝트 정보
+
+        :modal_type connect: 프로젝트 선택
+
+        :modal_type delete: 프로젝트 삭제
+
+    '''
     if not session or 'auth' not in session:
         session.clear()
         return redirect(url_for('login'))
@@ -97,6 +134,8 @@ def dashboard():
         modal_type = request.form.get('modal_type')
         if not modal_type:
             pass
+
+
         elif modal_type == "insert":
 
             projName = request.form.get('projName')
@@ -139,6 +178,9 @@ def dashboard():
 @login_required
 def proj_info():
 
+    '''
+        프로젝트 정보
+    '''
     projName = ""
 
     if not session['project'] or session['project'] == "":
@@ -168,6 +210,10 @@ def proj_info():
 @app.route('/file_upload', methods=['GET', 'POST'])
 @login_required
 def file_upload():
+
+    '''
+        파일 업로드
+    '''
     
     projName = ""
 
@@ -205,6 +251,10 @@ def file_upload():
 @login_required
 def tuple():
 
+    '''
+        순서쌍 생성
+    '''
+
     projName = ""
 
     if not session['project'] or session['project'] == "":
@@ -222,5 +272,8 @@ def tuple():
 @app.route('/logout', methods=['GET',   'POST'])
 @login_required
 def logout():
+    '''
+        로그아웃 및 세션 초기화
+    '''
     session.clear()
     return redirect(url_for('login'))
