@@ -8,6 +8,16 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import timedelta
 
 
+'''
+	source analysis (soan)
+
+	:copyright: (c) 2016 by software maestro
+	:license: soan
+
+'''
+
+__version__ = '1.0'
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://///tmp/soan.db'
