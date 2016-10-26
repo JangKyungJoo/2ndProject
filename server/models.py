@@ -77,7 +77,7 @@ class Result(db.Model):
     '''
     __tablename__ = 'result_tbl'
     resultID = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    pairID = db.Column(db.Integer, primary_key=True, nullable=False)
+    pairID = db.Column(db.Integer, primary_key=False, nullable=False)
     originLine = db.Column(db.Integer, nullable=False)
     compLine = db.Column(db.Integer, nullable=False)
     count = db.Column(db.Integer, nullable=False, default=1)
@@ -93,6 +93,16 @@ class Result(db.Model):
     def __repr__(self):
         return '<Result %r>' % self.resultID
 
+    @property
+    def serialize(self):
+       return {
+           'pairID' : self.pairID,
+           'originLine' : self.originLine,
+           'compLine' : self.compLine,
+           'count' : self.count,
+           'rType' : self.rType
+       }
+
 
 class Origin(db.Model):
     __tablename__ = 'origin_tbl'
@@ -100,10 +110,9 @@ class Origin(db.Model):
     originName = db.Column(db.String(255), nullable=False)
     originPath = db.Column(db.String(255), nullable=False)
     lineNum = db.Column(db.Integer, nullable=False)
-    projID = db.Column(db.Integer, primary_key=True, nullable=False)
+    projID = db.Column(db.Integer, primary_key=False, nullable=False)
 
-    def __init__(self, originID, originName, originPath, lineNum, projID):
-        self.originID = originID
+    def __init__(self, originName, originPath, lineNum, projID):
         self.originName = originName
         self.originPath = originPath
         self.lineNum = lineNum
@@ -119,10 +128,9 @@ class Compare(db.Model):
     compName = db.Column(db.String(255), nullable=False)
     compPath = db.Column(db.String(255), nullable=False)
     lineNum = db.Column(db.Integer, nullable=False)
-    projID = db.Column(db.Integer, primary_key=True, nullable=False)
+    projID = db.Column(db.Integer, primary_key=False, nullable=False)
 
-    def __init__(self, compID, compName, compPath, lineNum, projID):
-        self.compID = compID
+    def __init__(self, compName, compPath, lineNum, projID):
         self.compName = compName
         self.compPath = compPath
         self.lineNum = lineNum
@@ -138,6 +146,8 @@ class Pair(db.Model):
     originID = db.Column(db.Integer, nullable=False)
     compID = db.Column(db.Integer, nullable=False)
     projID = db.Column(db.Integer, nullable=False)
+    similarity = db.Column(db.Float, default=0)
+    modifyDate = db.Column(db.TIMESTAMP, nullable=True)
 
     def __init__(self, originID, compID, projID):
         self.originID = originID
@@ -146,3 +156,13 @@ class Pair(db.Model):
 
     def __repr__(self):
         return '<Pair %r>' % self.pairID
+
+    @property
+    def serialize(self):
+       return {
+           'pairID' : self.pairID,
+           'originID' : self.originID,
+           'compID' : self.compID,
+           'similarity' : self.similarity,
+           'modifyDate' : self.modifyDate
+       }

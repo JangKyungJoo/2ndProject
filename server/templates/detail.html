@@ -4,74 +4,7 @@
     <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     <meta charset="UTF-8">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <style>
-        .container{
-            width : 1400px;
-            padding-left : 10px;
-            padding-right : 10px;
-        }
-
-        .header-body{
-            display : flex;
-        }
-
-        .header-container{
-            padding-left : 30px;
-            padding-right : 30px;
-        }
-
-        .panel-container {
-            padding-top : 20px;
-            display : flex;
-        }
-
-        .panel-default {
-            width : 40%;
-            display : inline-block;
-            margin-bottom : 10px;
-        }
-
-        .panel-body {
-            height : 100vh;
-            overflow : auto;
-            white-space : nowrap;
-            padding-left : 5px;
-            padding-right : 5px;
-        }
-
-        .panel-summary{
-            width : 300px;
-            height : 100%;
-            padding : 0px;
-        }
-
-        .summary{
-            display : inline-block;
-            padding : 5px;
-            overflow : auto;
-            white-space : nowrap;
-        }
-
-        .summary-table{
-            width : 110px;
-            height : 300px;
-            border : 1px;
-            border-color : black;
-            border-style : outset;
-        }
-
-        .index{
-            border-right : solid 1px #dddddd;
-            text-align : right;
-            padding-right : 3px;
-        }
-
-         .unselectable {
-            -moz-user-select:none;
-            -webkit-user-select:none;
-        }
-
-    </style>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/detail.css') }}">
 </head>
 <body>
     <div class="container">
@@ -81,27 +14,63 @@
             </div>
             <div class="header-body">
                 <h3>Similar Percentage : </h3>&nbsp;&nbsp;<h3 id="linePer"></h3><h3>%</h3>
-                <h3 style="padding-left : 15px;">Line Count : </h3>&nbsp;&nbsp;<h3>{{lineCount}}</h3>
+                <h3 style="padding-left : 15px;">Line Count : </h3>&nbsp;&nbsp;<h3>{{originCount}}</h3>
                 <h3 style="padding-left : 15px;">Same Line Count : </h3>&nbsp;&nbsp;<h3 id="sameLine"></h3>
                 <h3 style="padding-left : 15px;">Similar Line Count : </h3>&nbsp;&nbsp;<h3 id="similarLine"></h3>
             </div>
         </div>
         <div class="panel-container">
-            <div class="panel panel-summary panel-default">
-                    <div class="summary">
-                        <table class="summary-table">
-                            {% for line in origin %}
-                            <tr><td id="os_{{loop.index}}"></td></tr>
-                            {% endfor %}
+            <div class="help-container">
+                <div class="panel panel-summary panel-default">
+                        <div class="summary">
+                            <table class="summary-table">
+                                {% for line in origin %}
+                                <tr><td id="os_{{loop.index}}"></td></tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                        <div class="summary">
+                            <table class="summary-table">
+                                {% for line in compare %}
+                                <tr><td id="cs_{{loop.index}}"></td></tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                </div>
+                <div class="panel panel-helper panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Tips !</h3>
+                    </div>
+                    <div class="helper-body">
+                        <table>
+                            <tr class="helper-tr">
+                                <td>Same line</td>
+                                <td class="helper-td"> : </td>
+                                <td><div style="width:80px;height:8px;background-color:#ff0000"></div></td>
+                            </tr>
+                            <tr class="helper-tr">
+                                <td>Similar line</td>
+                                <td class="helper-td"> : </td>
+                                <td><div style="width:80px;height:8px;background-color:#ffb6c1"></div></td>
+                            </tr>
+                            <tr class="helper-tr">
+                                <td>Added line</td>
+                                <td class="helper-td"> : </td>
+                                <td><div style="width:80px;height:8px;background-color:#3399ff"></div></td>
+                            </tr>
+                            <tr class="helper-tr">
+                                <td>Removed line</td>
+                                <td class="helper-td"> : </td>
+                                <td><div style="width:80px;height:8px;background-color:#c0c0c0"></div></td>
+                            </tr>
+                            <tr class="helper-tr">
+                                <td>Select line</td>
+                                <td class="helper-td"> : </td>
+                                <td><div style="width:80px;height:8px;background-color:#ffff99"></div></td>
+                            </tr>
                         </table>
                     </div>
-                    <div class="summary">
-                        <table class="summary-table">
-                            {% for line in compare %}
-                            <tr><td id="cs_{{loop.index}}"></td></tr>
-                            {% endfor %}
-                        </table>
-                    </div>
+                </div>
             </div>
             <div class="panel panel-default" style="margin-left : 15px">
                 <div class="panel-heading">
@@ -121,7 +90,7 @@
                     <h3 class="panel-title">anonymity.js</h3>
                 </div>
                 <div class="panel-body" id="compare">
-                    <table>
+                    <table class="unselectable">
                     {% for line in compare %}
                         <tr><td id="cl_{{loop.index}}" class="index"><font color="#999999">{{loop.index}}</font></td><td id="c_{{loop.index}}" style="padding-left:3px">{{line}}</td></tr>
                         {% endfor %}
@@ -129,239 +98,236 @@
                 </div>
             </div>
         </div>
+        <div class="footer-container" style="margin-top:10px;text-align:right;">
+            <form id="body">
+                <button class="btn btn-default" type="submit">Save</button>
+            </form>
+        </div>
     </div>
 </body>
-</html>
 
 <script type="text/javascript">
     var isOriginal = "o";
     var isCompare = "c";
-    var result = {{list}}; // 원본 결과
-    var isChoose = false;
-    var chooseLine = {type : null, line : -1, background : ""};
-    var lineCount = {{lineCount}};
-    var similarCount = {{similarCount}};
-    var sameCount = {{sameCount}};
-    var SAME = 1;
-    var SIMILARY = 2;
-    var SELECT = 3;
-    var REMOVE = 4;
-    var ADD = 5;
-    var modifyList = [];
+    var result = {{list|safe}}; // 원본 결과
+    var numbers = {same : 1, select : 2, remove : 3, add : 4};
     var colors = {sameColor : "#ff0000", similarColor : "#ffb6c1", selectColor : "#ffff99", removeColor : "#c0c0c0", addColor : "#3399ff"};
+    var selectList = [];
+    var shiftPressed, similarCount, sameCount, resultNum;
+    var lineCount = {{originCount}};
 
     init();
 
     function init(){
-        var len = result.length;
-        for (var i = 0; i<len; i++){
-            if(result[i][2]==SAME){
-                $("#o_"+result[i][0]).css('background-color', colors.sameColor);
-                $("#c_"+result[i][1]).css('background-color', colors.sameColor);
-                $("#os_"+result[i][0]).css('background-color', colors.sameColor);
-                $("#cs_"+result[i][1]).css('background-color', colors.sameColor);
+        similarCount = 0;
+        sameCount = 0;
+        resultNum = result.length;
+        for (var i = 0; i<resultNum; i++){
+            if(result[i].rType==numbers.same){
+                $("#o_"+result[i].originLine).css('background-color', colors.sameColor);
+                $("#c_"+result[i].compLine).css('background-color', colors.sameColor);
+                $("#os_"+result[i].originLine).css('background-color', colors.sameColor);
+                $("#cs_"+result[i].compLine).css('background-color', colors.sameColor);
+                sameCount++;
             }else{
-                $("#o_"+result[i][0]).css('background-color', colors.similarColor);
-                $("#c_"+result[i][1]).css('background-color', colors.similarColor);
-                $("#os_"+result[i][0]).css('background-color', colors.similarColor);
-                $("#cs_"+result[i][1]).css('background-color', colors.similarColor);
+                $("#o_"+result[i].originLine).css('background-color', colors.similarColor);
+                $("#c_"+result[i].compLine).css('background-color', colors.similarColor);
+                $("#os_"+result[i].originLine).css('background-color', colors.similarColor);
+                $("#cs_"+result[i].compLine).css('background-color', colors.similarColor);
+                similarCount++;
             }
         }
         updateNumber();
     }
 
+    function updateNumber(){
+        console.log(result);
+        $("#similarLine").text(similarCount);
+        $("#sameLine").text(sameCount);
+        $("#linePer").text((resultNum * 100 / lineCount).toFixed(2));
+    }
+
     function setSelected(type, id, flag){
         var target = type + "_" + id;
         var summary = type + "s_" + id;
-        if(flag == SELECT){
+        if(flag == numbers.select){
             $("#"+target).css('background-color', colors.selectColor);
             $("#"+summary).css('background-color', colors.selectColor);
             return;
         }
-        if(flag == ADD){
+        if(flag == numbers.add){
             $("#"+target).css('background-color', colors.addColor);
             $("#"+summary).css('background-color', colors.addColor);
             return;
         }
-        if(flag == REMOVE){
+        if(flag == numbers.remove){
             $("#"+target).css('background-color', colors.removeColor);
             $("#"+summary).css('background-color', colors.removeColor);
             return;
         }
-        $("#"+target).css('background-color', chooseLine.background);
-        $("#"+summary).css('background-color', chooseLine.background);
-        return;
     }
 
-    function updateNumber(){
-        $("#similarLine").text(similarCount);
-        $("#sameLine").text(sameCount);
-        $("#linePer").text(((sameCount + similarCount) * 100 / lineCount).toFixed(2));
+    function deSelect(){
+        for(var i=0; i<selectList.length; i++){
+            var target = selectList[i].type + "_" + selectList[i].line;
+            var summary = selectList[i].type + "s_" + selectList[i].line;
+            $("#"+target).css('background-color', selectList[i].background);
+            $("#"+summary).css('background-color', selectList[i].background);
+        }
+        selectList = [];
     }
 
     // 비교본 라인으로 원본 라인 검색
     function searchOriginLine(id){
-        var len = result.length;
-        for(var i=0; i<len; i++){
-            if(result[i][1]==id)
-                return result[i][0];
+        for(var i=0; i<resultNum; i++){
+            if(result[i].compLine==id)
+                return result[i].originLine;
         }
         return -1;
     }
 
     // 원본 라인으로 비교본 라인 검색
     function searchCompareLine(id){
-        var len = result.length;
-        for(var i=0; i<len; i++){
-            if(result[i][0]==id)
-                return result[i][1];
+        for(var i=0; i<resultNum; i++){
+            if(result[i].originLine==id)
+                return result[i].compLine;
         }
         return -1;
     }
 
     function searchIndex(id){
-        var len = result.length;
-        for(var i=0; i<len; i++){
-            if(result[i][0]==id)
+        for(var i=0; i<resultNum; i++){
+            if(result[i].originLine==id)
                 return i;
         }
         return -1;
     }
 
-    function clearSelect(){
-        isChoose = false;
-        chooseLine.background = "";
-    }
-
-    function update(id){
-        var temp = id.split('_');
-        var type;
-        if(temp[0] == "o")
-            type = isOriginal;
-        else
-            type = isCompare;
-
-        var id = temp[1];
-
-        // second click
-        if(isChoose){
-            if(chooseLine.type == isOriginal){
-                if(type == isOriginal){
-                    if(isSelected(type, id)){
-                        // 비교본 선택 해제, delete from list
-                        alert("deselect o : " + id + ", c : " + searchCompareLine(id));
-                        setSelected(type, chooseLine.line, -1);
-                        setSelected(type, id, REMOVE);
-                        setSelected(isCompare, searchCompareLine(id), REMOVE);
-                        result.splice(searchIndex(id), 1);
-                        lineCount-=1;
-                        updateNumber();
-                        clearSelect();
-                        return;
-                    }
-                    setSelected(type, chooseLine.line, -1);
-                    chooseLine.line = id;
-                    chooseLine.background = toHex(document.getElementById(type+"_"+id).style.backgroundColor);
-                    setSelected(type, id, SELECT);
-                    return;
-                }
-                if(isSelected(type, id)){
-                    alert("choose not selected line");
-                    return;
-                }
-                // add new same line
-                setSelected(type, id, ADD);
-                setSelected(chooseLine.type, chooseLine.line, ADD);
-                result.push(new Array(chooseLine.line, id, SAME));
-                isChoose = false;
-                lineCount+=1;
-                updateNumber();
-                alert("select : o : " + chooseLine.line + ", c : " + id);
-                return;
-            }
-            if(type == isCompare){
-                if(isSelected(type, id)){
-                    // 원본 해제, delete from list
-                    alert("deselect o : " + searchOriginLine(id) + ", c : " + id);
-                    setSelected(type, chooseLine.line, -1);
-                    setSelected(type, id, REMOVE);
-                    setSelected(isOriginal, searchOriginLine(id), REMOVE);
-                    result.splice(searchIndex(searchOriginLine(id)), 1);
-                    lineCount-=1;
-                    updateNumber();
-                    clearSelect();
-                    return;
-                }
-                setSelected(type, chooseLine.line, -1);
-                chooseLine.line = id;
-                chooseLine.background = toHex(document.getElementById(type+"_"+id).style.backgroundColor);
-                setSelected(type, id, SELECT);
-                return;
-            }
-            if(isSelected(type, id)){
-                alert("choose not selected line");
-                return;
-            }
-            // add new same line
-            setSelected(type, id, ADD);
-            setSelected(chooseLine.type, chooseLine.line, ADD);
-            result.push(new Array(id, chooseLine.line, SAME));
-            isChoose = false;
-            lineCount+=1;
-            updateNumber();
-            alert("select : o : " + chooseLine.line + ", c : " + id);
-            return;
-        }
-
-        // first click
-        if(type==isOriginal){
-            if(isSelected(type, id)){
-                // 원본 && 비교본 선택 해제, delete from list
-                alert("deselect o : " + id + ", c : " + searchCompareLine(id));
-                setSelected(type, id, REMOVE);
-                setSelected(isCompare, searchCompareLine(id), REMOVE);
-                result.splice(searchIndex(id), 1);
-                lineCount-=1;
-                updateNumber();
-                return;
-            }
-            // 원본 선택
-            isChoose = true;
-            chooseLine.type = isOriginal;
-            chooseLine.line = id;
-            chooseLine.background = toHex(document.getElementById(type+"_"+id).style.backgroundColor);
-            setSelected(type, id, SELECT);
-            return;
-        }
-        if(isSelected(type, id)){
-            // 원본 && 비교본 해제, delete from list
-            alert("deselect o : " + searchOriginLine(id) + ", c : " + id);
-            setSelected(type, id, REMOVE);
-            setSelected(isOriginal, searchOriginLine(id), REMOVE);
-            result.splice(searchIndex(searchOriginLine(id)), 1);
-            lineCount-=1;
-            updateNumber();
-            return;
-        }
-        // 비교본 선택
-        isChoose = true;
-        chooseLine.type = isCompare;
-        chooseLine.line = id;
-        chooseLine.background = toHex(document.getElementById(type+"_"+id).style.backgroundColor);
-        setSelected(type, id, SELECT);
-        return;
-    }
-
-    function isSelected(type, id){
-        var color = toHex(document.getElementById(type+"_"+id).style.backgroundColor);
+    function hasMatched(id){
+        var color = toHex(document.getElementById(id).style.backgroundColor);
         if(color == colors.removeColor || color == colors.selectColor || color=="")
             return false;
         return true;
     }
 
+    function getId(id){
+      var temp = id.split('_');
+      var type;
+      temp[0] == "o" ? type = isOriginal : type = isCompare;
+
+      var result = {line : temp[1], type : type};
+      return result;
+    }
+
+    function removeLine(nowSelect){
+        var origin, compare;
+        if(nowSelect.type == isOriginal){
+            origin = parseInt(nowSelect.line);
+            compare = searchCompareLine(origin);
+        }else{
+            compare = parseInt(nowSelect.line);
+            origin = searchOriginLine(compare);
+        }
+        setSelected(isOriginal, origin, numbers.remove);
+        setSelected(isCompare, compare, numbers.remove);
+
+        var index = searchIndex(origin);
+        result[index].rType == numbers.same ? sameCount-=1 : similarCount-=1;
+        result.splice(index, 1);
+        resultNum-=1;
+
+        updateNumber();
+    }
+
+    function selectSameDiv(nowSelect){
+        if(nowSelect.type == selectList[0].type) return true;
+        return false;
+    }
+
+    function selectLine(nowSelect){
+        var background = toHex(document.getElementById(nowSelect.type+"_"+nowSelect.line).style.backgroundColor);
+        // $("#").css.background
+        selectList.push({type : nowSelect.type, line : nowSelect.line, background : background});
+        setSelected(nowSelect.type, nowSelect.line, numbers.select);
+    }
+
+    function selectMultiLine(nowSelect){
+        var start, end;
+        if(parseInt(selectList[0].line) < nowSelect.line){
+            start = parseInt(selectList[0].line);
+            end = nowSelect.line;
+        }else{
+            start = nowSelect.line;
+            end = parseInt(selectList[0].line);
+        }
+        deSelect();
+        for(var i=start; i<=end; i++){
+            selectLine({line : i, type : nowSelect.type});
+        }
+    }
+
+    function addResultList(origin, compare){
+        if(searchCompareLine(origin) == -1 && searchOriginLine(compare) == -1){
+            result.push({originLine : origin, compLine : compare, count : 1, rType : numbers.same, pairID : 1});
+            return true;
+        }
+        return false;
+    }
+
+    function addLine(nowSelect){
+        var origin, compare;
+        var len = selectList.length;
+        var addCount = 0;
+        for(var i=0; i<len; i++){
+            if(nowSelect.type == isCompare){
+                origin = parseInt(selectList[i].line);
+                compare = parseInt(nowSelect.line)+i;
+            }else{
+                origin = parseInt(nowSelect.line)+i;
+                compare = parseInt(selectList[i].line);
+            }
+            if(addResultList(origin, compare)){
+                addCount++;
+                setSelected(selectList[i].type, parseInt(selectList[i].line), numbers.add);
+                setSelected(nowSelect.type, parseInt(nowSelect.line)+i, numbers.add);
+            }else{
+                alert("deny push line(origin : " + origin + ", compare : " + compare + ")");
+                $("#"+selectList[i].type + "_" + parseInt(selectList[i].line)).css('background-color', selectList[i].background);
+                $("#"+selectList[i].type + "s_" + parseInt(selectList[i].line)).css('background-color', selectList[i].background);
+            }
+        }
+        resultNum+=addCount;
+        sameCount+=addCount;
+        updateNumber();
+        selectList = [];
+        alert("add new line");
+    }
+
+    function update(id){
+        var info = getId(id);
+        if(hasMatched(id)){
+            removeLine(info);
+            deSelect();
+            return;
+        }
+        if(selectList.length > 0){
+            if(selectSameDiv(info)){
+                if(shiftPressed){
+                    selectMultiLine(info);
+                }else{
+                    deSelect();
+                    selectLine(info);
+                }
+                return;
+            }
+            addLine(info);
+            return;
+        }
+        selectLine(info);
+    }
+
     function toHex(colorval) {
-        if(colorval == "")
-            return "";
+        if(colorval == "")  return "";
         var parts = colorval.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
         delete(parts[0]);
         for (var i = 1; i <= 3; ++i) {
@@ -369,7 +335,6 @@
             if (parts[i].length == 1) parts[i] = '0' + parts[i];
         }
         color = '#' + parts.join('');
-
         return color;
     }
 
@@ -383,15 +348,16 @@
             var type = temp[0];
             clicks++;  //count clicks
 
+            e.shiftKey==true ? shiftPressed = true : shiftPressed = false;
+
             if(type=="o" || type=="c"){
                 if(clicks === 1) {
                     timer = setTimeout(function() {
                         update(id);
                         clicks = 0;
-
                     }, DELAY);
 
-                } else {
+                }else{
                     clearTimeout(timer);
                     clicks = 0;
 
@@ -424,4 +390,18 @@
             e.preventDefault();  //cancel system double-click event
         });
     });
+
+     $('#body').submit(function() {
+        var data = JSON.stringify(result);
+        console.log(data);
+        $.ajax({
+            type: "POST",
+            url: window.location.href,
+            data: data,
+            success: function(){},
+            dataType: "json",
+            contentType : "application/json"
+        });
+     });
 </script>
+</html>
