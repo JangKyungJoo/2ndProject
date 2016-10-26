@@ -107,7 +107,7 @@ class RemoveComment(PreProcessor):
         for i in range(len(self.file.split('\n'))):
             while i + plus in lineList:
                 plus += 1
-            retList.append(i + plus)
+            retList.append(self.lineNumList[i + plus])
 
         return self.file, retList
 
@@ -156,7 +156,18 @@ class Tokenizing(PreProcessor):
 
         return retList, lineList
 
-'''
+
+class TokenToNumber(PreProcessor):
+    def setInput(self, file):
+        pass
+
+    def setLineNumInfo(self, lineNumList):
+        pass
+
+    def process(self):
+        pass
+
+
 def numberMapping(orifile, compfile):
     dic = {}
     number = 0
@@ -175,6 +186,4 @@ def numberMapping(orifile, compfile):
             retList.append(midList)
         outputs.append(retList)
 
-
     return outputs[0], outputs[1]
-'''
