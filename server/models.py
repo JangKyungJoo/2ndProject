@@ -140,6 +140,16 @@ class Result(db.Model):
     def __repr__(self):
         return '<Result %r>' % self.resultID
 
+    @property
+    def serialize(self):
+       return {
+           'pairID' : self.pairID,
+           'originLine' : self.originLine,
+           'compLine' : self.compLine,
+           'count' : self.count,
+           'rType' : self.rType
+       }
+
 
 class Origin(db.Model):
     '''
@@ -157,8 +167,7 @@ class Origin(db.Model):
     projID = db.Column(db.Integer, db.ForeignKey('project_tbl.projID'), nullable=False)
     '''프로젝트 번호 '''
 
-    def __init__(self, originID, originName, originPath, lineNum, projID):
-        self.originID = originID
+    def __init__(self, originName, originPath, lineNum, projID):
         self.originName = originName
         self.originPath = originPath
         self.lineNum = lineNum
@@ -184,8 +193,7 @@ class Compare(db.Model):
     projID = db.Column(db.Integer, db.ForeignKey('project_tbl.projID'), nullable=False)
     '''프로젝트 번호 '''
 
-    def __init__(self, compID, compName, compPath, lineNum, projID):
-        self.compID = compID
+    def __init__(self, compName, compPath, lineNum, projID):
         self.compName = compName
         self.compPath = compPath
         self.lineNum = lineNum
@@ -208,7 +216,11 @@ class Pair(db.Model):
     '''비교본 번호 '''
     projID = db.Column(db.Integer, db.ForeignKey('project_tbl.projID'), nullable=False)
     '''프로젝트 번호 '''
-
+    similarity = db.Column(db.Float, default=0)
+    '''유사도'''
+    modifyDate = db.Column(db.TIMESTAMP, nullable=True)
+    '''수정날짜'''
+    
     def __init__(self, originID, compID, projID):
         self.originID = originID
         self.compID = compID
@@ -216,3 +228,13 @@ class Pair(db.Model):
 
     def __repr__(self):
         return '<Pair %r>' % self.pairID
+
+    @property
+    def serialize(self):
+       return {
+           'pairID' : self.pairID,
+           'originID' : self.originID,
+           'compID' : self.compID,
+           'similarity' : self.similarity,
+           'modifyDate' : self.modifyDate
+       }

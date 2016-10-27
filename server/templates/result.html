@@ -2,40 +2,10 @@
 <html lang="en" xmlns:https="http://www.w3.org/1999/xhtml">
 <head>
     <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="{{url_for ('static', filename='js/bootpag.js') }}"></script>
     <meta charset="UTF-8">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <style>
-        .container{
-            width : 1350px;
-        }
-
-        .panel-container {
-            padding-top : 20px;
-        }
-
-        .panel-default {
-            width : 70%;
-            margin-bottom : 10px;
-        }
-
-        .panel-body {
-            padding-top : 5px;
-            padding-bottom : 0px;
-            padding-left : 10px;
-            padding-right : 10px;
-        }
-
-        .table{
-            text-align : center;
-            margin-bottom : 5px;
-        }
-
-        .th-header{
-            width : 15%;
-            text-align : center;
-        }
-
-    </style>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/result.css') }}">
 </head>
 <body>
     <div class="container">
@@ -47,23 +17,21 @@
         <div class="panel-container" align="center">
             <div class="panel panel-default" style="margin-left : 15px">
                 <div class="panel-body">
-                    <table class="table">
+                    <table id="myTable" class="table">
                         <tr>
                             <th class="th-header" style="width:10%;border-top:none;">No</th>
                             <th class="th-header" style="border-top:none;">Origin File</th>
                             <th class="th-header" style="border-top:none;">Compare File</th>
-                            <th class="th-header" style="border-top:none;">Similarity<span id="similarity" class="glyphicon glyphicon-triangle-top" style="margin-left:2px;"></span></th>
-                            <th class="th-header" style="border-top:none;">Modified Date<span id="modifyDate" class="glyphicon glyphicon-triangle-top" style="margin-left:2px;"></span></th>
+                            <th id="th-similarity" class="th-header" style="border-top:none;">Similarity<span id="similarity" class="glyphicon glyphicon-triangle-bottom" style="margin-left:2px;"></span></th>
+                            <th id="th-modify" class="th-header" style="border-top:none;">Modified Date<span id="modifyDate" class="glyphicon glyphicon-triangle-top" style="margin-left:2px;"></span></th>
                         </tr>
-                        {% for line in result %}
-                        <tr id="{{loop.index}} "style="cursor:pointer;" onClick="window.open('/result/1/{{loop.index}}');">
-                            <td>{{loop.index}}</td>
-                            <td>{{line[0]}}</td>
-                            <td>{{line[1]}}</td>
-                            <td>{{line[2]}} %</td>
-                            <td>{% if line[3]=="" %}-</td>
-                                {% else %}{{line[3]}}</td>
-                                {% endif %}
+                        {% for i in range(1, 21) %}
+                        <tr id="row_{{i}} "style="cursor:pointer;">
+                            <td id="idx_{{i}}"></td>
+                            <td id="origin_{{i}}"></td>
+                            <td id="comp_{{i}}"></td>
+                            <td id="similarity_{{i}}"></td>
+                            <td id="modify_{{i}}"></td>
                         </tr>
                         {% endfor %}
                     </table>
@@ -71,43 +39,120 @@
             </div>
         </div>
         <div class="footer" align="center">
-            <nav aria-label="Page navigation">
-              <ul class="pagination">
-                <li>
-                  <a href="#" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                  </a>
-                </li>
-                <li class="active"><a href="#">1</a></li>
-                <li><a href="#">2</a></li>
-                <li><a href="#">3</a></li>
-                <li><a href="#">4</a></li>
-                <li><a href="#">5</a></li>
-                <li>
-                  <a href="#" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                  </a>
-                </li>
-              </ul>
-            </nav>
+            <div id="pagination"></div>
         </div>
     </div>
 </body>
 </html>
 
-<script>
-    $("#similarity").click(function(){
-        if(document.getElementById("similarity").className=="glyphicon glyphicon-triangle-top")
-            document.getElementById("similarity").className = "glyphicon glyphicon-triangle-bottom";
-        else
-            document.getElementById("similarity").className = "glyphicon glyphicon-triangle-top";
+<script type="text/javascript">
+    var simDesc_dateAsc = {{dateByAsc|safe}};
+    var simDesc_dateDesc = {{dateByDesc|safe}};
+    var pairCount = {{pairCount}};
+    var pID = {{projectid}};
+    var NUMBER_PAGE = 20;
+    var pageNum = Math.ceil(pairCount / NUMBER_PAGE);
+    var nowPage = 1;
+    var nowList, simAsc_dateAsc, simAsc_dateDesc;
+    var TOP = "glyphicon glyphicon-triangle-top";
+    var BOTTOM = "glyphicon glyphicon-triangle-bottom"
+
+    init();
+
+    function init(){
+        simAsc_dateAsc = [];
+        simAsc_dateDesc = [];
+        var len = simDesc_dateAsc.length;
+        for(var i=len-1; i>=0; i--){
+            simAsc_dateDesc.push(simDesc_dateAsc[i]);
+        }
+        var len = simDesc_dateDesc.length;
+        for(var i=len-1; i>=0; i--){
+            simAsc_dateAsc.push(simDesc_dateDesc[i]);
+        }
+        nowList = simDesc_dateAsc;
+        update();
+    }
+
+    function parseDate(gmt){
+        if(gmt == null){
+            return '-';
+        }
+        var date = new Date(gmt);
+        var temp = date.toLocaleString().split(".", 3);
+        return (temp[0] + "." + temp[1] + "." + temp[2]);
+    }
+
+    function changeList(){
+        if($("#similarity").attr('class') == TOP && $("#modifyDate").attr('class') == TOP){
+            nowList = simAsc_dateAsc;
+        }else if($("#similarity").attr('class') == TOP && $("#modifyDate").attr('class') == BOTTOM){
+            nowList = simAsc_dateDesc;
+        }else if($("#similarity").attr('class') == BOTTOM && $("#modifyDate").attr('class') == TOP){
+            nowList = simDesc_dateAsc;
+        }else{
+            nowList = simDesc_dateDesc;
+        }
+    }
+
+    function update(){
+        changeList();
+        for(var i=1; i<=NUMBER_PAGE; i++){
+            var now = i + NUMBER_PAGE * (nowPage-1);
+            if(now <= pairCount){
+                $("#idx_"+i).css("display", "");
+                $("#origin_"+i).css("display", "");
+                $("#comp_"+i).css("display", "");
+                $("#similarity_"+i).css("display", "");
+                $("#modify_"+i).css("display", "");
+
+                $("#idx_"+i).html(now);
+                $("#origin_"+i).html(nowList[now-1].originID);
+                $("#comp_"+i).html(nowList[now-1].compID);
+                $("#similarity_"+i).html(nowList[now-1].similarity + ' %');
+                $("#modify_"+i).html(parseDate(nowList[now-1].modifyDate));
+            }else{
+                $("#idx_"+i).css("display", "none");
+                $("#origin_"+i).css("display", "none");
+                $("#comp_"+i).css("display", "none");
+                $("#similarity_"+i).css("display", "none");
+                $("#modify_"+i).css("display", "none");
+            }
+        }
+    }
+
+    $(function(){
+        $("td").on("click", function(e){
+            var id = $(this).attr('id');
+            var temp = id.split('_');
+            var now = parseInt(temp[1]) + NUMBER_PAGE * (nowPage-1);
+            window.open('/result/'+pID+'/'+nowList[now-1].pairID, 'detail', 'window settings');
+        })
     });
 
-    $("#modifyDate").click(function(){
-        if(document.getElementById("modifyDate").className=="glyphicon glyphicon-triangle-top")
-            document.getElementById("modifyDate").className = "glyphicon glyphicon-triangle-bottom";
+    $("#th-similarity").click(function(){
+        if($("#similarity").attr('class')==TOP)
+            $("#similarity").attr('class', BOTTOM);
         else
-            document.getElementById("modifyDate").className = "glyphicon glyphicon-triangle-top";
+            $("#similarity").attr('class',TOP);
+        update();
+    });
+
+    $("#th-modify").click(function(){
+        if($("#modifyDate").attr('class')==TOP)
+            $("#modifyDate").attr('class', BOTTOM);
+        else
+            $("#modifyDate").attr('class', TOP);
+        update();
+    });
+
+    $('#pagination').bootpag({
+        total: pageNum,
+        page : 1,
+        maxVisible : 5,
+    }).on("page", function(event, num){
+        nowPage = num;
+        update();
     });
 
 </script>
