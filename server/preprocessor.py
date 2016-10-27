@@ -4,7 +4,6 @@ import re
 from abc import ABCMeta, abstractmethod
 
 
-
 class PreProcessor:
     file = ''
     lineNumList = []
@@ -155,17 +154,6 @@ class Tokenizing(PreProcessor):
             lineList.append(self.lineNumList[i + plus])
 
         return retList, lineList
-
-
-class TokenToNumber(PreProcessor):
-    def setInput(self, file):
-        pass
-
-    def setLineNumInfo(self, lineNumList):
-        pass
-
-    def process(self):
-        pass
 
 
 def numberMapping(orifile, compfile):

@@ -11,6 +11,7 @@ from server import db
 from server import app
 import time
 
+<<<<<<< Updated upstream
 
 @app.route('/compare/<projectid>', methods=["GET"])
 def compare(projectid):
@@ -19,6 +20,10 @@ def compare(projectid):
 
 
 def temp():
+=======
+# pair 수 만큼 호출
+def compareOnePair(originFile, compFile):
+>>>>>>> Stashed changes
     global output
     originFile = open("/Users/user/PycharmProjects/filter_flask/ex/4340897.c")
     compFile = open("/Users/user/PycharmProjects/filter_flask/ex/4370143.c")
@@ -66,9 +71,6 @@ def temp():
 
     similarity = similLine/entireLine*100
 
-    db.drop_all()
-    db.create_all()
-
     for key in ret.keys():
         # key : 원본 라인 번호 -1
         for element in ret[key]:
@@ -80,8 +82,11 @@ def temp():
     # db.session.query(Pair).filter(Pair.pairID == 'ㅎㅎㅎㅎ').update({'similarity': similarity})
     db.session.commit()
 
+    # db.session.query(Result).delete()
+    # db.session.commit()
+
     for u in db.session.query(Result).all():
         print(u.resultID, u.pairID, u.originLine, u.compLine, u.count, u.rType)
 
 
-temp()
+compareOnePair('', '')
