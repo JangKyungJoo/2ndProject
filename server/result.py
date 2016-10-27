@@ -14,10 +14,10 @@ from werkzeug import secure_filename
 
 @app.route('/result/<projectid>', methods=["GET"])
 def result(projectid):
-
+    
     pair = Pair.query.filter(Pair.projID == projectid).order_by(Pair.similarity.desc(), Pair.modifyDate).all()
     json_list = [i.serialize for i in pair]
-
+    
     pair = Pair.query.filter(Pair.projID == projectid).order_by(Pair.similarity.desc(), Pair.modifyDate.desc()).all()
     json_list2 = [i.serialize for i in pair]
 

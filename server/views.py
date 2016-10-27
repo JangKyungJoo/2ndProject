@@ -226,6 +226,13 @@ def file_upload():
 
     '''
         파일 업로드
+
+
+        upload file path
+
+        :원본 파일: server/uploads/<projName>/origin/<filename>
+        :비교 파일: server/uploads/<projName>/compare/<filename>
+
     '''
     
     projName = ""
@@ -331,7 +338,10 @@ def tuple():
 
         origin_list = []
         comp_list = []
-        
+
+        # file_list.extractall(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin'))
+        # file_list.extractall(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare'))
+
         for ori in origin_file.namelist():
             origin_list.append(ori)
             print (ori, file=sys.stderr)
@@ -347,9 +357,6 @@ def tuple():
 
         # 사용자가 지정
 
-        # file_list.extractall(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin'))
-        # file_list.extractall(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare'))
-        
     return render_template('/tuple.html', projName=projName)
 
 

@@ -34,3 +34,4 @@ db = SQLAlchemy(app, session_options={"autoflush": False})
 
 import server.views
 import server.result
+import server.filter

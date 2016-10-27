@@ -12,6 +12,12 @@ from server import app
 import time
 
 
+@app.route('/compare/<projectid>', methods=["GET"])
+def compare(projectid):
+    
+    return render_template("compare.html", projectid=projectid)
+
+
 def temp():
     global output
     originFile = open("/Users/user/PycharmProjects/filter_flask/ex/4340897.c")

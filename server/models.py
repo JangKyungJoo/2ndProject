@@ -8,6 +8,15 @@ import os
 import random
 import string
 
+'''
+    model.py
+    ~~~~~~~~
+    
+
+    Database 테이블
+
+'''
+
 class People(db.Model):
     '''
         사용자 관리 테이블
@@ -120,8 +129,6 @@ class Result(db.Model):
     '''원본 라인 번호 '''
     compLine = db.Column(db.Integer, nullable=False)
     '''비교 라인 번호 '''
-    count = db.Column(db.Integer, nullable=False, default=1)
-    '''라인 카운트 '''
     rType = db.Column(db.Integer, nullable=False, default=1)
     '''결과 유형
 
@@ -130,11 +137,10 @@ class Result(db.Model):
         :rType 2: 유사
     '''
 
-    def __init__(self, pairID, originLine, compLine, count=1, rType=1):
+    def __init__(self, pairID, originLine, compLine, rType=1):
         self.pairID = pairID
         self.originLine = originLine
         self.compLine = compLine
-        self.count = count
         self.rType = rType
         
     def __repr__(self):
@@ -146,7 +152,6 @@ class Result(db.Model):
            'pairID' : self.pairID,
            'originLine' : self.originLine,
            'compLine' : self.compLine,
-           'count' : self.count,
            'rType' : self.rType
        }
 
