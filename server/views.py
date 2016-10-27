@@ -145,7 +145,7 @@ def dashboard():
             return redirect(url_for('dashboard'))
 
         elif modal_type == "clone":
-
+            
             projName = request.form.get('projName')
             projDesc = request.form.get('projDesc')
             project_name = request.form.get('project_name')
