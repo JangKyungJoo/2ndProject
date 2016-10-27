@@ -217,6 +217,9 @@ def proj_info():
         user_name=user_name, update_time=update_time)
 
 
+origin_file = ""
+comp_file = ""
+
 @app.route('/file_upload', methods=['GET', 'POST'])
 @login_required
 def file_upload():
@@ -227,65 +230,78 @@ def file_upload():
     
     projName = ""
 
+    global origin_file
+    global comp_file
+    
+
     if not session['project'] or session['project'] == "":
         return redirect(url_for('dashboard'))
     else:
         projName = session['project']
 
-        origin_file = []
-        comp_file = []
-
         if request.method == 'POST':
 
-            file = request.files['file']
+            post_type = request.form.get('post_type')
 
-            if file and allowed_file(file.filename):
+            if not post_type:
 
-                filename = secure_filename(file.filename)
+                file = request.files['file']
 
-                file_type = request.form.get('file_type')
+                if file and allowed_file(file.filename):
 
-                if file_type == "origin_file":
-                    if not os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin')):
-                        os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin'))
+                    filename = secure_filename(file.filename)
 
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin', filename))
-                    origin_file = zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin', filename))
-                    # print (file_list.namelist(), file=sys.stderr)
-                    
-                elif file_type == "compare_file":
+                    file_type = request.form.get('file_type')
 
-                    if not os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare')):
-                        os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare'))
-                    
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare', filename))
-                    comp_file = zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare', filename))
-                    # print (file_list.namelist(), file=sys.stderr)
+                    if file_type == "origin_file":
+                        if not os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin')):
+                            os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin'))
 
-                elif file_type == "file_upload":
+                        file.save(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin', filename))
+                        origin_file = os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin', filename)
 
-                    if not origin_file or not comp_file:
-                        # file miss
-                        print ("no file", file=sys.stderr)
-                        pass
-                    else:
+                        print (origin_file, file=sys.stderr)
                         
-                        file_data = File(origin_file, comp_file)
-                        db.session.add(file_data)
-                        db.session.commit()
+                    elif file_type == "compare_file":
 
-                        file_data = File.query.filter(File.originPath==origin_file).first()
+                        if not os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare')):
+                            os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare'))
+                        
+                        file.save(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare', filename))
+                        # comp_file = zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare', filename))
+                        comp_file = os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare', filename)
+                        print (comp_file, file=sys.stderr)
 
-                        project_data = Project.query.filter(Project.projName==projName).first()
-                        project_data.fileNum = file_data.fileID
-                        db.session.commit()
+                    else:
+                        print ("upload type error", file=sys.stderr)
 
-                        return redirect(url_for('tuple'))
-                
                 else:
-                    print ("upload type error", file=sys.stderr)
+                    print ("only zip file", file=sys.stderr)
+
+            elif post_type == 'file_upload':
+
+                if not origin_file or not comp_file:
+                    # file miss
+                    print (origin_file, file=sys.stderr)
+                    print (comp_file, file=sys.stderr)
+                    print ("no file", file=sys.stderr)
+                    pass
+                else:
+                    
+                    file_data = File(origin_file, comp_file)
+                    db.session.add(file_data)
+                    db.session.commit()
+
+                    file_data = File.query.filter(File.originPath==origin_file).first()
+
+                    project_data = Project.query.filter(Project.projName==projName).first()
+                    project_data.fileNum = file_data.fileID
+                    db.session.commit()
+
+                    return redirect(url_for('tuple'))
+
             else:
-                print ("only zip file", file=sys.stderr)
+                pass
 
         else:
             pass
@@ -298,7 +314,7 @@ def file_upload():
 def tuple():
 
     '''
-        순서쌍 생성
+        비교쌍 생성
     '''
 
     projName = ""
@@ -310,10 +326,26 @@ def tuple():
         project_data = Project.query.filter(Project.projName==projName).first()
         file_data = File.query.filter(File.fileID==project_data.fileNum).first()
 
-        origin_file = file_data.originPath
-        comp_file = file_data.compPath
+        origin_file = zipfile.ZipFile(file_data.originPath)
+        comp_file = zipfile.ZipFile(file_data.compPath)
 
-        print (origin_file.nameList(), file=sys.stderr)
+        origin_list = []
+        comp_list = []
+        
+        for ori in origin_file.namelist():
+            origin_list.append(ori)
+            print (ori, file=sys.stderr)
+
+        for comp in comp_file.namelist():
+            comp_list.append(comp)
+            print (comp, file=sys.stderr)
+
+
+        # 같은 이름 파일
+
+        # 모든 파일 one by one
+
+        # 사용자가 지정
 
         # file_list.extractall(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin'))
         # file_list.extractall(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare'))

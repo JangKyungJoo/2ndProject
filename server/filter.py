@@ -25,7 +25,7 @@ def temp():
 
     inputs = [originFile, compFile]
     outputs = []
-
+    
     for input in inputs:
         lineNumInfo = []
         for i in range(len(input.split('\n'))):
