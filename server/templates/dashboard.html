@@ -136,6 +136,45 @@
                 <div class="x_panel">
                   <div class="x_title">
                     <h2><i class="fa fa-bars"></i> 프로젝트 리스트 </h2>
+                    <button id="btn_admin_clone" class="btn btn-default pull-right" type="button" data-toggle="modal" data-target="#cloneModal">복제</button>
+
+                    <div id="cloneModal" class="modal fade" role="dialog">
+                      <div class="modal-dialog">
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                          <div class="modal-body" style="padding:40px 50px;">
+                            <form role="form" method="POST" submit="/dashboard">
+                              <div class="form-group">
+                                <label for="projName"><span class="glyphicon glyphicon-user"></span>프로젝트 이름</label>
+                                <input type="text" class="form-control" id="projName" name="projName" placeholder="프로젝트 이름" required>
+                              </div>
+                              <div class="form-group">
+                                <label for="projDesc"><span class="glyphicon glyphicon-list-alt"></span>프로젝트 설명</label>
+                                <input type="text" class="form-control" id="projDesc" name="projDesc" placeholder="프로젝트 설명" required>
+                              </div>
+                              <div class="form-group">
+                                <label for="projName"><span class="glyphicon glyphicon-user"></span>복제 프로젝트 선택</label>
+                                <select id="project_name" name="project_name" class="form-control" tabindex="-1" required>
+                                  {% for project in project_list %}
+                                  <option value="{{project.projName}}">{{project.projName}}</option>
+                                  {% endfor %}  
+                                </select>
+                              </div>
+
+                              <input id="modal_type" name="modal_type" type=hidden value="clone">
+                              <button type="submit" class="btn btn-success btn-block">
+                              <span class="glyphicon glyphicon-off"></span> 제출</button>
+                            </form>
+                          </div>
+                          <div class="modal-footer">
+                          <button type="button" class="btn btn-danger btn-default" data-dismiss="modal">
+                          <span class="glyphicon glyphicon-remove"></span>취소</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+
                     <button id="btn_admin_add" class="btn btn-default pull-right" type="button" data-toggle="modal" data-target="#insertModal">추가</button>
 
                     <div id="insertModal" class="modal fade" role="dialog">
@@ -143,7 +182,7 @@
                         <!-- Modal content-->
                         <div class="modal-content">
                           <div class="modal-body" style="padding:40px 50px;">
-                            <form role="form" method="POST" submit="/settings_server_manage">
+                            <form role="form" method="POST" submit="/dashboard">
                               <div class="form-group">
                                 <label for="projName"><span class="glyphicon glyphicon-user"></span>프로젝트 이름</label>
                                 <input type="text" class="form-control" id="projName" name="projName" placeholder="프로젝트 이름" required>
@@ -190,7 +229,7 @@
                           <td>{{project.date}}</td>
 
                           <td>
-                          <form role="form" method="POST" submit="/proj_info" name="form" class="pure-form pure-form-stacked">
+                          <form role="form" method="POST" submit="/dashboard" name="form" class="pure-form pure-form-stacked">
                               <input id="modal_type" name="modal_type" type=hidden value="info">
                               <input id="projName" name="projName" type="hidden" value="{{project.projName}}">
                               <button type="submit" class="btn btn-info btn-xs">정보</button>
@@ -198,7 +237,7 @@
                           </td>
                           
                           <td>
-                          <form role="form" method="POST" submit="/file_upload" name="form" class="pure-form pure-form-stacked">
+                          <form role="form" method="POST" submit="/dashboard" name="form" class="pure-form pure-form-stacked">
                               <input id="modal_type" name="modal_type" type=hidden value="connect">
                               <input id="projName" name="projName" type="hidden" value="{{project.projName}}">
                               <button type="submit" class="btn btn-primary btn-xs">선택</button>
