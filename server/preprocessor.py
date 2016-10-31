@@ -33,6 +33,7 @@ class RemoveBlank(PreProcessor):
 
         for i in range(len(self.file)):
             self.file[i] = re.sub('\t+', '', self.file[i])
+            self.file[i] = re.sub(' +', ' ', self.file[i])
             if self.file[i] == '' or self.file[i] == '\t' or self.file[i] == ' ':
                 blankList.append(i)
 
@@ -127,12 +128,14 @@ class Tokenizing(PreProcessor):
         for i in range(len(self.file)):
 
             list = self.file[i].split(' ')
-
             j = 0
             while j < len(list):
+                print list[j]
                 if list[j] in stopWords:
+                    print list[j] + ' 삭제'
                     list.pop(j)
-                j += 1
+                else:
+                    j += 1
 
             if not list:
                 blankList.append(i)

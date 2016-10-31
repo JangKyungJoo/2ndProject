@@ -28,7 +28,7 @@ class OrderedCheck(Check):
                 else:
                     dp[i][j] = dp[i - 1][j] if dp[i - 1][j] > dp[i][j - 1] else dp[i][j - 1]
 
-        return float(dp[len(origin)][len(comp)]) / len(origin) * 100
+        return float(dp[len(origin)][len(comp)]) / (len(origin) if len(origin) >= len(comp) else len(comp)) * 100
 
 
 class UnorderedCheck(Check):
@@ -79,6 +79,7 @@ class Compare:
             for j in range(len(self.compToken)):
                 per = self.method.process(self.originToken[i], self.compToken[j])
                 if per == 100.0:
+                    print self.originToken[i], self.compToken[j]
                     dict[i] = dict.get(i, [])
                     dict[i].append([j, 1])
                 elif per >= 70.0:

@@ -85,6 +85,15 @@ class Project(db.Model):
     '''프로젝트 생성 시각 '''
     update = db.Column(db.TIMESTAMP, default=datetime.now, onupdate=datetime.now)
     '''프로젝트 최종 수정 시각 '''
+    lastPair = db.Column(db.Integer, nullable=False, default=0)
+    '''프로젝트에서 마지막으로 비교한 비교쌍'''
+    compareMethod = db.Column(db.Integer, nullable=False, default=0)
+    '''
+        비교 방법 설정.
+        0 : 비교가 진행되지 않은 상태
+        1 : 순서 고려한 비교
+        2 : 순서 고려하지 않은 비교
+    '''
 
     def __init__(self, projName, projDesc, pID, fileNum=None):
         self.projName = projName

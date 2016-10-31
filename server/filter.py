@@ -10,23 +10,16 @@ from server.models import Pair
 from server import db
 from server import app
 import time
-
-<<<<<<< Updated upstream
-
-@app.route('/compare/<projectid>', methods=["GET"])
-def compare(projectid):
-    
-    return render_template("compare.html", projectid=projectid)
+from datetime import datetime
 
 
-def temp():
-=======
 # pair 수 만큼 호출
-def compareOnePair(originFile, compFile):
->>>>>>> Stashed changes
+def compareOnePair(originFile, compFile, pairNum, compareMethod):
+    db.session.query(Result).delete()
+
     global output
-    originFile = open("/Users/user/PycharmProjects/filter_flask/ex/4340897.c")
-    compFile = open("/Users/user/PycharmProjects/filter_flask/ex/4370143.c")
+    originFile = open(originFile)
+    compFile = open(compFile)
 
     originFile = originFile.read()
     compFile = compFile.read()
@@ -47,13 +40,16 @@ def compareOnePair(originFile, compFile):
             task.setLineNumInfo(lineNumInfo)
             output, lineNumInfo = task.process()
             input = output
-
         outputs.append([output, lineNumInfo])
 
     start_time = time.time()
     # ori, comp = preprocessor.numberMapping(outputs[0][0], outputs[1][0])
 
-    checkFunction = compare.OrderedCheck()
+    checkFunction = ''
+    if compareMethod == 1:
+        checkFunction = compare.OrderedCheck()
+    elif compareMethod == 2:
+        checkFunction = compare.UnorderedCheck()
 
     compa = compare.Compare(checkFunction)
     compa.setInput(outputs[0][0], outputs[1][0])
@@ -66,27 +62,22 @@ def compareOnePair(originFile, compFile):
 
     similLine = 0.0
     entireLine = len(outputs[0][0])
-    for value in ret.values():
-        similLine += len(value)
+    similLine += len(ret.keys())
 
     similarity = similLine/entireLine*100
+    print similarity
 
     for key in ret.keys():
         # key : 원본 라인 번호 -1
         for element in ret[key]:
             # element : 원본 key라인과 매칭된 비교본 라인번호, 유사타입(1 : 일치, 2 : 유사)
             # print element
-            newResult = Result(3, outputs[0][1][key]+1, outputs[1][1][element[0]]+1, 1, element[1])
+            newResult = Result(pairNum, outputs[0][1][key]+1, outputs[1][1][element[0]]+1, element[1])
             db.session.add(newResult)
 
-    # db.session.query(Pair).filter(Pair.pairID == 'ㅎㅎㅎㅎ').update({'similarity': similarity})
+    db.session.query(Pair).filter(Pair.pairID == pairNum).update(
+        dict(similarity=similarity, modifyDate=datetime.now()))
     db.session.commit()
 
-    # db.session.query(Result).delete()
-    # db.session.commit()
-
-    for u in db.session.query(Result).all():
-        print(u.resultID, u.pairID, u.originLine, u.compLine, u.count, u.rType)
-
-
-compareOnePair('', '')
+    # for u in db.session.query(Result).all():
+        # print(u.resultID, u.pairID, u.originLine, u.compLine, u.rType)
