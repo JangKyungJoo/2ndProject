@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/detail.css') }}">
+    <title>Detail</title>
 </head>
 <body>
     <div class="container">
@@ -18,6 +19,11 @@
                 <h3 style="padding-left : 15px;">Same Line Count : </h3>&nbsp;&nbsp;<h3 id="sameLine"></h3>
                 <h3 style="padding-left : 15px;">Similar Line Count : </h3>&nbsp;&nbsp;<h3 id="similarLine"></h3>
             </div>
+        </div>
+                <div class="footer-container" style="margin-top:5px;text-align:right;">
+            <form id="body">
+                <button class="btn btn-default" type="submit" style="width:70px">Save</button>
+            </form>
         </div>
         <div class="panel-container">
             <div class="help-container">
@@ -98,11 +104,6 @@
                 </div>
             </div>
         </div>
-        <div class="footer-container" style="margin-top:10px;text-align:right;">
-            <form id="body">
-                <button class="btn btn-default" type="submit">Save</button>
-            </form>
-        </div>
     </div>
 </body>
 
@@ -113,8 +114,10 @@
     var numbers = {same : 1, select : 2, remove : 3, add : 4};
     var colors = {sameColor : "#ff0000", similarColor : "#ffb6c1", selectColor : "#ffff99", removeColor : "#c0c0c0", addColor : "#3399ff"};
     var selectList = [];
+    var modifyList = [];
     var shiftPressed, similarCount, sameCount, resultNum;
     var lineCount = {{originCount}};
+    var pairID = {{pairid}};
 
     init();
 
@@ -141,7 +144,6 @@
     }
 
     function updateNumber(){
-        console.log(result);
         $("#similarLine").text(similarCount);
         $("#sameLine").text(sameCount);
         $("#linePer").text((resultNum * 100 / lineCount).toFixed(2));
@@ -165,6 +167,8 @@
             $("#"+summary).css('background-color', colors.removeColor);
             return;
         }
+        $("#"+target).css('background-color', "");
+        $("#"+summary).css('background-color', "");
     }
 
     function deSelect(){
@@ -210,6 +214,13 @@
         return true;
     }
 
+    function isAdded(id){
+        var color = toHex(document.getElementById(id).style.backgroundColor);
+        if(color == colors.addColor)
+            return true;
+        return false;
+    }
+
     function getId(id){
       var temp = id.split('_');
       var type;
@@ -228,8 +239,16 @@
             compare = parseInt(nowSelect.line);
             origin = searchOriginLine(compare);
         }
-        setSelected(isOriginal, origin, numbers.remove);
-        setSelected(isCompare, compare, numbers.remove);
+
+        if(!isAdded(isOriginal+"_"+origin)){
+            setSelected(isOriginal, origin, numbers.remove);
+            setSelected(isCompare, compare, numbers.remove);
+        }else{
+            setSelected(isOriginal, origin, -1);
+            setSelected(isCompare, compare, -1);
+        }
+
+        modifyList.push({originLine : origin, compLine : compare, type : numbers.remove});
 
         var index = searchIndex(origin);
         result[index].rType == numbers.same ? sameCount-=1 : similarCount-=1;
@@ -246,7 +265,6 @@
 
     function selectLine(nowSelect){
         var background = toHex(document.getElementById(nowSelect.type+"_"+nowSelect.line).style.backgroundColor);
-        // $("#").css.background
         selectList.push({type : nowSelect.type, line : nowSelect.line, background : background});
         setSelected(nowSelect.type, nowSelect.line, numbers.select);
     }
@@ -290,6 +308,7 @@
                 addCount++;
                 setSelected(selectList[i].type, parseInt(selectList[i].line), numbers.add);
                 setSelected(nowSelect.type, parseInt(nowSelect.line)+i, numbers.add);
+                modifyList.push({originLine : origin, compLine : compare, type : numbers.add});
             }else{
                 alert("deny push line(origin : " + origin + ", compare : " + compare + ")");
                 $("#"+selectList[i].type + "_" + parseInt(selectList[i].line)).css('background-color', selectList[i].background);
@@ -301,6 +320,7 @@
         updateNumber();
         selectList = [];
         alert("add new line");
+        console.log('insert');
     }
 
     function update(id){
@@ -391,17 +411,30 @@
         });
     });
 
+    $(window).bind('beforeunload', function(){
+        if(modifyList.length > 0 )
+            return '변경된 사항이 있습니다. 페이지에서 나가시겠습니까?';
+    });
+
+
      $('#body').submit(function() {
-        var data = JSON.stringify(result);
-        console.log(data);
+        $(window).unbind('beforeunload');
+        var data = JSON.stringify(modifyList);
         $.ajax({
             type: "POST",
             url: window.location.href,
             data: data,
-            success: function(){},
+            success: success(),
             dataType: "json",
             contentType : "application/json"
         });
      });
+
+     function success(){
+        localStorage.setItem('isUpdated', '0');
+        localStorage.setItem('isUpdated', ''+pairID);
+        alert('update success');
+     }
+
 </script>
 </html>
