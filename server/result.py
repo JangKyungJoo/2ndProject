@@ -5,26 +5,27 @@ from flask import json
 from datetime import datetime
 from server.models import Pair
 from server.models import Result
-import urllib2
-import socket
-from flask import session
+from server.models import Origin
+from server.models import Compare
 from server import db
-from werkzeug import secure_filename
 
 
 @app.route('/result/<projectid>', methods=["GET"])
 def result(projectid):
 
-    pair = Pair.query.filter(Pair.projID == projectid).order_by(Pair.similarity.desc(), Pair.modifyDate).all()
-    json_list = [i.serialize for i in pair]
+    origin_list = Origin.query.with_entities(Origin.originName).filter(Origin.projID == projectid).all()
+    compare_list = Compare.query.with_entities(Compare.compName).filter(Compare.projID == projectid).all()
+
+    pair = Pair.query.filter(Pair.projID == projectid).order_by(Pair.similarity.desc()).all()
+    json_list = [Pair.serialize(i, origin_list[i.originID-1], compare_list[i.compID-1]) for i in pair]
 
     pair = Pair.query.filter(Pair.projID == projectid).order_by(Pair.similarity.desc(), Pair.modifyDate.desc()).all()
-    json_list2 = [i.serialize for i in pair]
+    json_list2 = [Pair.serialize(i, origin_list[i.originID-1], compare_list[i.compID-1]) for i in pair]
 
     return render_template("result.html", dateByAsc=json.dumps(json_list), dateByDesc=json.dumps(json_list2), pairCount=len(pair), projectid=projectid)
 
 
-@app.route('/result/<projectid>/<pairid>', methods=["GET"])
+@app.route('/result/<projectid>/<pairid>', methods=["GET", "POST"])
 def detail(projectid, pairid):
     if request.method == 'GET':
         origin = open("/Users/kyungjoo/Documents/Document/Maestro-backend/maestro/routes/board.js", 'r')
@@ -38,45 +39,47 @@ def detail(projectid, pairid):
         for line in lines:
             compareList.append(line)
 
-        result = Result.query.filter(Result.pairID == 1).order_by(Result.originLine).all()
+        pairid = 1
+        result = Result.query.filter(Result.pairID == pairid).order_by(Result.originLine).all()
         list = [i.serialize for i in result]
 
         # 원본소스코드 / 비교본 소스코드 / 원본 기준 결과
-        return render_template\
-            ("detail.html", origin=originList, originCount=len(originList), compare=compareList, list=json.dumps(list))
-    """
-    if request.method == 'POST':
-        #req = urllib2.Request("http://0.0.0.0:5000/result/1/1")
-        url = 'https://api.github.com/users?since=100'
+        return render_template("detail.html", origin=originList, originCount=len(originList), compare=compareList, list=json.dumps(list), pairid = pairid)
 
-        try:
-            #res = urllib2.urlopen(req)
-            output = json.load(urllib2.urlopen(url))
-            print(output)
-        except urllib2.URLError as e:
-            print e.reason
-            print e.code
-        except socket.timeout as e:
-            print e.reason
-            print e.code
-        except urllib2.HTTPError as e:
-            print e.reason
-            print 'Error code: ', e.code
-        else:
-            #data = json.load(res.read())
-            #print data
-            return render_template("detail.html")
-    """
+    if request.method == 'POST':
+
+        data = request.data
+        update = json.loads(data)
+        pairid = 1
+        REMOVE = 3
+        ADD = 4
+
+        for line in update:
+            if line['type'] == REMOVE:
+                delete = Result.query.filter(Result.pairID==pairid).filter(Result.originLine==line['originLine']).filter(Result.compLine==line['compLine']).first()
+                db.session.delete(delete)
+                db.session.commit()
+            elif line['type'] == ADD:
+                add = Result(pairid, line['originLine'], line['compLine'], 1)
+                db.session.add(add)
+                db.session.commit()
+
+        pair = Pair.query.get(pairid)
+        pair.modifyDate = datetime.now()
+        db.session.add(pair)
+        db.session.commit()
+
+        return render_template("detail.html")
+
 
 # DB 초기화에 대비한 db add 부분. 지울 것
-@app.route('/init/pair', methods=["GET"])
+@app.route('/init', methods=["GET"])
 def init_pair():
-    """
     for i in range(1, 51):
         pair = Pair(i, i, 1)
         db.session.add(pair)
         db.session.commit()
-    """
+
     temp = [89.12, 56.23, 94.01, 66.66, 72.44, 48.38, 29.75, 80.09, 76.92, 81.38]
     i = 0
     pair = Pair.query.filter(Pair.projID==1).all()
@@ -88,10 +91,24 @@ def init_pair():
         db.session.add(line)
         db.session.commit()
 
+    init_detail()
+    init_file()
     return render_template("result.html")
 
 
-@app.route('/init/result', methods=["GET"])
+def init_file():
+    temp1 = ["MainActivity.java", "MainFragment.java", "SearchActivity.java", "OriginActivity.java", "CompareActivity.java", "Service.java"]
+    temp2 = ["Model.java", "ModelView.java", "SearchView.java", "Network.java", "SearchFragment.java", "Controller.java"]
+
+    for i in range(1, 51):
+        origin = Origin(temp1[i%6], "C:", 140, 1)
+        db.session.add(origin)
+        db.session.commit()
+        compare = Compare(temp2[i%6], "D:", 140, 1)
+        db.session.add(compare)
+        db.session.commit()
+
+
 def init_detail():
     origin = open("/Users/kyungjoo/Documents/Document/Maestro-backend/maestro/routes/board.js", 'r')
     compare = open("/Users/kyungjoo/Documents/Document/Maestro-backend/maestro/routes/anonymity.js", 'r')
@@ -157,8 +174,6 @@ def init_detail():
 
     for line in result:
         print line
-        temp = Result(1, line[0], line[1], 1, line[2])
+        temp = Result(1, line[0], line[1], line[2])
         db.session.add(temp)
         db.session.commit()
-
-    return render_template("result.html")

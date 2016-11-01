@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:https="http://www.w3.org/1999/xhtml">
 <head>
+    <meta charset="UTF-8">
     <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     <script src="{{url_for ('static', filename='js/bootpag.js') }}"></script>
-    <meta charset="UTF-8">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/result.css') }}">
+    <title>Result</title>
 </head>
 <body>
     <div class="container">
@@ -79,8 +80,14 @@
             return '-';
         }
         var date = new Date(gmt);
-        var temp = date.toLocaleString().split(".", 3);
-        return (temp[0] + "." + temp[1] + "." + temp[2]);
+        var month = date.getUTCMonth();
+        var day = date.getUTCDate();
+        month++;
+        if(month < 10)  month = "0"+month;
+        if(day < 10)    day = "0"+day;
+
+        return date.getUTCFullYear() + '-'+ month +'-' + day;
+
     }
 
     function changeList(){
@@ -107,8 +114,8 @@
                 $("#modify_"+i).css("display", "");
 
                 $("#idx_"+i).html(now);
-                $("#origin_"+i).html(nowList[now-1].originID);
-                $("#comp_"+i).html(nowList[now-1].compID);
+                $("#origin_"+i).html(nowList[now-1].originFile);
+                $("#comp_"+i).html(nowList[now-1].compareFile);
                 $("#similarity_"+i).html(nowList[now-1].similarity + ' %');
                 $("#modify_"+i).html(parseDate(nowList[now-1].modifyDate));
             }else{
@@ -154,5 +161,38 @@
         nowPage = num;
         update();
     });
+
+    $(window).on('storage', function (e) {
+        var storageEvent = e.originalEvent;
+        var pairID = storageEvent.newValue;
+        if ((storageEvent.key == 'isUpdated') && (storageEvent.oldValue == '0') && pairID != '0'){
+            updateDate(pairID);
+        }
+    });
+
+    function updateDate(id){
+        var id = parseInt(id);
+        var len = simDesc_dateAsc.length;
+        var date = new Date().toUTCString();
+        date = parseDate(date);
+        for(var i=0; i<len; i++){
+            if(simAsc_dateAsc[i].pairID == id)
+                simAsc_dateAsc[i].modifyDate = date;
+            if(simAsc_dateDesc[i].pairID == id)
+                simAsc_dateDesc[i].modifyDate = date;
+            if(simDesc_dateAsc[i].pairID == id)
+                simDesc_dateAsc[i].modifyDate = date;
+            if(simDesc_dateDesc[i].pairID == id)
+                simDesc_dateDesc[i].modifyDate = date;
+        }
+        var now;
+        for(var i=0; i<len; i++){
+            if(nowList[i].pairID == id){
+                now = i+1;
+                break;
+            }
+        }
+        $("#modify_"+now).html(date);
+    }
 
 </script>

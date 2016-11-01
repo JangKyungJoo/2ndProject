@@ -120,8 +120,6 @@ class Result(db.Model):
     '''원본 라인 번호 '''
     compLine = db.Column(db.Integer, nullable=False)
     '''비교 라인 번호 '''
-    count = db.Column(db.Integer, nullable=False, default=1)
-    '''라인 카운트 '''
     rType = db.Column(db.Integer, nullable=False, default=1)
     '''결과 유형
 
@@ -130,11 +128,10 @@ class Result(db.Model):
         :rType 2: 유사
     '''
 
-    def __init__(self, pairID, originLine, compLine, count=1, rType=1):
+    def __init__(self, pairID, originLine, compLine, rType=1):
         self.pairID = pairID
         self.originLine = originLine
         self.compLine = compLine
-        self.count = count
         self.rType = rType
         
     def __repr__(self):
@@ -146,7 +143,6 @@ class Result(db.Model):
            'pairID' : self.pairID,
            'originLine' : self.originLine,
            'compLine' : self.compLine,
-           'count' : self.count,
            'rType' : self.rType
        }
 
@@ -229,12 +225,14 @@ class Pair(db.Model):
     def __repr__(self):
         return '<Pair %r>' % self.pairID
 
-    @property
-    def serialize(self):
+
+    def serialize(self, originFile, compareFile):
        return {
            'pairID' : self.pairID,
            'originID' : self.originID,
+           'originFile' : originFile,
            'compID' : self.compID,
+           'compareFile' : compareFile,
            'similarity' : self.similarity,
            'modifyDate' : self.modifyDate
        }
