@@ -17,26 +17,41 @@ import datetime
 
 import filter
 import sys, os
+import views
 
 process_dict = {}
 
 
-@app.route('/compare/<projectId>', methods=["GET"])
-def comparePageOpen(projectId):
+@app.route('/compare', methods=["GET"])
+def comparePageOpen():
+    projectId = getProjectId()
+
     db.session.query(Project).filter(Project.projID == projectId).update(
         dict(update=datetime.datetime.now(), lastPair=0, compareMethod=0))
     db.session.commit()
     project = db.session.query(Project).filter(Project.projID == projectId).first()
     
     print project.lastPair
+<<<<<<< HEAD
     
     return render_template("submit.html", projectId=projectId, lastPair=project.lastPair, compareMethod=project.compareMethod)
 
     
 @app.route('/compare/<projectId>', methods=["POST"])
 def compare(projectId):
+=======
+
+    return render_template("submit.html", projectId=projectId, lastPair=project.lastPair,
+                           compareMethod=project.compareMethod)
+
+
+@app.route('/compare', methods=["POST"])
+def compare():
+>>>>>>> 49a1502f2f9ba6151ef0105915ad9c10a87c0b5d
     lastPair = request.form.get('lastPair')
     compareMethod = request.form.get('compareMethod')
+
+    projectId = getProjectId()
 
     q = Queue()
     pr = Process(target=compareWithProcesses, args=(projectId, q, int(lastPair), int(compareMethod)))
@@ -90,7 +105,6 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod):
     # print '스테이지 : '+str(stage)
 
     for pair in db.session.query(Pair).filter(Pair.projID == projectId, lastPair < Pair.pairID):
-
         originFile = db.session.query(Origin).filter(Origin.originID == pair.originID).first()
         origin = originFile.originPath + '/' + originFile.originName
 
@@ -108,11 +122,11 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod):
         dict(lastPair=0))
     db.session.commit()
 
-    exit()
 
+@app.route("/compare/state", methods=["GET"])
+def processState():
+    projectId = getProjectId()
 
-@app.route("/compare/state/<projectId>", methods=["GET"])
-def processState(projectId):
     process_set = process_dict.get(projectId, -1)
     if process_set == -1:
         return -1
@@ -130,8 +144,10 @@ def processState(projectId):
     return jsonify(currentNumber)
 
 
-@app.route("/compare/cancel/<projectId>", methods=["POST"])
-def cancelCompare(projectId):
+@app.route("/compare/cancel", methods=["POST"])
+def cancelCompare():
+    projectId = getProjectId()
+
     pr = process_dict[projectId][0]
     print pr, pr.is_alive()
     pr.terminate()
@@ -139,3 +155,15 @@ def cancelCompare(projectId):
     del (process_dict[projectId])
 
     return redirect('/dashboard')
+
+
+def getProjectId():
+    if not session['project'] or session['project'] == "":
+        return redirect(url_for('dashboard'))
+    else:
+        projName = session['project']
+
+    project = db.session.query(Project).filter(Project.projName == projName).first()
+    projectId = project.projID
+
+    return projectId
