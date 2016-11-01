@@ -108,6 +108,15 @@ def login():
 @login_required
 def dashboard():
     '''
+    테스트용 코드 by Sang-jin Moon
+    db.session.query(Pair).delete()
+    db.session.query(Origin).delete()
+    db.session.query(Compare).delete()
+    db.session.query(Result).delete()
+    db.session.commit()
+    '''
+
+    '''
         프로젝트 선택 화면
         
 
@@ -444,7 +453,7 @@ def tuple_edit():
 
     if request.method == 'POST':
 
-        return redirect(url_for('compare/' + projID))
+        return redirect(url_for('compare'))
 
     return render_template('/tuple_edit.html', projName=projName, tuple_list=tuple_list)
 

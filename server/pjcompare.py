@@ -26,20 +26,8 @@ process_dict = {}
 def comparePageOpen():
     projectId = getProjectId()
 
-    db.session.query(Project).filter(Project.projID == projectId).update(
-        dict(update=datetime.datetime.now(), lastPair=0, compareMethod=0))
-    db.session.commit()
     project = db.session.query(Project).filter(Project.projID == projectId).first()
-    
     print project.lastPair
-<<<<<<< HEAD
-    
-    return render_template("submit.html", projectId=projectId, lastPair=project.lastPair, compareMethod=project.compareMethod)
-
-    
-@app.route('/compare/<projectId>', methods=["POST"])
-def compare(projectId):
-=======
 
     return render_template("submit.html", projectId=projectId, lastPair=project.lastPair,
                            compareMethod=project.compareMethod)
@@ -47,7 +35,6 @@ def compare(projectId):
 
 @app.route('/compare', methods=["POST"])
 def compare():
->>>>>>> 49a1502f2f9ba6151ef0105915ad9c10a87c0b5d
     lastPair = request.form.get('lastPair')
     compareMethod = request.form.get('compareMethod')
 
@@ -61,6 +48,7 @@ def compare():
     process_dict[projectId] = [pr, q]
 
     numOfPair = len(db.session.query(Pair).filter(Pair.projID == projectId).all())
+    print '으아아'+str(numOfPair)
     return jsonify(numOfPair)
     # return render_template("compare.html", projectid=projectid)
 
@@ -69,33 +57,6 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod):
     # 프로젝트 내에 있는 비교쌍들을 불러온다.
     # 비교쌍 리스트 갯수만큼 filter를 돌림.
 
-    "/Users/user/PycharmProjects/filter_flask/ex/origin/4340897.c"
-    "/Users/user/PycharmProjects/filter_flask/ex/compare/4370143.c"
-
-    db.session.query(Pair).delete()
-    db.session.query(Result).delete()
-    db.session.query(Origin).delete()
-    db.session.query(Compare).delete()
-
-    p1 = Pair(1, 1, projectId)
-    p2 = Pair(1, 2, projectId)
-    p3 = Pair(2, 1, projectId)
-    p4 = Pair(2, 2, projectId)
-
-    o1 = Origin("4340897.c", "/Users/user/PycharmProjects/filter_flask/ex/origin", 123, projectId)
-    o2 = Origin("1009.cpp", "/Users/user/Desktop/multi/baekjoon-master/CPP14", 123, projectId)
-    c1 = Compare("4370143.c", "/Users/user/PycharmProjects/filter_flask/ex/compare", 123, projectId)
-    c2 = Compare("1100.cpp", "/Users/user/Desktop/multi/baekjoon-master/CPP14", 123, projectId)
-
-    db.session.add(o1)
-    db.session.add(o2)
-    db.session.add(c1)
-    db.session.add(c2)
-
-    db.session.add(p1)
-    db.session.add(p2)
-    db.session.add(p3)
-    db.session.add(p4)
     db.session.query(Project).filter(Project.projID == projectId).update(
         dict(compareMethod=compareMethod))
 
@@ -116,10 +77,12 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod):
             dict(lastPair=pair.pairID))
         db.session.commit()
 
-        q.put(pair.pairID)
+        # 취소 확인
+        time.sleep(2)
+
+        lastPair = q.put(pair.pairID)
         # print "put : " + str(pair.pairID)
-    db.session.query(Project).filter(Project.projID == projectId).update(
-        dict(lastPair=0))
+    q.put(lastPair)
     db.session.commit()
 
 
