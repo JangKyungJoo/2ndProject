@@ -66,7 +66,7 @@
 
             function compareStart() {
                 $.ajax({
-                    url: '/compare/{{ projectId }}',
+                    url: '/compare',
                     data: {'lastPair': varLastPair, 'compareMethod': selectedMethod},
                     type: 'POST',
                     success: function (response) {
@@ -108,7 +108,7 @@
 
         var number = -1;
         $.ajax({
-                url: '/compare/state/{{ projectId }}',
+                url: '/compare/state',
                 data: 'JSON',
                 type: 'GET',
                 success: function(response) {
@@ -142,7 +142,7 @@
 </script>
 
     <form name="complete" action="/result/{{ projectId }}" method="get"></form>
-    <form name="canceled" action="/compare/cancel/{{ projectId }}" method="post"></form>
+    <form name="canceled" action="/compare/cancel" method="post"></form>
 
 <div class="modal fade" id="layerpop" >
   <div class="modal-dialog">
