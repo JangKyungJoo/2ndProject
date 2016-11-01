@@ -27,12 +27,12 @@ def comparePageOpen(projectId):
         dict(update=datetime.datetime.now(), lastPair=0, compareMethod=0))
     db.session.commit()
     project = db.session.query(Project).filter(Project.projID == projectId).first()
-
+    
     print project.lastPair
-
+    
     return render_template("submit.html", projectId=projectId, lastPair=project.lastPair, compareMethod=project.compareMethod)
 
-
+    
 @app.route('/compare/<projectId>', methods=["POST"])
 def compare(projectId):
     lastPair = request.form.get('lastPair')

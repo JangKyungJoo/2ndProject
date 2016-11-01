@@ -123,7 +123,7 @@ def init_detail():
         compareList.append(line)
     SAME = 1;
     SIMILAR = 2;
-
+    
     similarLineCount = 0
     sameLineCount = 0
     originlineNum = 1

@@ -112,7 +112,7 @@ def dashboard():
         
 
         :modal_type insert: 프로젝트 생성
-
+        
         :modal_type info: 프로젝트 정보
 
         :modal_type connect: 프로젝트 선택
@@ -345,6 +345,8 @@ def tuple():
         project_data = Project.query.filter(Project.projName==projName).first()
         file_data = File.query.filter(File.fileID==project_data.fileNum).first()
 
+        projID = project_data.projID
+
         origin_path = file_data.originPath
         comp_path = file_data.compPath
 
@@ -354,10 +356,22 @@ def tuple():
         for path, subdirs, files in walk(origin_path):
             for name in files:
                 origin_list.append(join(path,name))
+                original = open(join(path,name))
+                original_lineNum = len(original.readlines())
+                origin_file = Origin(name, path, original_lineNum, projID)
+
+                db.session.add(origin_file)
 
         for path, subdirs, files in walk(comp_path):
             for name in files:
                 comp_list.append(join(path,name))
+                compare = open(join(path,name))
+                compare_lineNum = len(compare.readlines())
+                comp_file = Compare(name, path, compare_lineNum, projID)
+
+                db.session.add(comp_file)
+
+        db.session.commit()
 
     if request.method == 'POST':
 
@@ -370,7 +384,7 @@ def tuple():
             for ori in origin_list:
                 for comp in comp_list:
                     if ori == comp:
-                        tuple_list.append((ori, comp))
+                        tuple_list.append((ori.encode('ascii'), comp.encode('ascii')))
                     else:
                         continue
             
@@ -385,7 +399,7 @@ def tuple():
         elif tuple_type == 'user':
             for ori in origin_list:
                 for comp in comp_list:
-                    tuple_list.append((ori, comp))
+                    tuple_list.append((ori.encode('ascii'), comp.encode('ascii')))
             return redirect(url_for('tuple_edit'))
         else:
             pass
@@ -404,16 +418,33 @@ def tuple_edit():
     global tuple_list
 
     projName = ""
-    
+
     if not session['project'] or session['project'] == "":
         return redirect(url_for('dashboard'))
     else:
         projName = session['project']
+        project_data = Project.query.filter(Project.projName==projName).first()
+        projID = project_data.projID
 
+        for pair in tuple_list:
+            origin_path = pair[0].rsplit('/',1)[0]
+            origin_file = pair[0].rsplit('/',1)[1]
+
+            comp_path = pair[1].rsplit('/',1)[0]
+            comp_file = pair[1].rsplit('/',1)[1]
+
+            originID = Origin.query.filter(Origin.originName==origin_file).filter(Origin.originPath==origin_path).filter(Origin.projID==projID).first().originID
+            compID = Compare.query.filter(Compare.compName==comp_file).filter(Compare.compPath==comp_path).filter(Compare.projID==projID).first().compID
+
+            new_pair = Pair(originID, compID, projID) # edit
+
+            db.session.add(new_pair)
+
+        db.session.commit()
 
     if request.method == 'POST':
 
-        return redirect(url_for('compare'))
+        return redirect(url_for('compare/' + projID))
 
     return render_template('/tuple_edit.html', projName=projName, tuple_list=tuple_list)
 

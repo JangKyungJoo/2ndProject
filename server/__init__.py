@@ -34,8 +34,8 @@ db = SQLAlchemy(app, session_options={"autoflush": False})
 
 import server.views
 import server.result
-<<<<<<< HEAD
+#<<<<<<< HEAD
 # import server.filter
-=======
-import server.pjcompare
->>>>>>> 39eeca410f0a23549ce2eac433f9d5f91465a549
+#=======
+#import server.pjcompare
+#>>>>>>> 39eeca410f0a23549ce2eac433f9d5f91465a549
