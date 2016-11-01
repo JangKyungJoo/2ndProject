@@ -19,6 +19,8 @@ from flask import Markup
 from flask import jsonify
 from werkzeug import secure_filename
 from datetime import date, timedelta
+from os import walk
+from os.path import isfile, join
 import os
 import base64
 import sys
@@ -34,7 +36,7 @@ import zipfile
 
 def login_required(f):
     ''' 주요 기능 사용과 관련하여 로그인 체크를 진행하는 함수.
-
+    
         login check가 필요한 부분에
         @login_required를 입력하여 사용
 
@@ -202,10 +204,11 @@ def proj_info():
         user_name = user.pName
         projDesc = project.projDesc
         fileNum = project.fileNum
+        file = File.query.filter(File.fileID==fileNum).first()
         if fileNum is None:
             file_desc = "no file"
         else:
-            file_desc = fileNum
+            file_desc = file.originPath + " , " + file.compPath
 
         date = project.date
         update_time = project.update
@@ -261,23 +264,20 @@ def file_upload():
                     file_type = request.form.get('file_type')
 
                     if file_type == "origin_file":
-                        if not os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin')):
-                            os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin'))
+                        if not os.path.exists(join(app.config['UPLOAD_FOLDER'], projName, 'origin')):
+                            os.makedirs(join(app.config['UPLOAD_FOLDER'], projName, 'origin'))
 
-                        file.save(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin', filename))
-                        origin_file = os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin', filename)
+                        file.save(join(app.config['UPLOAD_FOLDER'], projName, 'origin', filename))
+                        origin_file = join(app.config['UPLOAD_FOLDER'], projName, 'origin', filename)
 
-                        print (origin_file, file=sys.stderr)
-                        
                     elif file_type == "compare_file":
 
-                        if not os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare')):
-                            os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare'))
+                        if not os.path.exists(join(app.config['UPLOAD_FOLDER'], projName, 'compare')):
+                            os.makedirs(join(app.config['UPLOAD_FOLDER'], projName, 'compare'))
                         
-                        file.save(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare', filename))
+                        file.save(join(app.config['UPLOAD_FOLDER'], projName, 'compare', filename))
                         # comp_file = zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare', filename))
-                        comp_file = os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare', filename)
-                        print (comp_file, file=sys.stderr)
+                        comp_file = join(app.config['UPLOAD_FOLDER'], projName, 'compare', filename)
 
                     else:
                         print ("upload type error", file=sys.stderr)
@@ -294,15 +294,24 @@ def file_upload():
                     print ("no file", file=sys.stderr)
                     pass
                 else:
+
+                    origin_file = zipfile.ZipFile(origin_file)
+                    comp_file = zipfile.ZipFile(comp_file) 
+
+                    origin_file.extractall(join(app.config['UPLOAD_FOLDER'], projName, 'origin', 'files'))
+                    comp_file.extractall(join(app.config['UPLOAD_FOLDER'], projName, 'compare', 'files'))
+
+                    origin_path = join(app.config['UPLOAD_FOLDER'], projName, 'origin', 'files')
+                    comp_path = join(app.config['UPLOAD_FOLDER'], projName, 'compare', 'files')                    
                     
-                    file_data = File(origin_file, comp_file)
+                    file_data = File(origin_path, comp_path)
                     db.session.add(file_data)
                     db.session.commit()
 
-                    file_data = File.query.filter(File.originPath==origin_file).first()
-
+                    file_data = File.query.filter(File.originPath==origin_path).first()
                     project_data = Project.query.filter(Project.projName==projName).first()
                     project_data.fileNum = file_data.fileID
+
                     db.session.commit()
 
                     return redirect(url_for('tuple'))
@@ -314,6 +323,9 @@ def file_upload():
             pass
 
     return render_template('/file_upload.html', projName=projName, origin_file=origin_file, comp_file=comp_file)
+
+
+tuple_list = []
 
 
 @app.route('/tuple', methods=['GET', 'POST'])
@@ -333,31 +345,79 @@ def tuple():
         project_data = Project.query.filter(Project.projName==projName).first()
         file_data = File.query.filter(File.fileID==project_data.fileNum).first()
 
-        origin_file = zipfile.ZipFile(file_data.originPath)
-        comp_file = zipfile.ZipFile(file_data.compPath)
+        origin_path = file_data.originPath
+        comp_path = file_data.compPath
 
         origin_list = []
         comp_list = []
 
-        # file_list.extractall(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin'))
-        # file_list.extractall(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare'))
+        for path, subdirs, files in walk(origin_path):
+            for name in files:
+                origin_list.append(join(path,name))
 
-        for ori in origin_file.namelist():
-            origin_list.append(ori)
-            print (ori, file=sys.stderr)
+        for path, subdirs, files in walk(comp_path):
+            for name in files:
+                comp_list.append(join(path,name))
 
-        for comp in comp_file.namelist():
-            comp_list.append(comp)
-            print (comp, file=sys.stderr)
+    if request.method == 'POST':
 
+        global tuple_list
+
+        tuple_type = request.form.get('tuple_type')
 
         # 같은 이름 파일
-
+        if tuple_type == 'same':
+            for ori in origin_list:
+                for comp in comp_list:
+                    if ori == comp:
+                        tuple_list.append((ori, comp))
+                    else:
+                        continue
+            
+            return redirect(url_for('tuple_edit'))
         # 모든 파일 one by one
-
+        elif tuple_type == 'all':
+            for ori in origin_list:
+                for comp in comp_list:
+                    tuple_list.append((ori.encode('ascii'), comp.encode('ascii')))
+            return redirect(url_for('tuple_edit'))
         # 사용자가 지정
+        elif tuple_type == 'user':
+            for ori in origin_list:
+                for comp in comp_list:
+                    tuple_list.append((ori, comp))
+            return redirect(url_for('tuple_edit'))
+        else:
+            pass
 
-    return render_template('/tuple.html', projName=projName)
+    return render_template('/tuple.html', projName=projName, origin_list=origin_list, comp_list=comp_list)
+
+
+@app.route('/tuple_edit', methods=['GET', 'POST'])
+@login_required
+def tuple_edit():
+
+    '''
+        비교쌍 편집
+    '''
+
+    global tuple_list
+
+    projName = ""
+    
+    if not session['project'] or session['project'] == "":
+        return redirect(url_for('dashboard'))
+    else:
+        projName = session['project']
+
+
+    if request.method == 'POST':
+
+        return redirect(url_for('compare'))
+
+    return render_template('/tuple_edit.html', projName=projName, tuple_list=tuple_list)
+
+
 
 
 @app.route('/logout', methods=['GET',   'POST'])

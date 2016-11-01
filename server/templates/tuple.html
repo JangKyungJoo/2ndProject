@@ -1,3 +1,4 @@
+{% extends "sidebar.html" %}
 <html>
 <head>
 
@@ -60,67 +61,8 @@
 <body class="nav-md">
   <div class="container body">
       <div class="main_container">
-        <div class="col-md-3 left_col">
-          <div class="left_col scroll-view">
-            <div class="navbar nav_title" style="border: 0;">
-              <a href="dashboard" class="site_title"><i class="fa fa-paw"></i> <span>Soan</span></a>
-            </div>
-
-            <div class="clearfix"></div>
-            
-            <!-- menu profile quick info -->  
-            <div class="profile">
-              <div class="profile_info">
-                <span>환영합니다</span>
-                <h2>{{session['email']}}</h2>
-              </div>
-            </div>
-            <!-- /menu profile quick info -->
-            <br />
-
-            <!-- sidebar menu -->
-            <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
-              <div class="menu_section">
-                <br/><br/><br/><br/>
-                <h3>서버</h3>
-                <ul class="nav side-menu">
-                  <li><a href="dashboard"><i class="fa fa-edit"></i> 프로젝트 리스트 </a>
-                  </li>
-                  <li><a href="file_upload"><i class="fa fa-file-zip-o"></i> 파일 업로드 </a>
-                  </li>
-                  <li><a href="tuple"><i class="fa fa-desktop"></i> 비교쌍 생성 </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          <!-- /sidebar menu -->
-          </div>
-        </div>
-
-        <!-- top navigation -->
-        <div class="top_nav">
-          <div class="nav_menu">
-            <nav class="" role="navigation">
-              <div class="nav toggle">
-                <a id="menu_toggle"><i class="fa fa-bars"></i></a>
-              </div>
-
-              <ul class="nav navbar-nav navbar-right">
-                <li class="">
-                  <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                    {{session['email']}}
-                    <span class=" fa fa-angle-down"></span>
-                  </a>
-                  <ul class="dropdown-menu dropdown-usermenu pull-right">
-                    <li><a href="../logout"><i class="fa fa-sign-out pull-right"></i> 로그아웃</a></li>
-                  </ul>
-                </li>
-              </ul>
-            </nav>
-          </div>
-        </div>
-        <!-- /top navigation -->
-
+        {% block sidebar_menu %}
+        {{ super() }}
         <!-- page content -->
         <div class="right_col" role="main">
           <div class="">
@@ -130,29 +72,125 @@
               </div>
 
             <div class="clearfix"></div>
+
             <div class="row">
               <div class="col-md-12 col-sm-12 col-xs-12">
-                <div class="radio">
-                  <label>
-                    <input type="radio" checked="" value="option1" id="optionsRadios1" name="optionsRadios"> 같은 이름 파일 비교
-                  </label>
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                  <div class="x_panel">
+                    <div class="x_title">
+                      <h2>원본 파일 리스트</h2>
+                      <ul class="nav navbar-right panel_toolbox">
+                        <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                        </li>
+                        <li class="dropdown">
+                          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                          <ul class="dropdown-menu" role="menu">
+                            <li><a href="#">Settings 1</a>
+                            </li>
+                            <li><a href="#">Settings 2</a>
+                            </li>
+                          </ul>
+                        </li>
+                        <li><a class="close-link"><i class="fa fa-close"></i></a>
+                        </li>
+                      </ul>
+                      <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content" style="overflow:auto;">
+                      <table id="table_origin_list" class="table">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>파일</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                            {% set index = 0 %}
+                            {% for ori in origin_list %}
+                            <tr>
+                              <td scope="row">{{index+1}}</td>
+                              <td>{{ori}}</td>
+                            </tr>
+                            {% set index = index + 1 %}
+                            {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
-                <div class="radio">
-                  <label>
-                    <input type="radio" value="option2" id="optionsRadios2" name="optionsRadios"> 전체 파일 비교
-                  </label>
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                  <div class="x_panel">
+                    <div class="x_title">
+                      <h2>비교 파일 리스트</h2>
+                      <ul class="nav navbar-right panel_toolbox">
+                        <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                        </li>
+                        <li class="dropdown">
+                          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                          <ul class="dropdown-menu" role="menu">
+                            <li><a href="#">Settings 1</a>
+                            </li>
+                            <li><a href="#">Settings 2</a>
+                            </li>
+                          </ul>
+                        </li>
+                        <li><a class="close-link"><i class="fa fa-close"></i></a>
+                        </li>
+                      </ul>
+                      <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content" style="overflow:auto;">
+                      <table id="table_comp_list" class="table" >
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>파일</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                            {% set index = 0 %}
+                            {% for comp in comp_list %}
+                            <tr>
+                              <td scope="row">{{index+1}}</td>
+                              <td>{{comp}}</td>
+                            </tr>
+                            {% set index = index + 1 %}
+                            {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
-                <div class="radio">
-                  <label>
-                    <input type="radio" value="option3" id="optionsRadios3" name="optionsRadios"> 사용자 지정 비교
-                  </label>
-                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-12 col-sm-12 col-xs-12">
+                <form role="form" method="POST" submit="/tuple">
+                  <div class="radio">
+                    <label>
+                      <input type="radio" checked="" value="same" id="optionsRadios1" name="tuple_type"> 같은 이름 파일 비교
+                    </label>
+                  </div>
+                  <div class="radio">
+                    <label>
+                      <input type="radio" value="all" id="optionsRadios2" name="tuple_type"> 전체 파일 비교
+                    </label>
+                  </div>
+                  <div class="radio">
+                    <label>
+                      <input type="radio" value="user" id="optionsRadios3" name="tuple_type"> 사용자 지정 비교
+                    </label>
+                  </div>
+                  <button id="btn_create_tuple" type="submit" class="btn btn-primary btn-xs">비교쌍 생성</button>
+                </form>
               </div>
             </div>
           </div>
         </div>
       </div>
       <!-- /page content -->
+      {% endblock %}
     </div>
   </div>
   <footer>

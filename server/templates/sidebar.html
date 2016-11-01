@@ -1,6 +1,8 @@
-{% extends "sidebar.html" %}
+{% block html %}
 <html>
+{% endblock %}
 <head>
+  {% block head %}
 
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <!-- Meta, title, CSS, favicons, etc. -->
@@ -8,7 +10,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Dashboard</title>
+  <title>Soan</title>
   
   <script src="{{ url_for('static', filename='lib/js/jquery.min.js') }}"></script>
   <script src="{{ url_for('static', filename='lib/js/bootstrap.min.js') }}"></script>
@@ -56,82 +58,81 @@
       background-color: #f9f9f9;
   }
   </style>
-  
+  {% endblock %}
 </head>
 <body class="nav-md">
   <div class="container body">
       <div class="main_container">
         {% block sidebar_menu %}
-        {{ super() }}
-        <!-- page content -->
-        <div class="right_col" role="main">
-          <div class="">
-            <div class="page-title">
-              <div class="title_left">
-                <h3>프로젝트 정보</h3>
-              </div>
+        <div class="col-md-3 left_col" id="sidebar_menu">
+          <div class="left_col scroll-view">
+            <div class="navbar nav_title" style="border: 0;">
+              <a href="dashboard" class="site_title"><i class="fa fa-paw"></i> <span>Soan</span></a>
             </div>
-            
+
             <div class="clearfix"></div>
             
-            <div class="">
-              <div class="col-md-12 col-sm-12 col-xs-12">
-                <div class="x_panel">
-                  <div class="x_title">
-                    <h2><i class="fa fa-bars"></i> {{projName}} </h2>
-                    <div class="clearfix"></div>
-                  </div>
-                  <div class="x_content">
-                    <table class="table table-hover">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>항목</th>
-                          <th>상세</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <th scope="row">1</th>
-                          <td>프로젝트명</td>
-                          <td>{{projName}}</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">2</th>
-                          <td>프로젝트 설명</td>
-                          <td>{{projDesc}}</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">3</th>
-                          <td>소유자</td>
-                          <td>{{user_name}}</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">4</th>
-                          <td>파일</td>
-                          <td>{{file_desc}}</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">5</th>
-                          <td>생성 시각</td>
-                          <td>{{date}}</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">6</th>
-                          <td>최종 수정 시각</td>
-                          <td>{{update_time}}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                </div>
+            <!-- menu profile quick info -->  
+            <div class="profile">
+              <div class="profile_info">
+                <span>환영합니다</span>
+                <h2>{{session['email']}}</h2>
               </div>
             </div>
+            <!-- /menu profile quick info -->
+            <br />
+
+            <!-- sidebar menu -->
+            <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+              <div class="menu_section">
+                <br/><br/><br/><br/>
+                <h3>서버</h3>
+                <ul class="nav side-menu">
+                  <li><a href="dashboard"><i class="fa fa-edit"></i> 프로젝트 리스트 </a>
+                  </li>
+                  <li><a href="file_upload"><i class="fa fa-file-zip-o"></i> 파일 업로드 </a>
+                  </li>
+                  <li><a href="tuple"><i class="fa fa-desktop"></i> 비교쌍 생성 </a>
+                  </li>
+                  <li><a href="tuple_edit"><i class="fa fa-edit"></i> 비교쌍 편집 </a>
+                  </li>
+                  <li><a href="result"><i class="fa fa-search"></i> 비교 결과 </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          <!-- /sidebar menu -->
           </div>
         </div>
-        <!-- /page content -->
+        
+        <!-- top navigation -->
+        <div class="top_nav">
+          <div class="nav_menu">
+            <nav class="" role="navigation">
+              <div class="nav toggle">
+                <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+              </div>
+
+              <ul class="nav navbar-nav navbar-right">
+                <li class="">
+                  <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                    {{session['email']}}
+                    <span class=" fa fa-angle-down"></span>
+                  </a>
+                  <ul class="dropdown-menu dropdown-usermenu pull-right">
+                    <li><a href="../logout"><i class="fa fa-sign-out pull-right"></i> 로그아웃</a></li>
+                  </ul>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
         {% endblock %}
+        <!-- /top navigation -->
+
+        <!-- page content -->
+        
+        <!-- /page content -->
     </div>
   </div>
   <footer>
