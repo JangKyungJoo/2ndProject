@@ -24,7 +24,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://///tmp/soan.db'
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
-# app.jinja_env.globals['csrf_token'] = generate_csrf_token
 app.permanent_session_lifetime = timedelta(minutes=10)
 
 # Flask REDIS Session Interface SETTINGS
@@ -35,3 +34,4 @@ db = SQLAlchemy(app, session_options={"autoflush": False})
 
 import server.views
 import server.result
+import server.pjcompare

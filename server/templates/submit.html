@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-filestyle/1.2.1/bootstrap-filestyle.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.35.3/css/bootstrap-dialog.min.css" rel="stylesheet" type="text/css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.35.3/js/bootstrap-dialog.min.js"></script>
+</head>
+<body>
+    <h1>프로젝트 전체 비교</h1>
+    <button id="submit" class="btn btn-default">button</button>
+    <div class="container">
+	<label class="radio-inline">
+	  <input type="radio" name="method" id="inlineRadio1" value="1" checked="True"> orderedcheck
+	</label>
+	<label class="radio-inline">
+	  <input type="radio" name="method" id="inlineRadio2" value="2"> unorderedcheck
+	</label>
+</div>
+<script language="JavaScript">
+    var numOfPair = 0;
+    var dialog;
+    var varLastPair = {{ lastPair }};
+    var compareMethod = {{ compareMethod }};
+    var selectedMethod = 1;
+    var completed = 0;
+    $(function() {
+        $('#submit').click(function() {
+            var radio = document.getElementsByName('method');
+                for(var i=0; i<radio.length; i++) {
+                    if(radio[i].checked == true)
+                        selectedMethod = radio[i].value;
+                }
+
+            if(compareMethod != selectedMethod) {
+                varLastPair = 0;
+                compareStart();
+            }
+            else if(varLastPair > 0) {
+                BootstrapDialog.show({
+                    title: 'Default Title',
+                    message: '이전에 비교했던 기록이 있습니다. 계속 하시겠습니까?',
+                    buttons: [{
+                        label: '처음부터',
+                        action: function(dialog) {
+                            varLastPair = 0;
+                            dialog.close();
+                            compareStart();
+                        }
+                    }, {
+                        label: '이어서 하기',
+                        action: function(dialog) {
+                            dialog.close();
+                            compareStart();
+                        }
+                    }]
+                });
+            }
+            else {
+                compareStart()
+            }
+
+            function compareStart() {
+                $.ajax({
+                    url: '/compare/{{ projectId }}',
+                    data: {'lastPair': varLastPair, 'compareMethod': selectedMethod},
+                    type: 'POST',
+                    success: function (response) {
+                        console.log(response);
+
+                        numOfPair = response;
+                        dialog = new BootstrapDialog({
+                            title: '비교 진행 중...',
+                            message: '비교 작업 준비 중입니다...',
+                            buttons: [{
+                                id: 'btn-1',
+                                label: '비교 취소'
+                            }],
+                            closable: false
+                        });
+                        dialog.realize();
+                        var btn1 = dialog.getButton('btn-1');
+                        btn1.click(function() {
+                            completed = 1;
+                            dialog.close();
+                            document.canceled.submit();
+                        });
+                        dialog.open();
+
+                        checkProcess()
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            }
+        });
+    });
+
+    function checkProcess() {
+        if(completed == 1) {
+            return;
+        }
+
+        var number = -1;
+        $.ajax({
+                url: '/compare/state/{{ projectId }}',
+                data: 'JSON',
+                type: 'GET',
+                success: function(response) {
+                    console.log(response);
+                    number = response;
+                    if(number != -1) {
+                        dialog.setMessage(number + " / " + numOfPair + ' 완료');
+                    }
+                    if(number < numOfPair) {
+                        sleep(200);
+                        checkProcess();
+                    } else {
+                        dialog.close();
+                        document.complete.submit();
+                    }
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+        });
+    }
+    function sleep(delay) {
+        var start = new Date().getTime();
+        while (new Date().getTime() < start + delay);
+    }
+
+    $("#submit").load(function(){
+    alert("Image loaded.");
+    });
+
+</script>
+
+    <form name="complete" action="/result/{{ projectId }}" method="get"></form>
+    <form name="canceled" action="/compare/cancel/{{ projectId }}" method="post"></form>
+
+<div class="modal fade" id="layerpop" >
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <!-- header -->
+      <div class="modal-header">
+        <!-- 닫기(x) 버튼 -->
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <!-- header title -->
+        <h4 class="modal-title">Header</h4>
+      </div>
+      <!-- body -->
+      <div id="modalbody" class="modal-body">
+            Body
+      </div>
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

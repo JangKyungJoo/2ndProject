@@ -8,6 +8,15 @@ import os
 import random
 import string
 
+'''
+    model.py
+    ~~~~~~~~
+    
+
+    Database 테이블
+
+'''
+
 class People(db.Model):
     '''
         사용자 관리 테이블
@@ -70,12 +79,21 @@ class Project(db.Model):
     '''프로젝트 설명 '''
     pID = db.Column(db.String(50), db.ForeignKey('people_tbl.pID'), nullable=False)
     '''프로젝트 소유자 번호 '''
-    fileNum = db.Column(db.String(255), nullable=True, default=None)
+    fileNum = db.Column(db.String(255), db.ForeignKey('file_tbl.fileID'), nullable=True)
     '''프로젝트 파일 번호 '''
     date = db.Column(db.TIMESTAMP, default=datetime.now)
     '''프로젝트 생성 시각 '''
     update = db.Column(db.TIMESTAMP, default=datetime.now, onupdate=datetime.now)
     '''프로젝트 최종 수정 시각 '''
+    lastPair = db.Column(db.Integer, nullable=False, default=0)
+    '''프로젝트에서 마지막으로 비교한 비교쌍'''
+    compareMethod = db.Column(db.Integer, nullable=False, default=0)
+    '''
+        비교 방법 설정.
+        0 : 비교가 진행되지 않은 상태
+        1 : 순서 고려한 비교
+        2 : 순서 고려하지 않은 비교
+    '''
 
     def __init__(self, projName, projDesc, pID, fileNum=None):
         self.projName = projName

@@ -156,7 +156,7 @@
                     </div>
                     <div class="x_content">
                       <p>.zip형식의 원본 파일을 업로드해주세요</p>
-                      <form action="/board/file_upload" method="POST" class="dropzone" id="origin_dropzone" name="origin_dropzone">
+                      <form action="/file_upload" method="POST" class="dropzone" id="origin_dropzone" name="origin_dropzone">
                       <input type="hidden" id="file_type" name="file_type" value="origin_file">
                       </form>
                       <br />
@@ -186,7 +186,7 @@
                     </div>
                     <div class="x_content">
                       <p>.zip형식의 비교 파일을 업로드해주세요</p>
-                      <form action="/board/file_upload" method="POST" class="dropzone" id="compare_dropzone" name="compare_dropzone">
+                      <form action="/file_upload" method="POST" class="dropzone" id="compare_dropzone" name="compare_dropzone">
                         <input type="hidden" id="file_type" name="file_type" value="compare_file">
                       </form>
                       <br />
@@ -194,17 +194,22 @@
                   </div>
                 </div>
               </div>
-              </div>
-              
-              <div class="row">
-                <div class="col-md-12 col-sm-12 col-xs-12 pull-right">
-                  <button type="button" class="btn btn-default">업로드 완료</button>
-                </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-12 col-sm-12 col-xs-12 pull-right">
+                <form role="form" method="POST" submit="/file_upload" id="upload_form" name="upload_form">
+                  <input type="hidden" id="post_type" name="post_type" value="file_upload">
+                  <button type="submit" class="btn btn-primary btn-xs">파일 업로드</button>
+                </form>
+                <!-- <input type="hidden" id="file_type" name="file_type" value="file_upload">
+                <button type="button" class="btn btn-primary btn-xs" onclick="file_upload()">파일 업로드</button> -->
               </div>
             </div>
           </div>
         </div>
-        <!-- /page content -->
+      </div>
+      <!-- /page content -->
     </div>
   </div>
   <footer>
@@ -228,7 +233,6 @@
   <!-- Custom Theme Scripts -->
   <script src="{{url_for('static', filename='gentelella/build/js/custom.min.js')}}"></script>
 
-
   <script>
    $(document).ready(function(){
 
@@ -251,6 +255,10 @@
     };
 
   });
+
+   function file_upload() {
+
+   }
 
   </script>
 

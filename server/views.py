@@ -32,7 +32,6 @@ import zipfile
     ~~~~~~~~~    
 """
 
-
 def login_required(f):
     ''' 주요 기능 사용과 관련하여 로그인 체크를 진행하는 함수.
 
@@ -40,7 +39,6 @@ def login_required(f):
         @login_required를 입력하여 사용
 
     '''
-
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'email' in session:
@@ -78,7 +76,7 @@ def login():
         로그인 페이지
     '''
     error = None
-    # new_u = People('3ncag3', '3ncag3@gmail.com', 'Djfrdjfg1!', True);
+    # new_u = People('3ncag3', '3ncag3@gmail.com', '1111', True);
     # db.session.add(new_u)
     # db.session.commit()
 
@@ -99,6 +97,7 @@ def login():
             session['email'] = user.pEmail
             session['is_admin'] = user.pAuth
             session['auth'] = "true"
+            session.permanent = True
             return redirect(url_for('dashboard'))
         return render_template('login.html')
 
@@ -135,12 +134,23 @@ def dashboard():
         if not modal_type:
             pass
 
-
         elif modal_type == "insert":
 
             projName = request.form.get('projName')
             projDesc = request.form.get('projDesc')
             new_project = Project(projName, projDesc, user_data.pID)
+            db.session.add(new_project)
+            db.session.commit()
+
+            return redirect(url_for('dashboard'))
+
+        elif modal_type == "clone":
+            
+            projName = request.form.get('projName')
+            projDesc = request.form.get('projDesc')
+            project_name = request.form.get('project_name')
+            origin_project = Project.query.filter(Project.projName==project_name).first()
+            new_project = Project(projName, projDesc, user_data.pID, origin_project.fileNum)
             db.session.add(new_project)
             db.session.commit()
 
@@ -207,15 +217,29 @@ def proj_info():
         user_name=user_name, update_time=update_time)
 
 
+origin_file = ""
+comp_file = ""
+
 @app.route('/file_upload', methods=['GET', 'POST'])
 @login_required
 def file_upload():
 
     '''
         파일 업로드
+
+
+        upload file path
+
+        :원본 파일: server/uploads/<projName>/origin/<filename>
+        :비교 파일: server/uploads/<projName>/compare/<filename>
+
     '''
     
     projName = ""
+
+    global origin_file
+    global comp_file
+    
 
     if not session['project'] or session['project'] == "":
         return redirect(url_for('dashboard'))
@@ -224,27 +248,72 @@ def file_upload():
 
         if request.method == 'POST':
 
-            file = request.files['file']
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            post_type = request.form.get('post_type')
 
-                file_type = request.form.get('file_type')
-                
-                if file_type == "origin_file":
-                    file_list = zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                    print (file_list.namelist(), file=sys.stderr)
-                    file_list.extractall(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin'))
-                elif file_type == "compare_file":
-                    file_list = zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], 'filename'))
-                    print (file_list.namelist(), file=sys.stderr)
-                    file_list.extractall(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare'))
+            if not post_type:
+
+                file = request.files['file']
+
+                if file and allowed_file(file.filename):
+
+                    filename = secure_filename(file.filename)
+
+                    file_type = request.form.get('file_type')
+
+                    if file_type == "origin_file":
+                        if not os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin')):
+                            os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin'))
+
+                        file.save(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin', filename))
+                        origin_file = os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin', filename)
+
+                        print (origin_file, file=sys.stderr)
+                        
+                    elif file_type == "compare_file":
+
+                        if not os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare')):
+                            os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare'))
+                        
+                        file.save(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare', filename))
+                        # comp_file = zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare', filename))
+                        comp_file = os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare', filename)
+                        print (comp_file, file=sys.stderr)
+
+                    else:
+                        print ("upload type error", file=sys.stderr)
+
                 else:
-                    print ("upload type error", file=sys.stderr)
-            else:
-                print ("only zip file", file=sys.stderr)
+                    print ("only zip file", file=sys.stderr)
 
-    return render_template('/file_upload.html', projName=projName)
+            elif post_type == 'file_upload':
+
+                if not origin_file or not comp_file:
+                    # file miss
+                    print (origin_file, file=sys.stderr)
+                    print (comp_file, file=sys.stderr)
+                    print ("no file", file=sys.stderr)
+                    pass
+                else:
+                    
+                    file_data = File(origin_file, comp_file)
+                    db.session.add(file_data)
+                    db.session.commit()
+
+                    file_data = File.query.filter(File.originPath==origin_file).first()
+
+                    project_data = Project.query.filter(Project.projName==projName).first()
+                    project_data.fileNum = file_data.fileID
+                    db.session.commit()
+
+                    return redirect(url_for('tuple'))
+
+            else:
+                pass
+
+        else:
+            pass
+
+    return render_template('/file_upload.html', projName=projName, origin_file=origin_file, comp_file=comp_file)
 
 
 @app.route('/tuple', methods=['GET', 'POST'])
@@ -252,7 +321,7 @@ def file_upload():
 def tuple():
 
     '''
-        순서쌍 생성
+        비교쌍 생성
     '''
 
     projName = ""
@@ -261,11 +330,33 @@ def tuple():
         return redirect(url_for('dashboard'))
     else:
         projName = session['project']
-        origin_file_list = list()
-        compare_file_list = list()
+        project_data = Project.query.filter(Project.projName==projName).first()
+        file_data = File.query.filter(File.fileID==project_data.fileNum).first()
+
+        origin_file = zipfile.ZipFile(file_data.originPath)
+        comp_file = zipfile.ZipFile(file_data.compPath)
+
+        origin_list = []
+        comp_list = []
+
+        # file_list.extractall(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'origin'))
+        # file_list.extractall(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare'))
+
+        for ori in origin_file.namelist():
+            origin_list.append(ori)
+            print (ori, file=sys.stderr)
+
+        for comp in comp_file.namelist():
+            comp_list.append(comp)
+            print (comp, file=sys.stderr)
 
 
-        
+        # 같은 이름 파일
+
+        # 모든 파일 one by one
+
+        # 사용자가 지정
+
     return render_template('/tuple.html', projName=projName)
 
 
