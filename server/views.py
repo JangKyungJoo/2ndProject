@@ -386,6 +386,8 @@ def tuple():
 
         global tuple_list
 
+        tuple_list = []
+        
         tuple_type = request.form.get('tuple_type')
 
         # 같은 이름 파일

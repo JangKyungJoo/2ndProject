@@ -28,7 +28,7 @@ def comparePageOpen():
 
     project = db.session.query(Project).filter(Project.projID == projectId).first()
     print project.lastPair
-
+    
     return render_template("submit.html", projectId=projectId, lastPair=project.lastPair,
                            compareMethod=project.compareMethod)
 
