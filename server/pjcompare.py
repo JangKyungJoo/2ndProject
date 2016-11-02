@@ -10,7 +10,6 @@ from server.models import Result
 from server.models import Origin
 from server.models import Compare
 from server.models import Project
-from server.models import File
 from multiprocessing import Process, Queue
 import time
 import datetime
@@ -24,6 +23,7 @@ process_dict = {}
 
 @app.route('/compare', methods=["GET"])
 def comparePageOpen():
+    session['project'] = 'test2'
     projectId = getProjectId()
 
     project = db.session.query(Project).filter(Project.projID == projectId).first()
@@ -48,7 +48,6 @@ def compare():
     process_dict[projectId] = [pr, q]
 
     numOfPair = len(db.session.query(Pair).filter(Pair.projID == projectId).all())
-    print '으아아'+str(numOfPair)
     return jsonify(numOfPair)
     # return render_template("compare.html", projectid=projectid)
 
@@ -60,10 +59,11 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod):
     db.session.query(Project).filter(Project.projID == projectId).update(
         dict(compareMethod=compareMethod))
 
-    db.session.commit()
+    if lastPair == 0:
+        for pair in db.session.query(Pair).filter(Project.projID == Pair.projID).all():
+            db.session.query(Result).filter(pair.pairID == Result.pairID).delete()
 
-    stage = lastPair
-    # print '스테이지 : '+str(stage)
+    db.session.commit()
 
     for pair in db.session.query(Pair).filter(Pair.projID == projectId, lastPair < Pair.pairID):
         originFile = db.session.query(Origin).filter(Origin.originID == pair.originID).first()
@@ -80,8 +80,10 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod):
         # 취소 확인
         time.sleep(2)
 
-        lastPair = q.put(pair.pairID)
+        q.put(pair.pairID)
+        lastPair = pair.pairID
         # print "put : " + str(pair.pairID)
+
     q.put(lastPair)
     db.session.commit()
 
@@ -114,6 +116,7 @@ def cancelCompare():
     pr = process_dict[projectId][0]
     print pr, pr.is_alive()
     pr.terminate()
+    pr.join()
 
     del (process_dict[projectId])
 
