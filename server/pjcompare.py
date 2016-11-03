@@ -47,7 +47,7 @@ def compare():
 
     process_dict[projectId] = [pr, q]
 
-    numOfPair = len(db.session.query(Pair).filter(Pair.projID == projectId).all())
+    numOfPair = db.session.query(Pair).filter(Pair.projID == projectId).count()
     return jsonify(numOfPair)
     # return render_template("compare.html", projectid=projectid)
 
@@ -65,7 +65,13 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod):
 
     db.session.commit()
 
-    for pair in db.session.query(Pair).filter(Pair.projID == projectId, lastPair < Pair.pairID):
+    stage = 0
+
+    for pair in db.session.query(Pair).filter(Pair.projID == projectId):
+        if lastPair >= pair.pairID:
+            stage += 1
+            continue
+
         originFile = db.session.query(Origin).filter(Origin.originID == pair.originID).first()
         origin = originFile.originPath + '/' + originFile.originName
 
@@ -78,13 +84,13 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod):
         db.session.commit()
 
         # 취소 확인
-        time.sleep(2)
 
         q.put(pair.pairID)
         lastPair = pair.pairID
+        stage += 1
         # print "put : " + str(pair.pairID)
 
-    q.put(lastPair)
+    q.put(stage)
     db.session.commit()
 
 

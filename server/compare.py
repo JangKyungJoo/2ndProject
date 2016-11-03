@@ -77,7 +77,6 @@ class Compare:
 
         for i in range(len(self.originToken)):
             for j in range(len(self.compToken)):
-                per = self.method.process(self.originToken[i], self.compToken[j])
                 if per == 100.0:
                     dict[i] = dict.get(i, [])
                     dict[i].append([j, 1])
