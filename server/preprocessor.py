@@ -97,7 +97,7 @@ class RemoveComment(PreProcessor):
             lineNum = len(lineList)
 
             # 라인피드는 놔두고, */ 문자열은 지워야 함
-            _range = 0 if end == '\n' else 2
+            _range = 0 if end == '\n' else len(end)
 
             retStr = self.file[:startIdx] + self.file[startIdx + endIdx + _range:]
             self.file = retStr

@@ -23,11 +23,10 @@ process_dict = {}
 
 @app.route('/compare', methods=["GET"])
 def comparePageOpen():
-    session['project'] = 'test2'
     projectId = getProjectId()
 
     project = db.session.query(Project).filter(Project.projID == projectId).first()
-    print project.lastPair
+    print '마지막 중단 지점 : '+str(project.lastPair)
     
     return render_template("submit.html", projectId=projectId, lastPair=project.lastPair,
                            compareMethod=project.compareMethod)
@@ -37,11 +36,15 @@ def comparePageOpen():
 def compare():
     lastPair = request.form.get('lastPair')
     compareMethod = request.form.get('compareMethod')
+    commentRemove = request.form.get('commentRemove')
+
+    print commentRemove
 
     projectId = getProjectId()
 
     q = Queue()
-    pr = Process(target=compareWithProcesses, args=(projectId, q, int(lastPair), int(compareMethod)))
+    pr = Process(target=compareWithProcesses, args=(projectId, q, int(lastPair), int(compareMethod),
+                                                    int(commentRemove)))
     pr.daemon = True
     pr.start()
 
@@ -52,7 +55,7 @@ def compare():
     # return render_template("compare.html", projectid=projectid)
 
 
-def compareWithProcesses(projectId, q, lastPair, compareMethod):
+def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove):
     # 프로젝트 내에 있는 비교쌍들을 불러온다.
     # 비교쌍 리스트 갯수만큼 filter를 돌림.
 
@@ -78,7 +81,7 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod):
         compFile = db.session.query(Compare).filter(Compare.compID == pair.compID).first()
         comp = compFile.compPath + '/' + compFile.compName
 
-        filter.compareOnePair(origin, comp, pair.pairID, compareMethod)
+        filter.compareOnePair(origin, comp, pair.pairID, compareMethod, commentRemove)
         db.session.query(Project).filter(Project.projID == projectId).update(
             dict(lastPair=pair.pairID))
         db.session.commit()
