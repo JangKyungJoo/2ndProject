@@ -119,7 +119,7 @@ def dashboard():
     '''
         프로젝트 선택 화면
         
-
+        
         :modal_type insert: 프로젝트 생성
         
         :modal_type info: 프로젝트 정보
@@ -314,7 +314,10 @@ def file_upload():
                     comp_path = join(app.config['UPLOAD_FOLDER'], projName, 'compare', 'files')                    
                     
                     file_data = File(origin_path, comp_path)
-                    db.session.add(file_data)
+                    
+                    if not File.query.filter(File.originPath==origin_path).filter(File.compPath==comp_path).first():
+                        db.session.add(file_data)
+
                     db.session.commit()
 
                     file_data = File.query.filter(File.originPath==origin_path).first()
@@ -350,6 +353,9 @@ def tuple():
     if not session['project'] or session['project'] == "":
         return redirect(url_for('dashboard'))
     else:
+
+        tuple_list = []
+
         projName = session['project']
         project_data = Project.query.filter(Project.projName==projName).first()
         file_data = File.query.filter(File.fileID==project_data.fileNum).first()
@@ -369,7 +375,8 @@ def tuple():
                 original_lineNum = len(original.readlines())
                 origin_file = Origin(name, path, original_lineNum, projID)
 
-                db.session.add(origin_file)
+                if not Origin.query.filter(Origin.originName==name).filter(Origin.originPath==path).filter(Origin.lineNum==original_lineNum).filter(Origin.projID==projID).first():
+                    db.session.add(origin_file)
 
         for path, subdirs, files in walk(comp_path):
             for name in files:
@@ -378,7 +385,8 @@ def tuple():
                 compare_lineNum = len(compare.readlines())
                 comp_file = Compare(name, path, compare_lineNum, projID)
 
-                db.session.add(comp_file)
+                if not Compare.query.filter(Compare.compName==name).filter(Compare.compPath==path).filter(Compare.lineNum==compare_lineNum).filter(Compare.projID==projID).first():
+                    db.session.add(comp_file)
 
         db.session.commit()
 
@@ -387,7 +395,7 @@ def tuple():
         global tuple_list
 
         tuple_list = []
-        
+
         tuple_type = request.form.get('tuple_type')
 
         # 같은 이름 파일
@@ -449,8 +457,9 @@ def tuple_edit():
 
             new_pair = Pair(originID, compID, projID) # edit
 
-            db.session.add(new_pair)
-
+            if not Pair.query.filter(Pair.originID==originID).filter(Pair.compID==compID).filter(Pair.projID==projID).first():
+                db.session.add(new_pair)
+                
         db.session.commit()
 
     if request.method == 'POST':

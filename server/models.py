@@ -154,7 +154,7 @@ class Result(db.Model):
         
     def __repr__(self):
         return '<Result %r>' % self.resultID
-
+        
     @property
     def serialize(self):
        return {
@@ -180,7 +180,7 @@ class Origin(db.Model):
     '''총 라인 수 '''
     projID = db.Column(db.Integer, db.ForeignKey('project_tbl.projID'), nullable=False)
     '''프로젝트 번호 '''
-    
+
     def __init__(self, originName, originPath, lineNum, projID):
         self.originName = originName
         self.originPath = originPath
