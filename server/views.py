@@ -298,8 +298,6 @@ def file_upload():
 
                 if not origin_file or not comp_file:
                     # file miss
-                    print (origin_file, file=sys.stderr)
-                    print (comp_file, file=sys.stderr)
                     print ("no file", file=sys.stderr)
                     pass
                 else:
@@ -365,11 +363,14 @@ def tuple():
         origin_path = file_data.originPath
         comp_path = file_data.compPath
 
+        origin_file_list = []
+        comp_file_list = []
         origin_list = []
         comp_list = []
 
         for path, subdirs, files in walk(origin_path):
             for name in files:
+                origin_file_list.append(name)
                 origin_list.append(join(path,name))
                 original = open(join(path,name))
                 original_lineNum = len(original.readlines())
@@ -380,6 +381,7 @@ def tuple():
 
         for path, subdirs, files in walk(comp_path):
             for name in files:
+                comp_file_list.append(name)
                 comp_list.append(join(path,name))
                 compare = open(join(path,name))
                 compare_lineNum = len(compare.readlines())
@@ -402,7 +404,7 @@ def tuple():
         if tuple_type == 'same':
             for ori in origin_list:
                 for comp in comp_list:
-                    if ori == comp:
+                    if ori.replace(join(app.config['UPLOAD_FOLDER'], projName, 'origin', 'files'), '') == comp.replace(join(app.config['UPLOAD_FOLDER'], projName, 'compare', 'files'), ''):
                         tuple_list.append((ori.encode('ascii'), comp.encode('ascii')))
                     else:
                         continue
@@ -423,7 +425,8 @@ def tuple():
         else:
             pass
 
-    return render_template('/tuple.html', projName=projName, origin_list=origin_list, comp_list=comp_list)
+    return render_template('/tuple.html', projName=projName, origin_list=origin_list, comp_list=comp_list, 
+        origin_file_list=origin_file_list, comp_file_list=comp_file_list)
 
 
 @app.route('/tuple_edit', methods=['GET', 'POST'])
@@ -459,7 +462,7 @@ def tuple_edit():
 
             if not Pair.query.filter(Pair.originID==originID).filter(Pair.compID==compID).filter(Pair.projID==projID).first():
                 db.session.add(new_pair)
-                
+
         db.session.commit()
 
     if request.method == 'POST':
