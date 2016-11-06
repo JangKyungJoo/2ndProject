@@ -130,9 +130,9 @@ class Tokenizing(PreProcessor):
             list = self.file[i].split(' ')
             j = 0
             while j < len(list):
-                print list[j]
+                # print list[j]
                 if list[j] in stopWords:
-                    print list[j] + ' 삭제'
+                    # print list[j] + ' 삭제'
                     list.pop(j)
                 else:
                     j += 1

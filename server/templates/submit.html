@@ -57,18 +57,6 @@
     		</div>
     	</div>
               <br /><br />
-    <script language="JavaScript">
-    $('#radioBtn a').on('click', function(){
-        var sel = $(this).data('title');
-        var tog = $(this).data('toggle');
-        $('#'+tog).prop('value', sel);
-
-        document.getElementById(tog).value = sel;
-
-        $('a[data-toggle="'+tog+'"]').not('[data-title="'+sel+'"]').removeClass('active').addClass('notActive');
-        $('a[data-toggle="'+tog+'"][data-title="'+sel+'"]').removeClass('notActive').addClass('active');
-    })
-    </script>
 
     <button id="relay" class="btn btn-default">마지막 중단 지점부터 비교하기</button>
     <button id="initial" class="btn btn-default">처음부터 비교하기</button>
@@ -128,6 +116,8 @@
 
     $(function() {
         $('#initial').click(function() {
+            $('#myModal').modal();
+            /*
             BootstrapDialog.show({
                     message: '비교 방법 설정',
                     buttons: [{
@@ -148,6 +138,7 @@
                         }
                     }]
                 });
+                */
         });
     });
 
@@ -193,5 +184,77 @@
 
     <form name="complete" action="/result/{{ projectId }}" method="get"></form>
     <form name="canceled" action="/compare/cancel" method="post"></form>
+
+    <!-- Modal -->
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">소스코드 비교 옵션 설정</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+    		<label for="comment" class="col-sm-2 col-md-2 control-label text-left">주석 제거 여부</label>
+    		<div class="col-sm-7 col-md-7">
+    			<div class="input-group">
+    				<div id="radioBtn" class="btn-group">
+    					<a class="btn btn-primary btn-sm active" data-toggle="comment" data-title="1">제거</a>
+    					<a class="btn btn-primary btn-sm notActive" data-toggle="comment" data-title="0">유지</a>
+    				</div>
+    				<input type="hidden" name="comment" id="comment" value="1">
+    			</div>
+    		</div>
+    	</div>
+        <br /><br />
+        <div class="form-group">
+        	<label for="fun" class="col-sm-2 col-md-2 control-label text-left">토크나이저 선택</label>
+    		<div class="col-sm-7 col-md-7">
+    			<div class="input-group">
+    				<div id="radioBtn" class="btn-group">
+    					<a class="btn btn-primary btn-sm active" data-toggle="token" data-title="0">공백 토크나이저</a>
+                        <a class="btn btn-primary btn-sm notActive" data-toggle="token" data-title="1">???</a>
+    				</div>
+    				<input type="hidden" name="token" id="token" value="0">
+    			</div>
+    		</div>
+    	</div>
+              <br /><br />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal" onclick="ordered();">순서 고려한 비교</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal" onclick="unordered();">순서 고려하지 않은 비교</button>
+      </div>
+
+        <script language="JavaScript">
+    $('#radioBtn a').on('click', function(){
+        var sel = $(this).data('title');
+        var tog = $(this).data('toggle');
+        $('#'+tog).prop('value', sel);
+
+        document.getElementById(tog).value = sel;
+
+        $('a[data-toggle="'+tog+'"]').not('[data-title="'+sel+'"]').removeClass('active').addClass('notActive');
+        $('a[data-toggle="'+tog+'"][data-title="'+sel+'"]').removeClass('notActive').addClass('active');
+    });
+
+    function ordered() {
+        varLastPair = 0;
+        compareMethod = 1;
+        compareStart();
+    }
+    function unordered() {
+        alert('순서없는! ');
+        varLastPair = 0;
+        compareMethod = 2;
+        compareStart();
+    }
+    </script>
+    </div>
+
+  </div>
+</div>
 
 {% endblock %}
