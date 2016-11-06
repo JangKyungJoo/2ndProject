@@ -1,0 +1,316 @@
+{% extends "sidebar.html" %}
+<html>
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Dashboard</title>
+
+  <script src="{{ url_for('static', filename='lib/js/jquery.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='lib/js/bootstrap.min.js') }}"></script>
+  <script src="{{url_for ('static', filename='js/bootpag.js') }}"></script>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/patternlock.css') }}">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/result.css') }}">
+  <script src="{{url_for ('static', filename='js/patternlock.js') }}"></script>
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='gentelella/vendors/bootstrap/dist/css/bootstrap.min.css')}}">
+
+  <!-- Font Awesome -->
+  <link type="text/css" href="{{url_for('static', filename='gentelella/vendors/font-awesome/css/font-awesome.min.css')}}" rel="stylesheet">
+
+  <!-- Dropzone.js -->
+  <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='gentelella/vendors/dropzone/dist/min/dropzone.min.css')}}">
+
+  <!-- Custom Theme Style -->
+  <link type="text/css" href="{{url_for('static', filename='gentelella/build/css/custom.min.css')}}" rel="stylesheet">
+
+  <!-- Modal setting -->
+  <style>
+  .modal {
+    text-align: center;
+  }
+  @media screen and (min-width: 768px) {
+    .modal:before {
+      display: inline-block;
+      vertical-align: middle;
+      content: " ";
+      height: 100%;
+    }
+  }
+  .modal-dialog {
+    display: inline-block;
+    text-align: left;
+    vertical-align: middle;
+  }
+  .modal-header, h4, .close {
+      background-color: #5cb85c;
+      color:white !important;
+      text-align: center;
+      font-size: 30px;
+  }
+  .modal-footer {
+      background-color: #f9f9f9;
+  }
+  </style>
+
+</head>
+<body class="nav-md">
+  <div class="container body">
+      <div class="main_container">
+        {% block sidebar_menu %}
+        {{ super() }}
+        <!-- page content -->
+        <div class="right_col" role="main">
+          <div class="">
+            <div class="page-title">
+              <div class="title_left">
+                <h3>{{projName}} - 비교 결과 </h3>
+              </div>
+
+            <div class="clearfix"></div>
+
+            <div class="row">
+              <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                  <div class="x_panel">
+                    <div class="x_title">
+                      <h2>비교쌍 목록</h2>
+                      <ul class="nav navbar-right panel_toolbox">
+                        <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                        </li>
+                        <li class="dropdown">
+                          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                          <ul class="dropdown-menu" role="menu">
+                            <li><a href="#">Settings 1</a>
+                            </li>
+                            <li><a href="#">Settings 2</a>
+                            </li>
+                          </ul>
+                        </li>
+                        <li><a class="close-link"><i class="fa fa-close"></i></a>
+                        </li>
+                      </ul>
+                      <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content" style="overflow:auto;">
+                      <table id="myTable" class="table">
+                        <thead>
+                          <tr>
+                            <th class="th-header" style="width:10%;border-top:none;">No</th>
+                            <th class="th-header" style="border-top:none;">Origin File</th>
+                            <th class="th-header" style="border-top:none;">Compare File</th>
+                            <th id="th-similarity" class="th-header" style="border-top:none;">Similarity<span id="similarity" class="glyphicon glyphicon-triangle-bottom" style="margin-left:2px;"></span></th>
+                            <th id="th-modify" class="th-header" style="border-top:none;">Modified Date<span id="modifyDate" class="glyphicon glyphicon-triangle-top" style="margin-left:2px;"></span></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                            {% if pairCount == 0 %}
+                                <tr><td colspan="5" style="text-align:center;">데이터가 없습니다.</td></tr>
+                            {% else %}
+                            {% for i in range(1, 21) %}
+                                <tr id="row_{{i}} "style="cursor:pointer;">
+                                    <td id="idx_{{i}}"></td>
+                                    <td id="origin_{{i}}"></td>
+                                    <td id="comp_{{i}}"></td>
+                                    <td id="similarity_{{i}}"></td>
+                                    <td id="modify_{{i}}"></td>
+                                </tr>
+                            {% endfor %}
+                            {% endif %}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="footer" align="center">
+                        <div id="pagination"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /page content -->
+      {% endblock %}
+    </div>
+  </div>
+  <footer>
+    <div class="pull-right">
+      Gentelella - Bootstrap Admin Template by <a href="https://colorlib.com">Colorlib</a>
+    </div>
+    <div class="clearfix"></div>
+  </footer>
+
+  <!-- jQuery -->
+  <script src="{{url_for('static', filename='gentelella/vendors/jquery/dist/jquery.min.js')}}"></script>
+  <!-- Bootstrap -->
+  <script src="{{url_for('static', filename='gentelella/vendors/bootstrap/dist/js/bootstrap.min.js')}}"></script>
+  <!-- FastClick -->
+  <script src="{{url_for('static', filename='gentelella/vendors/fastclick/lib/fastclick.js')}}"></script>
+  <!-- NProgress -->
+  <script src="{{url_for('static', filename='gentelella/vendors/nprogress/nprogress.js')}}"></script>
+  <!-- Dropzone.js -->
+  <script src="{{url_for('static', filename='gentelella/vendors/dropzone/dist/min/dropzone.min.js')}}"></script>
+
+  <!-- Custom Theme Scripts -->
+  <script src="{{url_for('static', filename='gentelella/build/js/custom.min.js')}}"></script>
+
+</body>
+</html>
+<script type="text/javascript">
+    var simDesc_dateAsc = {{dateByAsc|safe}};
+    var simDesc_dateDesc = {{dateByDesc|safe}};
+    var pairCount = {{pairCount}};
+    var pID = {{projectid}};
+    var NUMBER_PAGE = 20;
+    var pageNum = Math.ceil(pairCount / NUMBER_PAGE);
+    var nowPage = 1;
+    var nowList, simAsc_dateAsc, simAsc_dateDesc;
+    var TOP = "glyphicon glyphicon-triangle-top";
+    var BOTTOM = "glyphicon glyphicon-triangle-bottom"
+
+    init();
+
+    function init(){
+        simAsc_dateAsc = [];
+        simAsc_dateDesc = [];
+        var len = simDesc_dateAsc.length;
+        for(var i=len-1; i>=0; i--){
+            simAsc_dateDesc.push(simDesc_dateAsc[i]);
+        }
+        var len = simDesc_dateDesc.length;
+        for(var i=len-1; i>=0; i--){
+            simAsc_dateAsc.push(simDesc_dateDesc[i]);
+        }
+        nowList = simDesc_dateAsc;
+        update();
+    }
+
+    function parseDate(gmt){
+        if(gmt == null){
+            return '-';
+        }
+        var date = new Date(gmt);
+        var month = date.getUTCMonth();
+        var day = date.getUTCDate();
+        month++;
+        if(month < 10)  month = "0"+month;
+        if(day < 10)    day = "0"+day;
+
+        return date.getUTCFullYear() + '-'+ month +'-' + day;
+
+    }
+
+    function changeList(){
+        if($("#similarity").attr('class') == TOP && $("#modifyDate").attr('class') == TOP){
+            nowList = simAsc_dateAsc;
+        }else if($("#similarity").attr('class') == TOP && $("#modifyDate").attr('class') == BOTTOM){
+            nowList = simAsc_dateDesc;
+        }else if($("#similarity").attr('class') == BOTTOM && $("#modifyDate").attr('class') == TOP){
+            nowList = simDesc_dateAsc;
+        }else{
+            nowList = simDesc_dateDesc;
+        }
+    }
+
+    function update(){
+        changeList();
+        for(var i=1; i<=NUMBER_PAGE; i++){
+            var now = i + NUMBER_PAGE * (nowPage-1);
+            if(now <= pairCount){
+                $("#idx_"+i).css("display", "");
+                $("#origin_"+i).css("display", "");
+                $("#comp_"+i).css("display", "");
+                $("#similarity_"+i).css("display", "");
+                $("#modify_"+i).css("display", "");
+
+                $("#idx_"+i).html(now);
+                $("#origin_"+i).html(nowList[now-1].originFile);
+                $("#comp_"+i).html(nowList[now-1].compareFile);
+                $("#similarity_"+i).html(nowList[now-1].similarity + ' %');
+                $("#modify_"+i).html(parseDate(nowList[now-1].modifyDate));
+            }else{
+                $("#idx_"+i).css("display", "none");
+                $("#origin_"+i).css("display", "none");
+                $("#comp_"+i).css("display", "none");
+                $("#similarity_"+i).css("display", "none");
+                $("#modify_"+i).css("display", "none");
+            }
+        }
+    }
+
+    $(function(){
+        $("td").on("click", function(e){
+            var id = $(this).attr('id');
+            var temp = id.split('_');
+            var now = parseInt(temp[1]) + NUMBER_PAGE * (nowPage-1);
+            window.open('/result/'+pID+'/'+nowList[now-1].pairID, 'detail', 'window settings');
+        })
+    });
+
+    $("#th-similarity").click(function(){
+        if($("#similarity").attr('class')==TOP)
+            $("#similarity").attr('class', BOTTOM);
+        else
+            $("#similarity").attr('class',TOP);
+        update();
+    });
+
+    $("#th-modify").click(function(){
+        if($("#modifyDate").attr('class')==TOP)
+            $("#modifyDate").attr('class', BOTTOM);
+        else
+            $("#modifyDate").attr('class', TOP);
+        update();
+    });
+
+    $('#pagination').bootpag({
+        total: pageNum,
+        page : 1,
+        maxVisible : 5,
+    }).on("page", function(event, num){
+        nowPage = num;
+        update();
+    });
+
+    $(window).on('storage', function (e) {
+        var storageEvent = e.originalEvent;
+        var pairID = storageEvent.newValue;
+        if ((storageEvent.key == 'isUpdated') && (storageEvent.oldValue == '0') && pairID != '0'){
+            updateDate(pairID);
+        }
+    });
+
+    function updateDate(id){
+        //var id = parseInt(id);
+        var id = 3;
+        var len = simDesc_dateAsc.length;
+        var date = new Date().toUTCString();
+        date = parseDate(date);
+        for(var i=0; i<len; i++){
+            if(simAsc_dateAsc[i].pairID == id)
+                simAsc_dateAsc[i].modifyDate = date;
+            if(simAsc_dateDesc[i].pairID == id)
+                simAsc_dateDesc[i].modifyDate = date;
+            if(simDesc_dateAsc[i].pairID == id)
+                simDesc_dateAsc[i].modifyDate = date;
+            if(simDesc_dateDesc[i].pairID == id)
+                simDesc_dateDesc[i].modifyDate = date;
+        }
+        var now;
+        for(var i=0; i<len; i++){
+            if(nowList[i].pairID == id){
+                now = i+1;
+                break;
+            }
+        }
+        $("#modify_"+now).html(date);
+        // TODO  유사율도 수정
+    }
+
+</script>

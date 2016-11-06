@@ -4,17 +4,35 @@ from server import app
 from flask import json
 from datetime import datetime
 from server.models import Pair
+from server.models import Project
 from server.models import Result
 from server.models import Origin
 from server.models import Compare
+from server.models import People
 from server import db
 
 
 @app.route('/result/<projectid>', methods=["GET"])
 def result(projectid):
 
-    origin_list = Origin.query.with_entities(Origin.originName).filter(Origin.projID == projectid).all()
-    compare_list = Compare.query.with_entities(Compare.compName).filter(Compare.projID == projectid).all()
+    print 'pair'
+    pair = Pair.query.filter(Pair.projID == projectid)
+    for line in pair:
+        print '%d %d' %(line.originID, line.compID)
+
+    #origin_list = Origin.query.with_entities(Origin.originName).filter(Origin.projID == projectid).all()
+    #compare_list = Compare.query.with_entities(Compare.compName).filter(Compare.projID == projectid).all()
+
+    origin_list = Origin.query.filter(Origin.projID == projectid).all()
+    compare_list = Compare.query.filter(Compare.projID == projectid).all()
+
+    print 'origin'
+    for origin in origin_list:
+        print '%d %s' %(origin.originID, origin.originName)
+
+    print 'compare'
+    for compare in compare_list:
+        print '%d %s' %(compare.compID, compare.compName)
 
     pair = Pair.query.filter(Pair.projID == projectid).order_by(Pair.similarity.desc()).all()
     json_list = [Pair.serialize(i, origin_list[i.originID-1], compare_list[i.compID-1]) for i in pair]
@@ -22,7 +40,11 @@ def result(projectid):
     pair = Pair.query.filter(Pair.projID == projectid).order_by(Pair.similarity.desc(), Pair.modifyDate.desc()).all()
     json_list2 = [Pair.serialize(i, origin_list[i.originID-1], compare_list[i.compID-1]) for i in pair]
 
-    return render_template("result.html", dateByAsc=json.dumps(json_list), dateByDesc=json.dumps(json_list2), pairCount=len(pair), projectid=projectid)
+    print 'pair count : %d' %len(pair)
+
+    #return render_template("result.html", dateByAsc=json.dumps(json_list), dateByDesc=json.dumps(json_list2), pairCount=len(pair), projectid=projectid)
+    return render_template("temp.html", dateByAsc=json.dumps(json_list), dateByDesc=json.dumps(json_list2),
+                           pairCount=len(pair), projectid=projectid)
 
 
 @app.route('/result/<projectid>/<pairid>', methods=["GET", "POST"])
@@ -75,6 +97,10 @@ def detail(projectid, pairid):
 # DB 초기화에 대비한 db add 부분. 지울 것
 @app.route('/init', methods=["GET"])
 def init_pair():
+    people = People('KyungJoo', 'rudwn826@naver.com', '1234')
+    db.session.add(people)
+    db.session.commit()
+    '''
     for i in range(1, 51):
         pair = Pair(i, i, 1)
         db.session.add(pair)
@@ -93,7 +119,8 @@ def init_pair():
 
     init_detail()
     init_file()
-    return render_template("result.html")
+    '''
+    return render_template("temp.html")
 
 
 def init_file():
