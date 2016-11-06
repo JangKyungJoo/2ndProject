@@ -1,49 +1,48 @@
 {% extends "sidebar.html" %}
 {% block contents %}
-<html>
-    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+
     <script src="{{url_for ('static', filename='js/bootpag.js') }}"></script>
     <!--<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">-->
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <!--<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">-->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/result.css') }}">
-<body>
-    <div class="result-container">
-        <div class="header-container" align="center">
-            <div class="title">
-                <h2>Result</h2>
-            </div>
-        </div>
-        <div class="panel-container" align="center">
-            <div class="panel panel-default" style="margin-left : 15px">
-                <div class="panel-body">
-                    <table id="myTable" class="table">
-                        <tr>
-                            <th class="th-header" style="width:10%;border-top:none;">No</th>
-                            <th class="th-header" style="border-top:none;">Origin File</th>
-                            <th class="th-header" style="border-top:none;">Compare File</th>
-                            <th id="th-similarity" class="th-header" style="border-top:none;">Similarity<span id="similarity" class="glyphicon glyphicon-triangle-bottom" style="margin-left:2px;"></span></th>
-                            <th id="th-modify" class="th-header" style="border-top:none;">Modified Date<span id="modifyDate" class="glyphicon glyphicon-triangle-top" style="margin-left:2px;"></span></th>
-                        </tr>
-                        {% for i in range(1, 21) %}
-                        <tr id="row_{{i}} "style="cursor:pointer;">
-                            <td id="idx_{{i}}"></td>
-                            <td id="origin_{{i}}"></td>
-                            <td id="comp_{{i}}"></td>
-                            <td id="similarity_{{i}}"></td>
-                            <td id="modify_{{i}}"></td>
-                        </tr>
-                        {% endfor %}
-                    </table>
+
+    <div class="right_col" role="main">
+        <div class="result-container">
+            <div class="header-container" align="center">
+                <div class="title">
+                    <h2>Result</h2>
                 </div>
             </div>
-        </div>
-        <div class="footer" align="center">
-            <div id="pagination"></div>
+            <div class="panel-container" align="center">
+                <div class="panel panel-default" style="margin-left : 15px">
+                    <div class="panel-body">
+                        <table id="myTable" class="table">
+                            <tr>
+                                <th class="th-header" style="width:10%;border-top:none;">No</th>
+                                <th class="th-header" style="border-top:none;">Origin File</th>
+                                <th class="th-header" style="border-top:none;">Compare File</th>
+                                <th id="th-similarity" class="th-header" style="border-top:none;">Similarity<span id="similarity" class="glyphicon glyphicon-triangle-bottom" style="margin-left:2px;"></span></th>
+                                <th id="th-modify" class="th-header" style="border-top:none;">Modified Date<span id="modifyDate" class="glyphicon glyphicon-triangle-top" style="margin-left:2px;"></span></th>
+                            </tr>
+                            {% for i in range(1, 21) %}
+                            <tr id="row_{{i}} "style="cursor:pointer;">
+                                <td id="idx_{{i}}"></td>
+                                <td id="origin_{{i}}"></td>
+                                <td id="comp_{{i}}"></td>
+                                <td id="similarity_{{i}}"></td>
+                                <td id="modify_{{i}}"></td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="footer" align="center">
+                <div id="pagination"></div>
+            </div>
         </div>
     </div>
-    </body></html>
-{% endblock %}
-<script type="text/javascript">
+<script language="JavaScript">
     var simDesc_dateAsc = {{dateByAsc|safe}};
     var simDesc_dateDesc = {{dateByDesc|safe}};
     var pairCount = {{pairCount}};
@@ -195,3 +194,5 @@
     }
 
 </script>
+
+{% endblock %}

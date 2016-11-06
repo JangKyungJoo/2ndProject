@@ -1,4 +1,6 @@
 #-*- coding: utf-8 -*-
+import os
+
 from flask import Flask, request, render_template
 from server import app
 from flask import json
@@ -15,24 +17,8 @@ from server import db
 @app.route('/result/<projectid>', methods=["GET"])
 def result(projectid):
 
-    print 'pair'
-    pair = Pair.query.filter(Pair.projID == projectid)
-    for line in pair:
-        print '%d %d' %(line.originID, line.compID)
-
-    #origin_list = Origin.query.with_entities(Origin.originName).filter(Origin.projID == projectid).all()
-    #compare_list = Compare.query.with_entities(Compare.compName).filter(Compare.projID == projectid).all()
-
-    origin_list = Origin.query.filter(Origin.projID == projectid).all()
-    compare_list = Compare.query.filter(Compare.projID == projectid).all()
-
-    print 'origin'
-    for origin in origin_list:
-        print '%d %s' %(origin.originID, origin.originName)
-
-    print 'compare'
-    for compare in compare_list:
-        print '%d %s' %(compare.compID, compare.compName)
+    origin_list = Origin.query.with_entities(Origin.originName).filter(Origin.projID == projectid).all()
+    compare_list = Compare.query.with_entities(Compare.compName).filter(Compare.projID == projectid).all()
 
     pair = Pair.query.filter(Pair.projID == projectid).order_by(Pair.similarity.desc()).all()
     json_list = [Pair.serialize(i, origin_list[i.originID-1], compare_list[i.compID-1]) for i in pair]
@@ -40,28 +26,32 @@ def result(projectid):
     pair = Pair.query.filter(Pair.projID == projectid).order_by(Pair.similarity.desc(), Pair.modifyDate.desc()).all()
     json_list2 = [Pair.serialize(i, origin_list[i.originID-1], compare_list[i.compID-1]) for i in pair]
 
-    print 'pair count : %d' %len(pair)
-
-    #return render_template("result.html", dateByAsc=json.dumps(json_list), dateByDesc=json.dumps(json_list2), pairCount=len(pair), projectid=projectid)
-    return render_template("temp.html", dateByAsc=json.dumps(json_list), dateByDesc=json.dumps(json_list2),
-                           pairCount=len(pair), projectid=projectid)
+    return render_template("result.html", dateByAsc=json.dumps(json_list), dateByDesc=json.dumps(json_list2), pairCount=len(pair), projectid=projectid)
 
 
 @app.route('/result/<projectid>/<pairid>', methods=["GET", "POST"])
 def detail(projectid, pairid):
     if request.method == 'GET':
-        origin = open("/Users/kyungjoo/Documents/Document/Maestro-backend/maestro/routes/board.js", 'r')
-        compare = open("/Users/kyungjoo/Documents/Document/Maestro-backend/maestro/routes/anonymity.js", 'r')
+
+        pair = Pair.query.get(pairid)
+
+        origin = Origin.query.filter(Origin.originID == pair.originID).first()
+        compare = Compare.query.filter(Compare.compID == pair.compID).first()
+
+        originFile = open(os.path.join(origin.originPath, origin.originName), 'r')
+        compFile = open(os.path.join(compare.compPath, compare.compName), 'r')
+
         originList = []
         compareList = []
-        lines = origin.readlines()
+
+        lines = originFile.readlines()
         for line in lines:
             originList.append(line)
-        lines = compare.readlines()
+
+        lines = compFile.readlines()
         for line in lines:
             compareList.append(line)
 
-        pairid = 1
         result = Result.query.filter(Result.pairID == pairid).order_by(Result.originLine).all()
         list = [i.serialize for i in result]
 
@@ -120,7 +110,7 @@ def init_pair():
     init_detail()
     init_file()
     '''
-    return render_template("temp.html")
+    return render_template("result.html")
 
 
 def init_file():

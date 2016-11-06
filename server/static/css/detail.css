@@ -20,10 +20,11 @@
         }
 
         .help-container{
+            width : 20%;
         }
 
         .panel-default {
-            width : 40%;
+            width : 50%;
             display : inline-block;
             margin-bottom : 10px;
         }
@@ -81,6 +82,7 @@
         }
 
          .unselectable {
+             width : 100%;
             -moz-user-select:none;
             -webkit-user-select:none;
         }
