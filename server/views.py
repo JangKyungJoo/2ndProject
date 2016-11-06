@@ -119,7 +119,7 @@ def dashboard():
     '''
         프로젝트 선택 화면
         
-
+        
         :modal_type insert: 프로젝트 생성
         
         :modal_type info: 프로젝트 정보
@@ -298,8 +298,6 @@ def file_upload():
 
                 if not origin_file or not comp_file:
                     # file miss
-                    print (origin_file, file=sys.stderr)
-                    print (comp_file, file=sys.stderr)
                     print ("no file", file=sys.stderr)
                     pass
                 else:
@@ -314,7 +312,10 @@ def file_upload():
                     comp_path = join(app.config['UPLOAD_FOLDER'], projName, 'compare', 'files')                    
                     
                     file_data = File(origin_path, comp_path)
-                    db.session.add(file_data)
+                    
+                    if not File.query.filter(File.originPath==origin_path).filter(File.compPath==comp_path).first():
+                        db.session.add(file_data)
+
                     db.session.commit()
 
                     file_data = File.query.filter(File.originPath==origin_path).first()
@@ -350,6 +351,9 @@ def tuple():
     if not session['project'] or session['project'] == "":
         return redirect(url_for('dashboard'))
     else:
+
+        tuple_list = []
+
         projName = session['project']
         project_data = Project.query.filter(Project.projName==projName).first()
         file_data = File.query.filter(File.fileID==project_data.fileNum).first()
@@ -359,26 +363,32 @@ def tuple():
         origin_path = file_data.originPath
         comp_path = file_data.compPath
 
+        origin_file_list = []
+        comp_file_list = []
         origin_list = []
         comp_list = []
 
         for path, subdirs, files in walk(origin_path):
             for name in files:
+                origin_file_list.append(name)
                 origin_list.append(join(path,name))
                 original = open(join(path,name))
                 original_lineNum = len(original.readlines())
                 origin_file = Origin(name, path, original_lineNum, projID)
 
-                db.session.add(origin_file)
+                if not Origin.query.filter(Origin.originName==name).filter(Origin.originPath==path).filter(Origin.lineNum==original_lineNum).filter(Origin.projID==projID).first():
+                    db.session.add(origin_file)
 
         for path, subdirs, files in walk(comp_path):
             for name in files:
+                comp_file_list.append(name)
                 comp_list.append(join(path,name))
                 compare = open(join(path,name))
                 compare_lineNum = len(compare.readlines())
                 comp_file = Compare(name, path, compare_lineNum, projID)
 
-                db.session.add(comp_file)
+                if not Compare.query.filter(Compare.compName==name).filter(Compare.compPath==path).filter(Compare.lineNum==compare_lineNum).filter(Compare.projID==projID).first():
+                    db.session.add(comp_file)
 
         db.session.commit()
 
@@ -387,14 +397,14 @@ def tuple():
         global tuple_list
 
         tuple_list = []
-        
+
         tuple_type = request.form.get('tuple_type')
 
         # 같은 이름 파일
         if tuple_type == 'same':
             for ori in origin_list:
                 for comp in comp_list:
-                    if ori == comp:
+                    if ori.replace(join(app.config['UPLOAD_FOLDER'], projName, 'origin', 'files'), '') == comp.replace(join(app.config['UPLOAD_FOLDER'], projName, 'compare', 'files'), ''):
                         tuple_list.append((ori.encode('ascii'), comp.encode('ascii')))
                     else:
                         continue
@@ -415,7 +425,8 @@ def tuple():
         else:
             pass
 
-    return render_template('/tuple.html', projName=projName, origin_list=origin_list, comp_list=comp_list)
+    return render_template('/tuple.html', projName=projName, origin_list=origin_list, comp_list=comp_list, 
+        origin_file_list=origin_file_list, comp_file_list=comp_file_list)
 
 
 @app.route('/tuple_edit', methods=['GET', 'POST'])
@@ -449,7 +460,8 @@ def tuple_edit():
 
             new_pair = Pair(originID, compID, projID) # edit
 
-            db.session.add(new_pair)
+            if not Pair.query.filter(Pair.originID==originID).filter(Pair.compID==compID).filter(Pair.projID==projID).first():
+                db.session.add(new_pair)
 
         db.session.commit()
 

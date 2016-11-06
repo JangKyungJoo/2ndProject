@@ -14,9 +14,7 @@ from datetime import datetime
 
 
 # pair 수 만큼 호출
-def compareOnePair(originFile, compFile, pairNum, compareMethod):
-    db.session.query(Result).delete()
-
+def compareOnePair(originFile, compFile, pairNum, compareMethod, commentRemove):
     global output
     originFile = open(originFile)
     compFile = open(compFile)
@@ -24,12 +22,19 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod):
     originFile = originFile.read()
     compFile = compFile.read()
 
-    preprocess_filter = [preprocessor.RemoveComment(token=['/*', '*/']), preprocessor.RemoveComment(token=['//', '\n']),
-                         preprocessor.RemoveBlank(), preprocessor.Tokenizing()]
+    cComment = [preprocessor.RemoveComment(token=['/*', '*/']), preprocessor.RemoveComment(token=['//', '\n'])]
+    pyComment = [preprocessor.RemoveComment(token=["'''", "'''"]), preprocessor.RemoveComment(token=['"""', '"""']),
+                 preprocessor.RemoveComment(token=['#', '\n'])]
+
+    preprocess_filter = [preprocessor.RemoveBlank(), preprocessor.Tokenizing()]
+
+    if commentRemove == 1:
+        for comment in cComment:
+            preprocess_filter.insert(0, comment)
 
     inputs = [originFile, compFile]
     outputs = []
-    
+
     for input in inputs:
         lineNumInfo = []
         for i in range(len(input.split('\n'))):
@@ -64,7 +69,7 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod):
     entireLine = len(outputs[0][0])
     similLine += len(ret.keys())
 
-    similarity = similLine/entireLine*100
+    similarity = similLine / entireLine * 100
     print similarity
 
     for key in ret.keys():
@@ -72,7 +77,7 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod):
         for element in ret[key]:
             # element : 원본 key라인과 매칭된 비교본 라인번호, 유사타입(1 : 일치, 2 : 유사)
             # print element
-            newResult = Result(pairNum, outputs[0][1][key]+1, outputs[1][1][element[0]]+1, element[1])
+            newResult = Result(pairNum, outputs[0][1][key] + 1, outputs[1][1][element[0]] + 1, element[1])
             db.session.add(newResult)
 
     db.session.query(Pair).filter(Pair.pairID == pairNum).update(
@@ -80,4 +85,4 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod):
     db.session.commit()
 
     # for u in db.session.query(Result).all():
-        # print(u.resultID, u.pairID, u.originLine, u.compLine, u.rType)
+    # print(u.resultID, u.pairID, u.originLine, u.compLine, u.rType)

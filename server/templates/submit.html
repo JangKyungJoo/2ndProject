@@ -11,17 +11,65 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.35.3/css/bootstrap-dialog.min.css" rel="stylesheet" type="text/css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.35.3/js/bootstrap-dialog.min.js"></script>
 
+    <style>
+    #radioBtn .notActive{
+        color: #3276b1;
+        background-color: #fff;
+    }
+    </style>
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/funky.css') }}">
+
     <div class="right_col" role="main">
           <div class="">
             <div class="page-title">
               <div class="title_left">
-                <h3>프로젝트 목록</h3>
+                <h3>프로젝트 비교 옵션 설정</h3>
               </div>
             </div>
 
             <div class="clearfix"></div>
 
-    <h1>프로젝트 전체 비교</h1>
+
+    <div class="form-group">
+    		<label for="comment" class="col-sm-2 col-md-2 control-label text-left">주석 제거 여부</label>
+    		<div class="col-sm-7 col-md-7">
+    			<div class="input-group">
+    				<div id="radioBtn" class="btn-group">
+    					<a class="btn btn-primary btn-sm active" data-toggle="comment" data-title="1">제거</a>
+    					<a class="btn btn-primary btn-sm notActive" data-toggle="comment" data-title="0">유지</a>
+    				</div>
+    				<input type="hidden" name="comment" id="comment" value="1">
+    			</div>
+    		</div>
+    	</div>
+        <br /><br />
+        <div class="form-group">
+        	<label for="fun" class="col-sm-2 col-md-2 control-label text-left">토크나이저 선택</label>
+    		<div class="col-sm-7 col-md-7">
+    			<div class="input-group">
+    				<div id="radioBtn" class="btn-group">
+    					<a class="btn btn-primary btn-sm active" data-toggle="token" data-title="0">공백 토크나이저</a>
+                        <a class="btn btn-primary btn-sm notActive" data-toggle="token" data-title="1">???</a>
+    				</div>
+    				<input type="hidden" name="token" id="token" value="0">
+    			</div>
+    		</div>
+    	</div>
+              <br /><br />
+    <script language="JavaScript">
+    $('#radioBtn a').on('click', function(){
+        var sel = $(this).data('title');
+        var tog = $(this).data('toggle');
+        $('#'+tog).prop('value', sel);
+
+        document.getElementById(tog).value = sel;
+
+        $('a[data-toggle="'+tog+'"]').not('[data-title="'+sel+'"]').removeClass('active').addClass('notActive');
+        $('a[data-toggle="'+tog+'"][data-title="'+sel+'"]').removeClass('notActive').addClass('active');
+    })
+    </script>
+
     <button id="relay" class="btn btn-default">마지막 중단 지점부터 비교하기</button>
     <button id="initial" class="btn btn-default">처음부터 비교하기</button>
               </div>
@@ -30,7 +78,9 @@
     function compareStart() {
                 $.ajax({
                     url: '/compare',
-                    data: {'lastPair': varLastPair, 'compareMethod': selectedMethod},
+                    data: {'lastPair': varLastPair, 'compareMethod': selectedMethod,
+                            'commentRemove': document.getElementById("comment").value,
+                            'tokenizer': document.getElementById("token").value},
                     type: 'POST',
                     success: function (response) {
                         console.log(response);
@@ -71,13 +121,6 @@
     var completed = 0;
     $(function() {
         $('#relay').click(function() {
-            /*
-            var radio = document.getElementsByName('method');
-                for(var i=0; i<radio.length; i++) {
-                    if(radio[i].checked == true)
-                        selectedMethod = radio[i].value;
-                }
-            */
             compareStart();
 
         });
@@ -86,7 +129,6 @@
     $(function() {
         $('#initial').click(function() {
             BootstrapDialog.show({
-                    title: 'Default Title',
                     message: '비교 방법 설정',
                     buttons: [{
                         label: '순서 고려한 비교',
