@@ -64,6 +64,7 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove):
         dict(compareMethod=compareMethod))
 
     if lastPair == 0:
+        print '뿅뿅'
         for pair in db.session.query(Pair).filter(Project.projID == Pair.projID).all():
             db.session.query(Result).filter(pair.pairID == Result.pairID).delete()
 
