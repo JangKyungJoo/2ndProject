@@ -37,6 +37,7 @@ def compare():
     lastPair = request.form.get('lastPair')
     compareMethod = request.form.get('compareMethod')
     commentRemove = request.form.get('commentRemove')
+    tokenizer = request.form.get('tokenizer')
 
     print commentRemove
 
