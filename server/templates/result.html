@@ -2,15 +2,17 @@
 {% block contents %}
 
     <script src="{{url_for ('static', filename='js/bootpag.js') }}"></script>
-    <!--<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">-->
-    <!--<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">-->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/result.css') }}">
 
     <div class="right_col" role="main">
         <div class="result-container">
             <div class="header-container" align="center">
                 <div class="title">
-                    <h2>Result</h2>
+                    <h3>비교 결과</h3>
+                </div>
+                <div class="header-body">
+                    <h2>프로젝트 명 : {{ projName }}</h2>
+                    <h5 id="isUpdated" style="color:lightcoral"></h5>
                 </div>
             </div>
             <div class="panel-container" align="center">
@@ -19,10 +21,10 @@
                         <table id="myTable" class="table">
                             <tr>
                                 <th class="th-header" style="width:10%;border-top:none;">No</th>
-                                <th class="th-header" style="border-top:none;">Origin File</th>
-                                <th class="th-header" style="border-top:none;">Compare File</th>
-                                <th id="th-similarity" class="th-header" style="border-top:none;">Similarity<span id="similarity" class="glyphicon glyphicon-triangle-bottom" style="margin-left:2px;"></span></th>
-                                <th id="th-modify" class="th-header" style="border-top:none;">Modified Date<span id="modifyDate" class="glyphicon glyphicon-triangle-top" style="margin-left:2px;"></span></th>
+                                <th class="th-header" style="border-top:none;">원본파일</th>
+                                <th class="th-header" style="border-top:none;">비교본파일</th>
+                                <th id="th-similarity" class="th-header" style="border-top:none;">유사율<span id="similarity" class="glyphicon glyphicon-triangle-bottom" style="margin-left:2px;"></span></th>
+                                <th id="th-modify" class="th-header" style="border-top:none;">수정날짜<span id="modifyDate" class="glyphicon glyphicon-triangle-top" style="margin-left:2px;"></span></th>
                             </tr>
                             {% for i in range(1, 21) %}
                             <tr id="row_{{i}} "style="cursor:pointer;">
@@ -50,13 +52,14 @@
     var NUMBER_PAGE = 20;
     var pageNum = Math.ceil(pairCount / NUMBER_PAGE);
     var nowPage = 1;
-    var nowList, simAsc_dateAsc, simAsc_dateDesc;
+    var nowList, simAsc_dateAsc, simAsc_dateDesc, isUpdated;
     var TOP = "glyphicon glyphicon-triangle-top";
     var BOTTOM = "glyphicon glyphicon-triangle-bottom"
 
     init();
 
     function init(){
+        isUpdated = false;
         simAsc_dateAsc = [];
         simAsc_dateDesc = [];
         var len = simDesc_dateAsc.length;
@@ -112,7 +115,7 @@
                 $("#idx_"+i).html(now);
                 $("#origin_"+i).html(nowList[now-1].originFile);
                 $("#comp_"+i).html(nowList[now-1].compareFile);
-                $("#similarity_"+i).html(nowList[now-1].similarity + ' %');
+                $("#similarity_"+i).html(nowList[now-1].similarity.toFixed(2) + ' %');
                 $("#modify_"+i).html(parseDate(nowList[now-1].modifyDate));
             }else{
                 $("#idx_"+i).css("display", "none");
@@ -162,35 +165,13 @@
         var storageEvent = e.originalEvent;
         var pairID = storageEvent.newValue;
         if ((storageEvent.key == 'isUpdated') && (storageEvent.oldValue == '0') && pairID != '0'){
-            updateDate(pairID);
+            isUpdated = true;
+            updateDate();
         }
     });
 
-    function updateDate(id){
-        //var id = parseInt(id);
-        var id = 3;
-        var len = simDesc_dateAsc.length;
-        var date = new Date().toUTCString();
-        date = parseDate(date);
-        for(var i=0; i<len; i++){
-            if(simAsc_dateAsc[i].pairID == id)
-                simAsc_dateAsc[i].modifyDate = date;
-            if(simAsc_dateDesc[i].pairID == id)
-                simAsc_dateDesc[i].modifyDate = date;
-            if(simDesc_dateAsc[i].pairID == id)
-                simDesc_dateAsc[i].modifyDate = date;
-            if(simDesc_dateDesc[i].pairID == id)
-                simDesc_dateDesc[i].modifyDate = date;
-        }
-        var now;
-        for(var i=0; i<len; i++){
-            if(nowList[i].pairID == id){
-                now = i+1;
-                break;
-            }
-        }
-        $("#modify_"+now).html(date);
-        // TODO  유사율도 수정
+    function updateDate(){
+        isUpdated == true ? $("#isUpdated").text('변경사항이 있습니다. 새로고침 하세요.') : $("#isUpdated").text('');
     }
 
 </script>

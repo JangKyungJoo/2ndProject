@@ -11,16 +11,17 @@
     <div class="container">
         <div class="header-container">
             <div class="title">
-                <h2>Result</h2>
+                <h3>원본 파일 : {{ originPath }}</h3>
+                <h3>비교본 파일 : {{ compPath }}</h3>
             </div>
             <div class="header-body">
-                <h3>Similar Percentage : </h3>&nbsp;&nbsp;<h3 id="linePer"></h3><h3>%</h3>
-                <h3 style="padding-left : 15px;">Line Count : </h3>&nbsp;&nbsp;<h3>{{originCount}}</h3>
-                <h3 style="padding-left : 15px;">Same Line Count : </h3>&nbsp;&nbsp;<h3 id="sameLine"></h3>
-                <h3 style="padding-left : 15px;">Similar Line Count : </h3>&nbsp;&nbsp;<h3 id="similarLine"></h3>
+                <h3>유사율 : </h3>&nbsp;&nbsp;<h3 id="linePer"></h3><h3>%</h3>
+                <h3>&nbsp;( 총 라인 수 : </h3>&nbsp;&nbsp;<h3 class="h4-text">{{originCount}}</h3>
+                <h3>&nbsp;/ 동일 라인 수 : </h3>&nbsp;&nbsp;<h3 id="sameLine"></h3>
+                <h3>&nbsp;/ 유사 라인 수 : </h3>&nbsp;&nbsp;<h3 id="similarLine"></h3><h3> )</h3>
             </div>
         </div>
-                <div class="footer-container" style="margin-top:5px;text-align:right;">
+        <div class="footer-container" style="margin-top:5px;text-align:right;">
             <form id="body">
                 <button class="btn btn-default" type="submit" style="width:70px">Save</button>
             </form>
@@ -80,7 +81,7 @@
             </div>
             <div class="panel panel-default" style="margin-left : 15px">
                 <div class="panel-heading">
-                    <h3 class="panel-title">board.js</h3>
+                    <h3 id="originFile" class="panel-title"></h3>
                 </div>
                 <div class="panel-body" id="origin">
                     <table class="unselectable">
@@ -93,7 +94,7 @@
 
             <div class="panel panel-default" style="margin-left : 15px">
                 <div class="panel-heading">
-                    <h3 class="panel-title">anonymity.js</h3>
+                    <h3 id="compareFile" class="panel-title"></h3>
                 </div>
                 <div class="panel-body" id="compare">
                     <table class="unselectable">
@@ -118,6 +119,8 @@
     var shiftPressed, similarCount, sameCount, resultNum;
     var lineCount = {{originCount}};
     var pairID = {{pairid}};
+    var originPath = "{{ originPath }}";
+    var compPath = "{{ compPath }}";
 
     init();
 
@@ -131,7 +134,6 @@
                 $("#c_"+result[i].compLine).css('background-color', colors.sameColor);
                 $("#os_"+result[i].originLine).css('background-color', colors.sameColor);
                 $("#cs_"+result[i].compLine).css('background-color', colors.sameColor);
-                console.log('same ++');
                 sameCount++;
             }else{
                 $("#o_"+result[i].originLine).css('background-color', colors.similarColor);
@@ -141,6 +143,8 @@
                 similarCount++;
             }
         }
+        $("#originFile").text(getFileName(originPath));
+        $("#compareFile").text(getFileName(compPath));
         updateNumber();
     }
 
@@ -359,6 +363,11 @@
         return color;
     }
 
+    function getFileName(path){
+        var result = path.split("/")
+        return result[result.length - 1]
+    }
+
     var DELAY = 500, clicks = 0, timer = null;
 
     $(function(){
@@ -425,17 +434,19 @@
             type: "POST",
             url: window.location.href,
             data: data,
-            success: success(),
-            dataType: "json",
-            contentType : "application/json"
+            contentType : "application/json",
+            async: false,
+            success : function(response){
+                localStorage.setItem('isUpdated', '0');
+                localStorage.setItem('isUpdated', ''+pairID);
+                alert('update success');
+            },
+            error: function(error) {
+                    alert('update fail');
+                    console.log(error);
+                }
         });
      });
-
-     function success(){
-        localStorage.setItem('isUpdated', '0');
-        localStorage.setItem('isUpdated', ''+pairID);
-        alert('update success');
-     }
 
 </script>
 </html>

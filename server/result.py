@@ -2,6 +2,8 @@
 import os
 
 from flask import Flask, request, render_template
+from flask import redirect
+from flask import url_for
 from server import app
 from flask import json
 from datetime import datetime
@@ -11,22 +13,34 @@ from server.models import Result
 from server.models import Origin
 from server.models import Compare
 from server.models import People
+from flask import session
 from server import db
+
+
+@app.route('/result', methods=["GET"])
+def default():
+    if not session['project'] or session['project'] == "":
+        return redirect(url_for('dashboard'))
+    else:
+        projName = session['project']
+        project_data = Project.query.filter(Project.projName==projName).first()
+        projID = project_data.projID
+        return redirect('result/' + str(projID))
 
 
 @app.route('/result/<projectid>', methods=["GET"])
 def result(projectid):
 
-    origin_list = Origin.query.with_entities(Origin.originName).filter(Origin.projID == projectid).all()
-    compare_list = Compare.query.with_entities(Compare.compName).filter(Compare.projID == projectid).all()
+    project = Project.query.get(projectid)
+    projName = project.projName
 
     pair = Pair.query.filter(Pair.projID == projectid).order_by(Pair.similarity.desc()).all()
-    json_list = [Pair.serialize(i, origin_list[i.originID-1], compare_list[i.compID-1]) for i in pair]
+    json_list = [Pair.serialize(i, Origin.query.with_entities(Origin.originName).filter(Origin.projID == projectid).filter(Origin.originID == i.originID).first(), Compare.query.with_entities(Compare.compName).filter(Compare.projID == projectid).filter(Compare.compID == i.compID).first()) for i in pair]
 
     pair = Pair.query.filter(Pair.projID == projectid).order_by(Pair.similarity.desc(), Pair.modifyDate.desc()).all()
-    json_list2 = [Pair.serialize(i, origin_list[i.originID-1], compare_list[i.compID-1]) for i in pair]
+    json_list2 = [Pair.serialize(i, Origin.query.with_entities(Origin.originName).filter(Origin.projID == projectid).filter(Origin.originID == i.originID).first(),Compare.query.with_entities(Compare.compName).filter(Compare.projID == projectid).filter(Compare.compID == i.compID).first()) for i in pair]
 
-    return render_template("result.html", dateByAsc=json.dumps(json_list), dateByDesc=json.dumps(json_list2), pairCount=len(pair), projectid=projectid)
+    return render_template("result.html", dateByAsc=json.dumps(json_list), dateByDesc=json.dumps(json_list2), pairCount=len(pair), projectid=projectid, projName = projName)
 
 
 @app.route('/result/<projectid>/<pairid>', methods=["GET", "POST"])
@@ -38,8 +52,11 @@ def detail(projectid, pairid):
         origin = Origin.query.filter(Origin.originID == pair.originID).first()
         compare = Compare.query.filter(Compare.compID == pair.compID).first()
 
-        originFile = open(os.path.join(origin.originPath, origin.originName), 'r')
-        compFile = open(os.path.join(compare.compPath, compare.compName), 'r')
+        originPath = os.path.join(origin.originPath, origin.originName)
+        comparePath = os.path.join(compare.compPath, compare.compName)
+
+        originFile = open(originPath, 'r')
+        compFile = open(comparePath, 'r')
 
         originList = []
         compareList = []
@@ -56,13 +73,12 @@ def detail(projectid, pairid):
         list = [i.serialize for i in result]
 
         # 원본소스코드 / 비교본 소스코드 / 원본 기준 결과
-        return render_template("detail.html", origin=originList, originCount=len(originList), compare=compareList, list=json.dumps(list), pairid = pairid)
+        return render_template("detail.html", origin=originList, originCount=len(originList), compare=compareList, list=json.dumps(list), pairid = pairid, originPath = getPath(originPath), compPath = getPath(comparePath))
 
     if request.method == 'POST':
 
         data = request.data
         update = json.loads(data)
-        pairid = 1
         REMOVE = 3
         ADD = 4
 
@@ -77,11 +93,21 @@ def detail(projectid, pairid):
                 db.session.commit()
 
         pair = Pair.query.get(pairid)
+        origin = Origin.query.filter(Origin.originID == pair.originID).first()
+        originLine = origin.lineNum
+        count = Result.query.filter(Result.pairID == pair.pairID).count()
+
+        pair.similarity = count * 100 / originLine
         pair.modifyDate = datetime.now()
         db.session.add(pair)
         db.session.commit()
 
         return render_template("detail.html")
+
+def getPath(path):
+    temp = path[len(app.config['UPLOAD_FOLDER']):]
+    return temp.split('files/')[1]
+
 
 
 # DB 초기화에 대비한 db add 부분. 지울 것
@@ -90,107 +116,5 @@ def init_pair():
     people = People('KyungJoo', 'rudwn826@naver.com', '1234')
     db.session.add(people)
     db.session.commit()
-    '''
-    for i in range(1, 51):
-        pair = Pair(i, i, 1)
-        db.session.add(pair)
-        db.session.commit()
 
-    temp = [89.12, 56.23, 94.01, 66.66, 72.44, 48.38, 29.75, 80.09, 76.92, 81.38]
-    i = 0
-    pair = Pair.query.filter(Pair.projID==1).all()
-    for line in pair:
-        line.similarity = temp[i%10]
-        if i%3==0:
-            line.modifyDate = datetime.now()
-        i+=1
-        db.session.add(line)
-        db.session.commit()
-
-    init_detail()
-    init_file()
-    '''
-    return render_template("result.html")
-
-
-def init_file():
-    temp1 = ["MainActivity.java", "MainFragment.java", "SearchActivity.java", "OriginActivity.java", "CompareActivity.java", "Service.java"]
-    temp2 = ["Model.java", "ModelView.java", "SearchView.java", "Network.java", "SearchFragment.java", "Controller.java"]
-
-    for i in range(1, 51):
-        origin = Origin(temp1[i%6], "C:", 140, 1)
-        db.session.add(origin)
-        db.session.commit()
-        compare = Compare(temp2[i%6], "D:", 140, 1)
-        db.session.add(compare)
-        db.session.commit()
-
-
-def init_detail():
-    origin = open("/Users/kyungjoo/Documents/Document/Maestro-backend/maestro/routes/board.js", 'r')
-    compare = open("/Users/kyungjoo/Documents/Document/Maestro-backend/maestro/routes/anonymity.js", 'r')
-    charToken = [',', '.', '/', ';', '*', '(', ')', '-', '_', '&', '%']
-    originList = []
-    compareList = []
-    lines = origin.readlines()
-    for line in lines:
-        originList.append(line)
-    lines = compare.readlines()
-    for line in lines:
-        compareList.append(line)
-    SAME = 1;
-    SIMILAR = 2;
-    
-    similarLineCount = 0
-    sameLineCount = 0
-    originlineNum = 1
-    comparelineNum = 1
-    tempPercent = 0
-    result = []  # 원본라인 / 비교본라인 / 유형(동일, 유사)
-
-    for oline in originList:
-        if oline != "":
-            for cline in compareList:
-                if cline != "":
-                    oword = oline.split()
-                    cword = cline.split()
-                    tokenCount = 0
-                    for otoken in oword:
-                        for ctoken in cword:
-                            if otoken == ctoken and otoken not in charToken:
-                                tokenCount += 1
-                    # 완전 일치
-                    if tokenCount >= 2 and tokenCount == len(oword):
-                        print('same : %d, %d' % (originlineNum, comparelineNum))
-                        if len(result) == 0:
-                            result.append([originlineNum, comparelineNum, SAME])
-                            sameLineCount += 1
-                        elif result[len(result) - 1][0] == originlineNum:
-                            result[len(result) - 1] = [originlineNum, comparelineNum, SAME]
-                        else:
-                            result.append([originlineNum, comparelineNum, SAME])
-                            sameLineCount += 1
-
-                    # 유사
-                    elif tokenCount > 2 and (tokenCount / len(oword)) > 0.3:
-                        print ('similar : %d, %d' % (originlineNum, comparelineNum))
-                        if len(result) == 0:
-                            result.append([originlineNum, comparelineNum, SIMILAR])
-                            similarLineCount += 1
-                        elif result[len(result) - 1][0] == originlineNum:
-                            if tokenCount / len(oword) > tempPercent:
-                                result[len(result) - 1] = [originlineNum, comparelineNum, SIMILAR]
-                        else:
-                            result.append([originlineNum, comparelineNum, SIMILAR])
-                            similarLineCount += 1
-
-                comparelineNum += 1
-            comparelineNum = 1
-            tempPercent = 0
-        originlineNum += 1
-
-    for line in result:
-        print line
-        temp = Result(1, line[0], line[1], line[2])
-        db.session.add(temp)
-        db.session.commit()
+    return redirect(url_for("/dashboard"))
