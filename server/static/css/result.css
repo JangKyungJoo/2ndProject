@@ -1,10 +1,4 @@
-
-        .panel-container {
-            padding-top : 20px;
-        }
-
         .panel-default {
-            width : 70%;
             margin-bottom : 10px;
         }
 
@@ -23,4 +17,10 @@
         .th-header{
             width : 15%;
             text-align : center;
+        }
+
+        .header-body{
+            padding-top: 10px;
+            padding-right: 10px;
+            text-align: right;
         }
