@@ -17,6 +17,7 @@ import datetime
 import filter
 import sys, os
 import views
+import preprocessor
 
 process_dict = {}
 
@@ -45,7 +46,7 @@ def compare():
 
     q = Queue()
     pr = Process(target=compareWithProcesses, args=(projectId, q, int(lastPair), int(compareMethod),
-                                                    int(commentRemove)))
+                int(commentRemove), int(tokenizer)))
     pr.daemon = True
     pr.start()
 
@@ -56,7 +57,7 @@ def compare():
     # return render_template("compare.html", projectid=projectid)
 
 
-def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove):
+def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, tokenzier):
     # 프로젝트 내에 있는 비교쌍들을 불러온다.
     # 비교쌍 리스트 갯수만큼 filter를 돌림.
 
@@ -69,6 +70,8 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove):
             db.session.query(Result).filter(pair.pairID == Result.pairID).delete()
 
     db.session.commit()
+
+    tokenzierList = [preprocessor.SpaceTokenizer(), preprocessor.CTokenizer()]
 
     stage = 0
 
@@ -83,7 +86,8 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove):
         compFile = db.session.query(Compare).filter(Compare.compID == pair.compID).first()
         comp = compFile.compPath + '/' + compFile.compName
 
-        filter.compareOnePair(origin, comp, pair.pairID, compareMethod, commentRemove)
+        filter.compareOnePair(origin, comp, pair.pairID, compareMethod, commentRemove
+                              , tokenzierList[tokenzier])
         db.session.query(Project).filter(Project.projID == projectId).update(
             dict(lastPair=pair.pairID))
         db.session.commit()

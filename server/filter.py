@@ -11,10 +11,12 @@ from server import db
 from server import app
 import time
 from datetime import datetime
+import lexer.clexer as clexer
 
 
 # pair 수 만큼 호출
-def compareOnePair(originFile, compFile, pairNum, compareMethod, commentRemove):
+def compareOnePair(originFile, compFile, pairNum, compareMethod, commentRemove
+                   , tokenizer):
     global output
     originFile = open(originFile)
     compFile = open(compFile)
@@ -26,7 +28,7 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentRemove):
     pyComment = [preprocessor.RemoveComment(token=["'''", "'''"]), preprocessor.RemoveComment(token=['"""', '"""']),
                  preprocessor.RemoveComment(token=['#', '\n'])]
 
-    preprocess_filter = [preprocessor.RemoveBlank(), preprocessor.Tokenizing()]
+    preprocess_filter = [preprocessor.RemoveBlank(), tokenizer]
 
     if commentRemove == 1:
         for comment in cComment:

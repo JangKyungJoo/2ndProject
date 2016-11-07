@@ -2,6 +2,7 @@
 
 import re
 from abc import ABCMeta, abstractmethod
+import lexer.clexer as clexer
 
 
 class PreProcessor:
@@ -126,8 +127,7 @@ class Tokenizing(PreProcessor):
         lineList = []
 
         for i in range(len(self.file)):
-
-            list = self.file[i].split(' ')
+            list = self.tokenize(self.file[i])
             j = 0
             while j < len(list):
                 # print list[j]
@@ -157,6 +157,27 @@ class Tokenizing(PreProcessor):
             lineList.append(self.lineNumList[i + plus])
 
         return retList, lineList
+
+    def tokenize(self, line):
+        pass
+
+
+class SpaceTokenizer(Tokenizing):
+    def tokenize(self, line):
+        return line.split(' ')
+
+
+class CTokenizer(Tokenizing):
+    def tokenize(self, line):
+        lexer = clexer.initLexer()
+        lexer.input(line)
+
+        tokenList = []
+        for token in lexer:
+            tokenList.append(token.value)
+
+        return tokenList
+
 
 
 def numberMapping(orifile, compfile):

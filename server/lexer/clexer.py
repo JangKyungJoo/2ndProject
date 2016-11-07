@@ -136,7 +136,5 @@ def initLexer():
     return lex.lex()
 
 
-lexer = initLexer()
-
-for token in lexer:
-    print "Token:", token.value
+# for token in lexer:
+    # print "Token:", token.value
