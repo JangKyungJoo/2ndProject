@@ -35,6 +35,9 @@ def comparePageOpen():
     commentRemove = 1
     tokenizer = 0
 
+    if not os.path.exists(app.config['PROGRESS_FOLDER']):
+        os.makedirs(app.config['PROGRESS_FOLDER'])
+
     if os.path.exists(join(app.config['PROGRESS_FOLDER'], str(projectId))):
         f = open(join(app.config['PROGRESS_FOLDER'], str(projectId)))
         configFile = f.read()
