@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from os.path import join
 
 from server import app
 from server import db
@@ -28,9 +29,23 @@ def comparePageOpen():
 
     project = db.session.query(Project).filter(Project.projID == projectId).first()
     print '마지막 중단 지점 : '+str(project.lastPair)
+
+    lastPair = 0
+    compareMethod = 0
+    commentRemove = 1
+    tokenizer = 0
+
+    if os.path.exists(join(app.config['PROGRESS_FOLDER'], str(projectId))):
+        f = open(join(app.config['PROGRESS_FOLDER'], str(projectId)))
+        configFile = f.read()
+        configFile = eval(configFile)
+        lastPair = configFile['lastPair']
+        compareMethod = configFile['compareMethod']
+        commentRemove = configFile['commentRemove']
+        tokenizer = configFile['tokenizer']
     
-    return render_template("submit.html", projectId=projectId, lastPair=project.lastPair,
-                           compareMethod=project.compareMethod)
+    return render_template("submit.html", projectId=projectId, lastPair=lastPair,
+                           compareMethod=compareMethod, commentRemove=commentRemove, tokenizer=tokenizer)
 
 
 @app.route('/compare', methods=["POST"])
@@ -57,7 +72,7 @@ def compare():
     # return render_template("compare.html", projectid=projectid)
 
 
-def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, tokenzier):
+def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, tokenizer):
     # 프로젝트 내에 있는 비교쌍들을 불러온다.
     # 비교쌍 리스트 갯수만큼 filter를 돌림.
 
@@ -71,7 +86,7 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
 
     db.session.commit()
 
-    tokenzierList = [preprocessor.SpaceTokenizer(), preprocessor.CTokenizer()]
+    tokenizerList = [preprocessor.SpaceTokenizer(), preprocessor.CTokenizer()]
 
     stage = 0
 
@@ -81,16 +96,20 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
             continue
 
         originFile = db.session.query(Origin).filter(Origin.originID == pair.originID).first()
-        origin = originFile.originPath + '/' + originFile.originName
+        origin = join(originFile.originPath, originFile.originName)
 
         compFile = db.session.query(Compare).filter(Compare.compID == pair.compID).first()
-        comp = compFile.compPath + '/' + compFile.compName
+        comp = join(compFile.compPath, compFile.compName)
 
         filter.compareOnePair(origin, comp, pair.pairID, compareMethod, commentRemove
-                              , tokenzierList[tokenzier])
+                              , tokenizerList[tokenizer])
         db.session.query(Project).filter(Project.projID == projectId).update(
             dict(lastPair=pair.pairID))
         db.session.commit()
+
+        f = open(join(app.config['PROGRESS_FOLDER'], str(projectId)), 'w')
+        f.write(str({'lastPair': pair.pairID, 'compareMethod': compareMethod, 'commentRemove': commentRemove,
+                     'tokenizer': tokenizer}))
 
         # 취소 확인
 
@@ -99,6 +118,8 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
         stage += 1
         # print "put : " + str(pair.pairID)
 
+    if os.path.exists(join(app.config['PROGRESS_FOLDER'], str(projectId))):
+        os.remove(join(app.config['PROGRESS_FOLDER'], str(projectId)))
     q.put(stage)
     db.session.commit()
 

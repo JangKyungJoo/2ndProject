@@ -63,7 +63,7 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentRemove
     ret = compa.process()
 
     end_time = time.time()
-    print end_time - start_time
+    # print end_time - start_time
 
     print ret
 

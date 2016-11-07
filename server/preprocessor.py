@@ -33,6 +33,7 @@ class RemoveBlank(PreProcessor):
         blankList = []
 
         for i in range(len(self.file)):
+            self.file[i] = re.sub('\r+', '', self.file[i])
             self.file[i] = re.sub('\t+', '', self.file[i])
             self.file[i] = re.sub(' +', ' ', self.file[i])
             if self.file[i] == '' or self.file[i] == '\t' or self.file[i] == ' ':

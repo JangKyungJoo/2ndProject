@@ -68,7 +68,7 @@
                     url: '/compare',
                     data: {'lastPair': varLastPair, 'compareMethod': selectedMethod,
                             'commentRemove': document.getElementById("comment").value,
-                            'tokenizer': document.getElementById("token").value},
+                            'tokenizer': tokenizer},
                     type: 'POST',
                     success: function (response) {
                         console.log(response);
@@ -105,10 +105,17 @@
     var dialog;
     var varLastPair = {{ lastPair }};
     var compareMethod = {{ compareMethod }};
+    var tokenizer = {{ tokenizer }};
+    var commentRemove = {{ commentRemove }};
+
     var selectedMethod = 1;
     var completed = 0;
     $(function() {
         $('#relay').click(function() {
+            if(varLastPair == 0) {
+                alert("저장된 취소 지점이 없습니다.");
+                return;
+            }
             compareStart();
 
         });
@@ -243,12 +250,15 @@
     function ordered() {
         varLastPair = 0;
         compareMethod = 1;
+        commentRemove = document.getElementById("comment").value;
+        tokenizer = document.getElementById("token").value;
         compareStart();
     }
     function unordered() {
-        alert('순서없는! ');
         varLastPair = 0;
         compareMethod = 2;
+        commentRemove = document.getElementById("comment").value;
+        tokenizer = document.getElementById("token").value;
         compareStart();
     }
     </script>

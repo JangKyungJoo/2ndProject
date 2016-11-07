@@ -24,6 +24,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://///tmp/soan.db'
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
+app.config['PROGRESS_FOLDER'] = os.path.join(app.root_path, 'progress')
 app.permanent_session_lifetime = timedelta(minutes=10)
 
 # Flask REDIS Session Interface SETTINGS
