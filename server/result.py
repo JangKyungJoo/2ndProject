@@ -15,7 +15,7 @@ from server.models import Compare
 from server.models import People
 from flask import session
 from server import db
-
+import codecs
 
 @app.route('/result', methods=["GET"])
 def default():
@@ -55,8 +55,8 @@ def detail(projectid, pairid):
         originPath = os.path.join(origin.originPath, origin.originName)
         comparePath = os.path.join(compare.compPath, compare.compName)
 
-        originFile = open(originPath, 'r')
-        compFile = open(comparePath, 'r')
+        originFile = codecs.open(originPath, 'r', 'utf-8', 'ignore')
+        compFile = codecs.open(comparePath, 'r', 'utf-8', 'ignore')
 
         originList = []
         compareList = []
