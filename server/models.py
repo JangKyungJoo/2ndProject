@@ -73,7 +73,7 @@ class Project(db.Model):
     __tablename__ = 'project_tbl'
     projID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     '''프로젝트 번호 '''
-    projName = db.Column(db.String(50), nullable=False, unique=True)
+    projName = db.Column(db.String(50), nullable=False)
     '''프로젝트 이름 '''
     projDesc = db.Column(db.String(255), nullable=True)
     '''프로젝트 설명 '''

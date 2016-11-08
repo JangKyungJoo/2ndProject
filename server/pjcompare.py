@@ -163,12 +163,17 @@ def cancelCompare():
 
 
 def getProjectId():
-    if not session['project'] or session['project'] == "":
+    #if not session['project'] or session['project'] == "":
+    if not session['projID'] or session['projID'] is None:
         return redirect(url_for('dashboard'))
     else:
-        projName = session['project']
+        return session['projID']
+    '''
+    else:
+        projID = session['project']
 
     project = db.session.query(Project).filter(Project.projName == projName).first()
     projectId = project.projID
 
     return projectId
+    '''

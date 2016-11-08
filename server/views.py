@@ -138,7 +138,8 @@ def dashboard():
     else:
         user_data = People.query.filter(People.pEmail==session['email']).first()
         project_list = Project.query.filter(Project.pID==user_data.pID).all()
-        session['project'] = ""
+        #session['project'] = ""
+        session['projID'] = None
 
     if request.method=='POST':
         modal_type = request.form.get('modal_type')
@@ -170,14 +171,23 @@ def dashboard():
         elif modal_type == "info":
 
             projName = request.form.get('projName')
+            projID = request.form.get('projID')
+            session['projID'] = projID
             session['project'] = projName
             return redirect(url_for('proj_info'))
 
         elif modal_type == "connect":
 
             projName = request.form.get('projName')
+            projID = request.form.get('projID')
+            session['projID'] = projID
             session['project'] = projName
-            return redirect(url_for('file_upload'))
+
+            project = Project.query.get(projID)
+            if project.fileNum is None:
+                return redirect(url_for('file_upload'))
+            else:
+                return redirect(url_for('tuple'))
 
         elif modal_type == "delete":
 
@@ -185,9 +195,24 @@ def dashboard():
             if not user_data.verify_password(password):
                 pass
             else:
-                projName = request.form.get('projName')
-                proj = Project.query.filter(Project.projName==projName).filter(Project.pID==user_data.pID).first()
-                db.session.delete(proj)
+                #projName = request.form.get('projName')
+                #proj = Project.query.filter(Project.projName==projName).filter(Project.pID==user_data.pID).first()
+                projID = request.form.get('projID')
+                project = Project.query.get(projID)
+                pair = Pair.query.filter(Pair.projID == projID).all()
+                for item in pair:
+                    result = Result.query.filter(Result.pairID == item.pairID).first()
+                    db.session.delete(result)
+
+                db.session.delete(pair)
+                origin = Origin.query.filter(Origin.projID == projID).all()
+                db.sesion.delete(origin)
+                compare = Compare.query.filter(Compare.projID == projID).all()
+                db.session.delete(compare)
+                file = File.query.get(project.fileNum)
+                db.session.delete(file)
+                db.session.delete(project)
+
                 db.session.commit()
 
                 return redirect(url_for('dashboard'))   
@@ -204,11 +229,14 @@ def proj_info():
     '''
     projName = ""
 
-    if not session['project'] or session['project'] == "":
+    #if not session['project'] or session['project'] == "":
+    if not session['projID'] or session['projID'] is None:
         return redirect(url_for('dashboard'))
     else:
-        projName = session['project']
-        project = Project.query.filter(Project.projName==projName).first()
+        #projName = session['project']
+        # project = Project.query.filter(Project.projName==projName).first()
+        project = Project.query.get(session['projID'])
+        projName = project.projName
         user = People.query.filter(People.pID==project.pID).first()
         user_name = user.pName
         projDesc = project.projDesc
@@ -253,10 +281,14 @@ def file_upload():
     global comp_file
     
 
-    if not session['project'] or session['project'] == "":
+    #if not session['project'] or session['project'] == "":
+    if not session['projID'] or session['projID'] is None:
         return redirect(url_for('dashboard'))
     else:
-        projName = session['project']
+        #projName = session['project']
+        projID = session['projID']
+        project = Project.query.get(projID)
+        projName = project.projName
 
         if request.method == 'POST':
 
@@ -273,20 +305,20 @@ def file_upload():
                     file_type = request.form.get('file_type')
 
                     if file_type == "origin_file":
-                        if not os.path.exists(join(app.config['UPLOAD_FOLDER'], projName, 'origin')):
-                            os.makedirs(join(app.config['UPLOAD_FOLDER'], projName, 'origin'))
+                        if not os.path.exists(join(app.config['UPLOAD_FOLDER'], projID, 'origin')):
+                            os.makedirs(join(app.config['UPLOAD_FOLDER'], projID, 'origin'))
 
-                        file.save(join(app.config['UPLOAD_FOLDER'], projName, 'origin', filename))
-                        origin_file = join(app.config['UPLOAD_FOLDER'], projName, 'origin', filename)
+                        file.save(join(app.config['UPLOAD_FOLDER'], projID, 'origin', filename))
+                        origin_file = join(app.config['UPLOAD_FOLDER'], projID, 'origin', filename)
 
                     elif file_type == "compare_file":
 
-                        if not os.path.exists(join(app.config['UPLOAD_FOLDER'], projName, 'compare')):
-                            os.makedirs(join(app.config['UPLOAD_FOLDER'], projName, 'compare'))
+                        if not os.path.exists(join(app.config['UPLOAD_FOLDER'], projID, 'compare')):
+                            os.makedirs(join(app.config['UPLOAD_FOLDER'], projID, 'compare'))
                         
-                        file.save(join(app.config['UPLOAD_FOLDER'], projName, 'compare', filename))
+                        file.save(join(app.config['UPLOAD_FOLDER'], projID, 'compare', filename))
                         # comp_file = zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], projName, 'compare', filename))
-                        comp_file = join(app.config['UPLOAD_FOLDER'], projName, 'compare', filename)
+                        comp_file = join(app.config['UPLOAD_FOLDER'], projID, 'compare', filename)
 
                     else:
                         print ("upload type error", file=sys.stderr)
@@ -305,11 +337,11 @@ def file_upload():
                     origin_file = zipfile.ZipFile(origin_file)
                     comp_file = zipfile.ZipFile(comp_file) 
 
-                    origin_file.extractall(join(app.config['UPLOAD_FOLDER'], projName, 'origin', 'files'))
-                    comp_file.extractall(join(app.config['UPLOAD_FOLDER'], projName, 'compare', 'files'))
+                    origin_file.extractall(join(app.config['UPLOAD_FOLDER'], projID, 'origin', 'files'))
+                    comp_file.extractall(join(app.config['UPLOAD_FOLDER'], projID, 'compare', 'files'))
 
-                    origin_path = join(app.config['UPLOAD_FOLDER'], projName, 'origin', 'files')
-                    comp_path = join(app.config['UPLOAD_FOLDER'], projName, 'compare', 'files')                    
+                    origin_path = join(app.config['UPLOAD_FOLDER'], projID, 'origin', 'files')
+                    comp_path = join(app.config['UPLOAD_FOLDER'], projID, 'compare', 'files')
                     
                     file_data = File(origin_path, comp_path)
                     
@@ -319,8 +351,8 @@ def file_upload():
                     db.session.commit()
 
                     file_data = File.query.filter(File.originPath==origin_path).first()
-                    project_data = Project.query.filter(Project.projName==projName).first()
-                    project_data.fileNum = file_data.fileID
+                    #project_data = Project.query.filter(Project.projName==projName).first()
+                    project.fileNum = file_data.fileID
 
                     db.session.commit()
 
@@ -348,17 +380,21 @@ def tuple():
 
     projName = ""
 
-    if not session['project'] or session['project'] == "":
+    # if not session['project'] or session['project'] == "":
+    if not session['projID'] or session['projID'] is None:
         return redirect(url_for('dashboard'))
     else:
 
         tuple_list = []
 
-        projName = session['project']
-        project_data = Project.query.filter(Project.projName==projName).first()
-        file_data = File.query.filter(File.fileID==project_data.fileNum).first()
+        #projName = session['project']
+        projID = session['projID']
+        project = Project.query.get(projID)
+        projName = project.projName
+        #project_data = Project.query.filter(Project.projName==projName).first()
+        file_data = File.query.filter(File.fileID==project.fileNum).first()
 
-        projID = project_data.projID
+        #projID = project.projID
 
         origin_path = file_data.originPath
         comp_path = file_data.compPath
@@ -404,7 +440,7 @@ def tuple():
         if tuple_type == 'same':
             for ori in origin_list:
                 for comp in comp_list:
-                    if ori.replace(join(app.config['UPLOAD_FOLDER'], projName, 'origin', 'files'), '') == comp.replace(join(app.config['UPLOAD_FOLDER'], projName, 'compare', 'files'), ''):
+                    if ori.replace(join(app.config['UPLOAD_FOLDER'], projID, 'origin', 'files'), '') == comp.replace(join(app.config['UPLOAD_FOLDER'], projID, 'compare', 'files'), ''):
                         tuple_list.append((ori.encode('ascii'), comp.encode('ascii')))
                     else:
                         continue
@@ -441,12 +477,17 @@ def tuple_edit():
 
     projName = ""
 
-    if not session['project'] or session['project'] == "":
+    # if not session['project'] or session['project'] == "":
+    if not session['projID'] or session['projID'] is None:
         return redirect(url_for('dashboard'))
     else:
-        projName = session['project']
-        project_data = Project.query.filter(Project.projName==projName).first()
-        projID = project_data.projID
+        #projName = session['project']
+        #project_data = Project.query.filter(Project.projName==projName).first()
+        #projID = project_data.projID
+
+        projID = session['projID']
+        project_data = Project.query.get(projID)
+        projName = project_data.projName
 
         for pair in tuple_list:
             origin_path = pair[0].rsplit('/',1)[0]

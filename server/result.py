@@ -17,18 +17,21 @@ from flask import session
 from server import db
 import codecs
 
+from server.views import login_required
+
+
 @app.route('/result', methods=["GET"])
+@login_required
 def default():
-    if not session['project'] or session['project'] == "":
+    if not session['projID'] or session['projID'] == "":
         return redirect(url_for('dashboard'))
     else:
-        projName = session['project']
-        project_data = Project.query.filter(Project.projName==projName).first()
-        projID = project_data.projID
+        projID = session['projID']
         return redirect('result/' + str(projID))
 
 
 @app.route('/result/<projectid>', methods=["GET"])
+@login_required
 def result(projectid):
 
     project = Project.query.get(projectid)
@@ -44,6 +47,7 @@ def result(projectid):
 
 
 @app.route('/result/<projectid>/<pairid>', methods=["GET", "POST"])
+@login_required
 def detail(projectid, pairid):
     if request.method == 'GET':
 
@@ -117,4 +121,4 @@ def init_pair():
     db.session.add(people)
     db.session.commit()
 
-    return redirect(url_for("/dashboard"))
+    return redirect(url_for("dashboard"))

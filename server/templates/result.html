@@ -132,7 +132,7 @@
             var id = $(this).attr('id');
             var temp = id.split('_');
             var now = parseInt(temp[1]) + NUMBER_PAGE * (nowPage-1);
-            window.open('/result/'+pID+'/'+nowList[now-1].pairID, 'detail', 'window settings');
+            window.open('/result/'+pID+'/'+nowList[now-1].pairID, '_blank');
         })
     });
 
@@ -173,6 +173,10 @@
     function updateDate(){
         isUpdated == true ? $("#isUpdated").text('변경사항이 있습니다. 새로고침 하세요.') : $("#isUpdated").text('');
     }
+
+    $(document).ready(function(){
+        $("#result").addClass("current-page");
+    });
 
 </script>
 

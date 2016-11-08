@@ -75,7 +75,7 @@
               <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="x_panel">
                   <div class="x_title">
-                    <h2><i class="fa fa-bars"></i> 프로젝트 리스트 </h2>
+                    <h2> 프로젝트 리스트 </h2>
                     <button id="btn_admin_clone" class="btn btn-default pull-right" type="button" data-toggle="modal" data-target="#cloneModal">복제</button>
 
                     <div id="cloneModal" class="modal fade" role="dialog">
@@ -172,6 +172,7 @@
                           <form role="form" method="POST" submit="/dashboard" name="form" class="pure-form pure-form-stacked">
                               <input id="modal_type" name="modal_type" type=hidden value="info">
                               <input id="projName" name="projName" type="hidden" value="{{project.projName}}">
+                              <input id="projID" name="projID" type="hidden" value="{{project.projID}}">
                               <button type="submit" class="btn btn-info btn-xs">정보</button>
                           </form>
                           </td>
@@ -180,6 +181,7 @@
                           <form role="form" method="POST" submit="/dashboard" name="form" class="pure-form pure-form-stacked">
                               <input id="modal_type" name="modal_type" type=hidden value="connect">
                               <input id="projName" name="projName" type="hidden" value="{{project.projName}}">
+                              <input id="projID" name="projID" type="hidden" value="{{project.projID}}">
                               <button type="submit" class="btn btn-primary btn-xs">선택</button>
                           </form>
                           </td>
@@ -194,9 +196,10 @@
                                   <form role="form" method="POST" submit="/dashboard">
                                     <input id="modal_type" name="modal_type" type=hidden value="delete">
                                     <input id="projName" name="projName" type="hidden" value="{{project.projName}}">
+                                    <input id="projID" name="projID" type="hidden" value="{{project.projID}}">
                                     <div class="form-group">
                                       <label for="password"><span class="glyphicon glyphicon-user"></span>패스워드</label>
-                                      <input type="text" class="form-control" id="password" name="password" placeholder="패스워드 입력" required>
+                                      <input type="password" class="form-control" id="password" name="password" autocomplete="off" placeholder="패스워드 입력" required>
                                     </div>
                                     <button type="submit" class="btn btn-success btn-block">
                                     <span class="glyphicon glyphicon-off"></span> 삭제</button>
