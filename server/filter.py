@@ -1,5 +1,4 @@
-# coding=utf-8
-# -*- coding-utf8 -*-
+# -*- coding:utf-8 -*-
 
 import preprocessor
 import compare
@@ -12,6 +11,10 @@ from server import app
 import time
 from datetime import datetime
 import lexer.clexer as clexer
+
+import sys
+reload(sys)
+sys.setdefaultencoding("utf-8")
 
 
 # pair 수 만큼 호출

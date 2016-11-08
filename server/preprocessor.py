@@ -4,6 +4,11 @@ import re
 from abc import ABCMeta, abstractmethod
 import lexer.clexer as clexer
 import lexer.javalexer as javalexer
+import tokenize, io
+
+import sys
+reload(sys)
+sys.setdefaultencoding("utf-8")
 
 
 class PreProcessor:
@@ -195,7 +200,13 @@ class JavaTokenizer(Tokenizing):
 
 class PythonTokenizer(Tokenizing):
     def tokenize(self, line):
-        pass
+        tokenList = []
+        print line
+        for t in tokenize.generate_tokens(io.StringIO(unicode(line.decode("ISO-8859-1"))).readline):
+            tokenList.append(t)
+
+        print tokenList
+        return tokenList
 
 
 def numberMapping(orifile, compfile):
