@@ -30,6 +30,7 @@ def comparePageOpen():
     project = db.session.query(Project).filter(Project.projID == projectId).first()
     print '마지막 중단 지점 : '+str(project.lastPair)
 
+    # 초기 옵션 [ 마지막으로 비교한 비교쌍 번호, 비교 알고리즘, 주석 제거 여부, 토크나이저 종류 ]
     lastPair = 0
     compareMethod = 0
     commentRemove = 1
@@ -38,6 +39,7 @@ def comparePageOpen():
     if not os.path.exists(app.config['PROGRESS_FOLDER']):
         os.makedirs(app.config['PROGRESS_FOLDER'])
 
+    # 저장된 지점부터 비교할 시, 메타 데이터들을 불러옴.
     if os.path.exists(join(app.config['PROGRESS_FOLDER'], str(projectId))):
         f = open(join(app.config['PROGRESS_FOLDER'], str(projectId)))
         configFile = f.read()
@@ -89,7 +91,10 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
 
     db.session.commit()
 
-    tokenizerList = [preprocessor.SpaceTokenizer(), preprocessor.CTokenizer()]
+    print 'java' if tokenizer == 2 else 'no'
+
+    tokenizerList = [preprocessor.SpaceTokenizer(), preprocessor.CTokenizer(), preprocessor.JavaTokenizer()
+                     , preprocessor.PythonTokenizer()]
 
     stage = 0
 
@@ -98,18 +103,21 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
             stage += 1
             continue
 
+        # 원본, 비교본 파일들의 경로를 얻음
         originFile = db.session.query(Origin).filter(Origin.originID == pair.originID).first()
         origin = join(originFile.originPath, originFile.originName)
 
         compFile = db.session.query(Compare).filter(Compare.compID == pair.compID).first()
         comp = join(compFile.compPath, compFile.compName)
 
+        # 옵션 인자들과 함께 원본과 비교본의 경로를 넘겨 두 파일을 실제 비교하게 함.
         filter.compareOnePair(origin, comp, pair.pairID, compareMethod, commentRemove
                               , tokenizerList[tokenizer])
         db.session.query(Project).filter(Project.projID == projectId).update(
             dict(lastPair=pair.pairID))
         db.session.commit()
 
+        # 비교 진행 상황을 파일에 저장
         f = open(join(app.config['PROGRESS_FOLDER'], str(projectId)), 'w')
         f.write(str({'lastPair': pair.pairID, 'compareMethod': compareMethod, 'commentRemove': commentRemove,
                      'tokenizer': tokenizer}))

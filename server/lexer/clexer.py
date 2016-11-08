@@ -128,7 +128,7 @@ t_ignore = ' \t\n'
 
 # Error handling rule
 def t_error(t):
-    print("Illegal character '{0}' at line {1}".format(t.value[0], t.lineno))
+    # print("Illegal character '{0}' at line {1}".format(t.value[0], t.lineno))
     t.lexer.skip(1)
 
 
