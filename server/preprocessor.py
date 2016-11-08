@@ -3,6 +3,7 @@
 import re
 from abc import ABCMeta, abstractmethod
 import lexer.clexer as clexer
+import lexer.javalexer as javalexer
 
 
 class PreProcessor:
@@ -122,7 +123,7 @@ class Tokenizing(PreProcessor):
         self.lineNumList = lineNumList
 
     def process(self):
-        stopWords = ['', ' ', '{', '}']
+        stopWords = ['', ' ', '{', '}', '(', ')', ',', '.', ':', ';']
         retList = []
         blankList = []
         lineList = []
@@ -179,6 +180,22 @@ class CTokenizer(Tokenizing):
 
         return tokenList
 
+
+class JavaTokenizer(Tokenizing):
+    def tokenize(self, line):
+        lexer = javalexer.initLexer()
+        lexer.input(line)
+
+        tokenList = []
+        for token in lexer:
+            tokenList.append(token.value)
+
+        return tokenList
+
+
+class PythonTokenizer(Tokenizing):
+    def tokenize(self, line):
+        pass
 
 
 def numberMapping(orifile, compfile):
