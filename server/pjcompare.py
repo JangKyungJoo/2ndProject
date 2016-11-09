@@ -91,8 +91,6 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
 
     db.session.commit()
 
-    print 'java' if tokenizer == 2 else 'no'
-
     tokenizerList = [preprocessor.SpaceTokenizer(), preprocessor.CTokenizer(), preprocessor.JavaTokenizer()
                      , preprocessor.PythonTokenizer()]
 
@@ -111,6 +109,7 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
         comp = join(compFile.compPath, compFile.compName)
 
         # 옵션 인자들과 함께 원본과 비교본의 경로를 넘겨 두 파일을 실제 비교하게 함.
+        print compareMethod, commentRemove, tokenizer
         filter.compareOnePair(origin, comp, pair.pairID, compareMethod, commentRemove
                               , tokenizerList[tokenizer])
         db.session.query(Project).filter(Project.projID == projectId).update(

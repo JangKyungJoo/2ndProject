@@ -61,6 +61,8 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentRemove
     elif compareMethod == 2:
         checkFunction = compare.UnorderedCheck()
 
+    print checkFunction
+
     compa = compare.Compare(checkFunction)
     compa.setInput(outputs[0][0], outputs[1][0])
     ret = compa.process()

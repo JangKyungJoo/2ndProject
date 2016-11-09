@@ -32,6 +32,48 @@
 
               <br /><br />
 
+              <div class="form-group">
+    		<label for="comment" class="col-sm-2 col-md-2 control-label text-left">주석 제거 여부</label>
+    		<div class="col-sm-7 col-md-7">
+    			<div class="input-group">
+    				<div id="radioBtn" class="btn-group">
+    					<a class="btn btn-primary btn-sm active" data-toggle="comment" data-title="1">제거</a>
+    					<a class="btn btn-primary btn-sm notActive" data-toggle="comment" data-title="0">유지</a>
+    				</div>
+    				<input type="hidden" name="comment" id="comment" value="1">
+    			</div>
+    		</div>
+    	</div>
+        <br /><br />
+        <div class="form-group">
+        	<label for="fun" class="col-sm-2 col-md-2 control-label text-left">토크나이저 선택</label>
+    		<div class="col-sm-7 col-md-7">
+    			<div class="input-group">
+    				<div id="radioBtn" class="btn-group">
+    					<a class="btn btn-primary btn-sm active" data-toggle="token" data-title="0">공백</a>
+                        <a class="btn btn-primary btn-sm notActive" data-toggle="token" data-title="1">C/CPP</a>
+                        <a class="btn btn-primary btn-sm notActive" data-toggle="token" data-title="2">JAVA</a>
+                        <a class="btn btn-primary btn-sm notActive" data-toggle="token" data-title="3">PYTHON</a>
+    				</div>
+    				<input type="hidden" name="token" id="token" value="0">
+    			</div>
+    		</div>
+    	</div>
+              <br /><br />
+        <div class="form-group">
+        	<label for="fun" class="col-sm-2 col-md-2 control-label text-left">비교 알고리즘 선택</label>
+    		<div class="col-sm-7 col-md-7">
+    			<div class="input-group">
+    				<div id="radioBtn" class="btn-group">
+    					<a class="btn btn-primary btn-sm active" data-toggle="method" data-title="1">LCS</a>
+                        <a class="btn btn-primary btn-sm notActive" data-toggle="method" data-title="2">???</a>
+    				</div>
+    				<input type="hidden" name="method" id="method" value="1">
+    			</div>
+    		</div>
+    	</div>
+              <br /><br />
+
     <button id="relay" class="btn btn-default">마지막 중단 지점부터 비교하기</button>
     <button id="initial" class="btn btn-default">처음부터 비교하기</button>
               </div>
@@ -84,6 +126,11 @@
 
     var selectedMethod = 1;
     var completed = 0;
+
+    if(varLastPair == 0) {
+        document.getElementById("relay").disabled = true;
+    }
+
     $(function() {
         $('#relay').click(function() {
             if(varLastPair == 0) {
@@ -97,29 +144,12 @@
 
     $(function() {
         $('#initial').click(function() {
-            $('#myModal').modal();
-            /*
-            BootstrapDialog.show({
-                    message: '비교 방법 설정',
-                    buttons: [{
-                        label: '순서 고려한 비교',
-                        action: function(dialog) {
-                            varLastPair = 0;
-                            compareMethod = 1;
-                            dialog.close();
-                            compareStart();
-                        }
-                    }, {
-                        label: '순서 고려하지 않은 비교',
-                        action: function(dialog) {
-                            varLastPair = 0;
-                            compareMethod = 2;
-                            dialog.close();
-                            compareStart();
-                        }
-                    }]
-                });
-                */
+            varLastPair = 0;
+            commentRemove = document.getElementById("comment").value;
+            tokenizer = document.getElementById("token").value;
+            selectedMethod = document.getElementById("method").value;
+
+            compareStart();
         });
     });
 
