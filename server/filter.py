@@ -18,8 +18,8 @@ sys.setdefaultencoding("utf-8")
 
 
 # pair 수 만큼 호출
-def compareOnePair(originFile, compFile, pairNum, compareMethod, commentRemove
-                   , tokenizer):
+def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
+                   , tokenizerList):
     global output
     originFile = open(originFile)
     compFile = open(compFile)
@@ -27,29 +27,27 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentRemove
     originFile = originFile.read()
     compFile = compFile.read()
 
-    cComment = [preprocessor.RemoveComment(token=['/*', '*/']), preprocessor.RemoveComment(token=['//', '\n'])]
-    pyComment = [preprocessor.RemoveComment(token=["'''", "'''"]), preprocessor.RemoveComment(token=['"""', '"""']),
-                 preprocessor.RemoveComment(token=['#', '\n'])]
-
-    preprocess_filter = [preprocessor.RemoveBlank(), tokenizer]
-
-    if commentRemove == 1:
-        for comment in cComment:
-            preprocess_filter.insert(0, comment)
+    preprocess_filter = [preprocessor.RemoveBlank(), tokenizerList]
 
     inputs = [originFile, compFile]
     outputs = []
 
-    for input in inputs:
+    for i in range(len(inputs)):
         lineNumInfo = []
-        for i in range(len(input.split('\n'))):
-            lineNumInfo.append(i)
+        for j in range(len(inputs[i].split('\n'))):
+            lineNumInfo.append(j)
+
+        for comments in commentList:
+            for comment in comments:
+                preprocess_filter.insert(0, comment)
 
         for task in preprocess_filter:
-            task.setInput(input)
+            if isinstance(task, list):
+                task = task[i]
+            task.setInput(inputs[i])
             task.setLineNumInfo(lineNumInfo)
             output, lineNumInfo = task.process()
-            input = output
+            inputs[i] = output
         outputs.append([output, lineNumInfo])
 
     start_time = time.time()
@@ -60,6 +58,8 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentRemove
         checkFunction = compare.OrderedCheck()
     elif compareMethod == 2:
         checkFunction = compare.UnorderedCheck()
+
+    print checkFunction
 
     compa = compare.Compare(checkFunction)
     compa.setInput(outputs[0][0], outputs[1][0])
