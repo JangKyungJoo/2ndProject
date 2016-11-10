@@ -138,7 +138,6 @@ def dashboard():
     else:
         user_data = People.query.filter(People.pEmail==session['email']).first()
         project_list = Project.query.filter(Project.pID==user_data.pID).all()
-        #session['project'] = ""
         session['projID'] = None
 
     if request.method=='POST':
@@ -195,25 +194,29 @@ def dashboard():
             if not user_data.verify_password(password):
                 pass
             else:
-                #projName = request.form.get('projName')
-                #proj = Project.query.filter(Project.projName==projName).filter(Project.pID==user_data.pID).first()
                 projID = request.form.get('projID')
                 project = Project.query.get(projID)
                 pair = Pair.query.filter(Pair.projID == projID).all()
                 for item in pair:
-                    result = Result.query.filter(Result.pairID == item.pairID).first()
-                    db.session.delete(result)
+                    result = Result.query.filter(Result.pairID == item.pairID).all()
+                    for temp in result:
+                        db.session.delete(temp)
+                    db.session.delete(item)
 
-                db.session.delete(pair)
                 origin = Origin.query.filter(Origin.projID == projID).all()
-                db.sesion.delete(origin)
+                for item in origin:
+                    db.session.delete(item)
+
                 compare = Compare.query.filter(Compare.projID == projID).all()
-                db.session.delete(compare)
+                for item in compare:
+                    db.session.delete(item)
+
                 file = File.query.get(project.fileNum)
                 db.session.delete(file)
                 db.session.delete(project)
 
                 db.session.commit()
+                #os.remove(join(app.config['UPLOAD_FOLDER'], projID))
 
                 return redirect(url_for('dashboard'))   
 
@@ -227,14 +230,9 @@ def proj_info():
     '''
         프로젝트 정보
     '''
-    projName = ""
-
-    #if not session['project'] or session['project'] == "":
     if not session['projID'] or session['projID'] is None:
         return redirect(url_for('dashboard'))
     else:
-        #projName = session['project']
-        # project = Project.query.filter(Project.projName==projName).first()
         project = Project.query.get(session['projID'])
         projName = project.projName
         user = People.query.filter(People.pID==project.pID).first()
@@ -274,18 +272,14 @@ def file_upload():
         :비교 파일: server/uploads/<projName>/compare/<filename>
 
     '''
-    
-    projName = ""
 
     global origin_file
     global comp_file
     
 
-    #if not session['project'] or session['project'] == "":
     if not session['projID'] or session['projID'] is None:
         return redirect(url_for('dashboard'))
     else:
-        #projName = session['project']
         projID = session['projID']
         project = Project.query.get(projID)
         projName = project.projName
@@ -351,7 +345,6 @@ def file_upload():
                     db.session.commit()
 
                     file_data = File.query.filter(File.originPath==origin_path).first()
-                    #project_data = Project.query.filter(Project.projName==projName).first()
                     project.fileNum = file_data.fileID
 
                     db.session.commit()
@@ -378,23 +371,21 @@ def tuple():
         비교쌍 생성
     '''
 
-    projName = ""
 
-    # if not session['project'] or session['project'] == "":
     if not session['projID'] or session['projID'] is None:
         return redirect(url_for('dashboard'))
     else:
 
         tuple_list = []
 
-        #projName = session['project']
         projID = session['projID']
         project = Project.query.get(projID)
         projName = project.projName
-        #project_data = Project.query.filter(Project.projName==projName).first()
         file_data = File.query.filter(File.fileID==project.fileNum).first()
 
-        #projID = project.projID
+        if file_data is None:
+            return redirect(url_for('file_upload'))
+
 
         origin_path = file_data.originPath
         comp_path = file_data.compPath
@@ -475,15 +466,9 @@ def tuple_edit():
 
     global tuple_list
 
-    projName = ""
-
-    # if not session['project'] or session['project'] == "":
     if not session['projID'] or session['projID'] is None:
         return redirect(url_for('dashboard'))
     else:
-        #projName = session['project']
-        #project_data = Project.query.filter(Project.projName==projName).first()
-        #projID = project_data.projID
 
         projID = session['projID']
         project_data = Project.query.get(projID)

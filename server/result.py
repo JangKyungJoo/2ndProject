@@ -3,6 +3,7 @@ import os
 
 from flask import Flask, request, render_template
 from flask import redirect
+from flask import send_file
 from flask import url_for
 from server import app
 from flask import json
@@ -16,6 +17,7 @@ from server.models import People
 from flask import session
 from server import db
 import codecs
+import csv
 
 from server.views import login_required
 
@@ -35,13 +37,29 @@ def default():
 def result(projectid):
 
     project = Project.query.get(projectid)
+
+    if project.fileNum is None:
+        return redirect(url_for('file_upload'))
+
     projName = project.projName
 
     pair = Pair.query.filter(Pair.projID == projectid).order_by(Pair.similarity.desc()).all()
-    json_list = [Pair.serialize(i, Origin.query.with_entities(Origin.originName).filter(Origin.projID == projectid).filter(Origin.originID == i.originID).first(), Compare.query.with_entities(Compare.compName).filter(Compare.projID == projectid).filter(Compare.compID == i.compID).first()) for i in pair]
+
+    origin_list = Origin.query.filter(Origin.projID == projectid).order_by(Origin.originID).all()
+    origin_flag = origin_list[0].originID
+    compare_list = Compare.query.filter(Compare.projID == projectid).order_by(Compare.compID).all()
+    compare_flag = compare_list[0].compID
+
+    json_list = []
+    for item in pair:
+        json_list.append(Pair.serialize(item, origin_list[item.originID - origin_flag].originName, compare_list[item.compID - compare_flag].compName))
+
 
     pair = Pair.query.filter(Pair.projID == projectid).order_by(Pair.similarity.desc(), Pair.modifyDate.desc()).all()
-    json_list2 = [Pair.serialize(i, Origin.query.with_entities(Origin.originName).filter(Origin.projID == projectid).filter(Origin.originID == i.originID).first(),Compare.query.with_entities(Compare.compName).filter(Compare.projID == projectid).filter(Compare.compID == i.compID).first()) for i in pair]
+    json_list2 = []
+    for item in pair:
+        json_list2.append(Pair.serialize(item, origin_list[item.originID - origin_flag].originName,
+                                        compare_list[item.compID - compare_flag].compName))
 
     return render_template("result.html", dateByAsc=json.dumps(json_list), dateByDesc=json.dumps(json_list2), pairCount=len(pair), projectid=projectid, projName = projName)
 
@@ -107,6 +125,27 @@ def detail(projectid, pairid):
         db.session.commit()
 
         return render_template("detail.html")
+
+
+@app.route('/result/<projectid>/save', methods=["GET"])
+@login_required
+def save(projectid):
+    projID = projectid
+    hello = [['Me', 'You'], ['293', '219'], ['13', '15']]
+    length = len(hello[0])
+
+    path = os.path.join(os.path.join(app.config['UPLOAD_FOLDER'], projID), 'result.csv')
+
+    with open(path, 'wb') as testfile:
+        csv_writer = csv.writer(testfile)
+        for y in range(length):
+            csv_writer.writerow([x[y] for x in hello])
+
+    return send_file(path,
+                     mimetype='text/csv',
+                     attachment_filename='result.csv',
+                     as_attachment=True)
+
 
 def getPath(path):
     temp = path[len(app.config['UPLOAD_FOLDER']):]

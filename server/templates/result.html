@@ -14,6 +14,11 @@
                     <h2>프로젝트 명 : {{ projName }}</h2>
                     <h5 id="isUpdated" style="color:lightcoral"></h5>
                 </div>
+                <div style="text-align: right;">
+                    <form id="csv" method="GET" action="{{ projectid }}/save">
+                        <button class="btn btn-default" style="width:100px;">Save as csv</button>
+                    </form>
+                </div>
             </div>
             <div class="panel-container" align="center">
                 <div class="panel panel-default" style="margin-left : 15px">
