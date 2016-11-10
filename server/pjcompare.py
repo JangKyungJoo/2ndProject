@@ -91,27 +91,48 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
 
     db.session.commit()
 
-    tokenizerList = [preprocessor.SpaceTokenizer(), preprocessor.CTokenizer(), preprocessor.JavaTokenizer()
-                     , preprocessor.PythonTokenizer()]
+    tokenizers = {'py': preprocessor.PythonTokenizer(), 'java': preprocessor.JavaTokenizer(),
+                  'c': preprocessor.CTokenizer(), 'cpp': preprocessor.CTokenizer()}
+
+    cComment = [preprocessor.RemoveComment(token=['/*', '*/']), preprocessor.RemoveComment(token=['//', '\n'])]
+    pyComment = [preprocessor.RemoveComment(token=["'''", "'''"]), preprocessor.RemoveComment(token=['"""', '"""']),
+                 preprocessor.RemoveComment(token=['#', '\n'])]
+
+    comments = {'py': pyComment, 'c': cComment, 'cpp': cComment, 'java': cComment}
 
     stage = 0
 
-    for pair in db.session.query(Pair).filter(Pair.projID == projectId):
+    pairs = db.session.query(Pair).filter(Pair.projID == projectId).all()
+    for i in range(len(pairs)):
+        pair = pairs[i]
+
         if lastPair >= pair.pairID:
             stage += 1
             continue
 
+        tokenizerList = []
+        commentList = []
         # 원본, 비교본 파일들의 경로를 얻음
         originFile = db.session.query(Origin).filter(Origin.originID == pair.originID).first()
         origin = join(originFile.originPath, originFile.originName)
+        originExt = origin.rsplit('.')[0]
+        tokenizerList.append(tokenizers.get(originExt, tokenizers['c']))
+        commentList.append(comments.get(originExt, comments['c']))
 
         compFile = db.session.query(Compare).filter(Compare.compID == pair.compID).first()
         comp = join(compFile.compPath, compFile.compName)
+        compExt = comp.rsplit('.')[0]
+        tokenizerList.append(tokenizers.get(compExt, tokenizers['c']))
+        commentList.append(comments.get(compExt, comments['c']))
 
         # 옵션 인자들과 함께 원본과 비교본의 경로를 넘겨 두 파일을 실제 비교하게 함.
-        print compareMethod, commentRemove, tokenizer
-        filter.compareOnePair(origin, comp, pair.pairID, compareMethod, commentRemove
-                              , tokenizerList[tokenizer])
+        if tokenizer == 0:
+            tokenizerList = [preprocessor.SpaceTokenizer(), preprocessor.SpaceTokenizer()]
+        if commentRemove == 0:
+            commentList = []
+
+        filter.compareOnePair(origin, comp, pair.pairID, compareMethod, commentList
+                              , tokenizerList)
         db.session.query(Project).filter(Project.projID == projectId).update(
             dict(lastPair=pair.pairID))
         db.session.commit()
