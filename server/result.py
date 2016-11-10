@@ -18,6 +18,7 @@ from flask import session
 from server import db
 import codecs
 import csv
+import time
 
 from server.views import login_required
 
@@ -131,15 +132,37 @@ def detail(projectid, pairid):
 @login_required
 def save(projectid):
     projID = projectid
-    hello = [['Me', 'You'], ['293', '219'], ['13', '15']]
-    length = len(hello[0])
+    projName = Project.query.get(projID).projName
+    result = []
+    origin = ['', 'origin file']
+    compare = ['', 'compare file']
+    similarity = ['project : ', 'similarity (%)']
+    modify = [projName, 'modify date']
 
+    pair = Pair.query.filter(Pair.projID == projectid).order_by(Pair.similarity.desc()).all()
+    origin_list = Origin.query.filter(Origin.projID == projectid).order_by(Origin.originID).all()
+    origin_flag = origin_list[0].originID
+    compare_list = Compare.query.filter(Compare.projID == projectid).order_by(Compare.compID).all()
+    compare_flag = compare_list[0].compID
+
+    for item in pair:
+        origin.append(origin_list[item.originID - origin_flag].originName)
+        compare.append(compare_list[item.compID - compare_flag].compName)
+        similarity.append(format(item.similarity, '.2f'))
+        modify.append(str(item.modifyDate.strftime("%Y-%m-%d %H:%M")))
+
+    result.append(origin)
+    result.append(compare)
+    result.append(similarity)
+    result.append(modify)
+
+    length = Pair.query.filter(Pair.projID == projectid).count()
     path = os.path.join(os.path.join(app.config['UPLOAD_FOLDER'], projID), 'result.csv')
 
-    with open(path, 'wb') as testfile:
-        csv_writer = csv.writer(testfile)
+    with codecs.open(path, 'wb', encoding = 'utf-8') as file:
+        csv_writer = csv.writer(file)
         for y in range(length):
-            csv_writer.writerow([x[y] for x in hello])
+            csv_writer.writerow([x[y].encode('utf-8') for x in result])
 
     return send_file(path,
                      mimetype='text/csv',
@@ -150,7 +173,6 @@ def save(projectid):
 def getPath(path):
     temp = path[len(app.config['UPLOAD_FOLDER']):]
     return temp.split('files/')[1]
-
 
 
 # DB 초기화에 대비한 db add 부분. 지울 것
