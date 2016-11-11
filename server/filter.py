@@ -21,6 +21,9 @@ sys.setdefaultencoding("utf-8")
 def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
                    , tokenizerList):
     global output
+    opath = originFile.rsplit('/')[0]
+    cpath = compFile.rsplit('/')[0]
+
     originFile = open(originFile)
     compFile = open(compFile)
 
@@ -37,8 +40,8 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
         for j in range(len(inputs[i].split('\n'))):
             lineNumInfo.append(j)
 
-        for comments in commentList:
-            for comment in comments:
+        if len(commentList) > 0:
+            for comment in commentList[i]:
                 preprocess_filter.insert(0, comment)
 
         for task in preprocess_filter:
@@ -48,7 +51,12 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
             task.setLineNumInfo(lineNumInfo)
             output, lineNumInfo = task.process()
             inputs[i] = output
+
         outputs.append([output, lineNumInfo])
+
+        if len(commentList) > 0:
+            for j in range(len(commentList[i])):
+                preprocess_filter.pop(0)
 
     start_time = time.time()
     # ori, comp = preprocessor.numberMapping(outputs[0][0], outputs[1][0])
@@ -59,35 +67,31 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
     elif compareMethod == 2:
         checkFunction = compare.UnorderedCheck()
 
-    print checkFunction
-
     compa = compare.Compare(checkFunction)
     compa.setInput(outputs[0][0], outputs[1][0])
     ret = compa.process()
 
     end_time = time.time()
-    # print end_time - start_time
+    print end_time - start_time
 
-    print ret
+    # print ret
 
     similLine = 0.0
     entireLine = len(outputs[0][0])
     similLine += len(ret.keys())
 
     similarity = similLine / entireLine * 100
-    print similarity
-
+    # print similarity
+'''
     for key in ret.keys():
         # key : 원본 라인 번호 -1
-        for element in ret[key]:
-            # element : 원본 key라인과 매칭된 비교본 라인번호, 유사타입(1 : 일치, 2 : 유사)
-            # print element
-            newResult = Result(pairNum, outputs[0][1][key] + 1, outputs[1][1][element[0]] + 1, element[1])
-            db.session.add(newResult)
+        newResult = Result(pairNum, outputs[0][1][key] + 1, outputs[1][1][ret[key][0]] + 1, ret[key][1])
+        db.session.add(newResult)
 
     db.session.query(Pair).filter(Pair.pairID == pairNum).update(
         dict(similarity=similarity, modifyDate=datetime.now()))
     db.session.commit()
+'''
 
     # for u in db.session.query(Result).all():
     # print(u.resultID, u.pairID, u.originLine, u.compLine, u.rType)

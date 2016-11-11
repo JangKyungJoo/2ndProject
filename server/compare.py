@@ -64,14 +64,16 @@ class Compare:
     originToken = []
     compToken = []
     method = ''
+    visited = {}
 
     def __init__(self, method):
         self.method = method
+        self.visited = {}
 
     def setInput(self, originFile, compFile):
         self.originToken = originFile
         self.compToken = compFile
-
+    '''
     def process(self):
         dict = {}
 
@@ -86,3 +88,60 @@ class Compare:
                     dict[i].append([j, 2])
 
         return dict
+    '''
+
+    def process(self):
+        i = 0
+        matrix = {}
+        while i < len(self.originToken):
+            dict = {}
+            j = 0
+            while j < len(self.compToken):
+                if self.visited.get(j, 0) == 1:
+                    j += 1
+                    continue
+                retList = []
+                per = self.method.process(self.originToken[i], self.compToken[j])
+                if per == 100.0:
+                    retList = self.block(i + 1, j + 1, 0)
+                    retList.append(1)
+                elif per >= 70.0:
+                    retList = self.block(i + 1, j + 1, 0)
+                    retList.append(2)
+                retList.reverse()
+                dict[j] = retList
+
+                j += len(retList)
+                j += 1
+
+            idx = 0
+            maxlen = 0
+            for blk in dict.keys():
+                if len(dict[blk]) > maxlen:
+                    maxlen = len(dict[blk])
+                    idx = blk
+            for k in range(idx, idx+maxlen):
+                matrix[i] = [k, dict[k][k-idx]]
+                self.visited[k] = 1
+                i += 1
+            i += 1
+        return matrix
+
+    def block(self, i, j, length):
+        if len(self.originToken) >= i or len(self.compToken) >= j:
+            return []
+        if self.visited.get(j, 0) == 1:
+            return []
+
+        per = self.method.process(self.originToken[i], self.compToken[j])
+
+        if per == 100.0:
+            retList = self.block(i + 1, j + 1, length + 1)
+            retList.append(1)
+        elif per >= 70.0:
+            retList = self.block(i + 1, j + 1, length + 1)
+            retList.append(2)
+        else:
+            return []
+
+        return retList
