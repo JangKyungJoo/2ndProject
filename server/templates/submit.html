@@ -78,6 +78,8 @@
               </div>
         </div>
 <script language="JavaScript">
+    var inter;
+
     function compareStart() {
                 $.ajax({
                     url: '/compare',
@@ -107,7 +109,7 @@
                         });
                         dialog.open();
 
-                        setInterval(checkProcess, 1000);
+                        inter = setInterval(checkProcess, 1000);
                         // checkProcess()
                     },
                     error: function (error) {
@@ -172,6 +174,8 @@
                         // sleep(200);
                         // checkProcess();
                     } else {
+                        clearInterval(inter);
+                        // sleep(500);
                         dialog.close();
                         document.complete.submit();
                     }

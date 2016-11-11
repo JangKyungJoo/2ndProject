@@ -144,15 +144,15 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
 
         # 취소 확인
 
-        q.put(pair.pairID)
+        q.put(stage)
         lastPair = pair.pairID
         stage += 1
         # print "put : " + str(pair.pairID)
 
     if os.path.exists(join(app.config['PROGRESS_FOLDER'], str(projectId))):
         os.remove(join(app.config['PROGRESS_FOLDER'], str(projectId)))
-    q.put(stage)
     db.session.commit()
+    q.put(stage)
 
 
 @app.route("/compare/state", methods=["GET"])
