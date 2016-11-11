@@ -82,7 +82,7 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
 
     similarity = similLine / entireLine * 100
     # print similarity
-'''
+
     for key in ret.keys():
         # key : 원본 라인 번호 -1
         newResult = Result(pairNum, outputs[0][1][key] + 1, outputs[1][1][ret[key][0]] + 1, ret[key][1])
@@ -91,7 +91,7 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
     db.session.query(Pair).filter(Pair.pairID == pairNum).update(
         dict(similarity=similarity, modifyDate=datetime.now()))
     db.session.commit()
-'''
+
 
     # for u in db.session.query(Result).all():
     # print(u.resultID, u.pairID, u.originLine, u.compLine, u.rType)
