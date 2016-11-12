@@ -24,6 +24,8 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
     opath = originFile.rsplit('/')[0]
     cpath = compFile.rsplit('/')[0]
 
+    start_time = time.time()
+
     originFile = open(originFile)
     compFile = open(compFile)
 
@@ -58,7 +60,6 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
             for j in range(len(commentList[i])):
                 preprocess_filter.pop(0)
 
-    start_time = time.time()
     # ori, comp = preprocessor.numberMapping(outputs[0][0], outputs[1][0])
 
     checkFunction = ''
@@ -71,9 +72,8 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
     compa.setInput(outputs[0][0], outputs[1][0])
     ret = compa.process()
 
-    end_time = time.time()
-    print end_time - start_time
-
+    mid_time = time.time()
+    print 'init-compare'+str(mid_time - start_time)
     # print ret
 
     similLine = 0.0
@@ -88,10 +88,13 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
         newResult = Result(pairNum, outputs[0][1][key] + 1, outputs[1][1][ret[key][0]] + 1, ret[key][1])
         db.session.add(newResult)
 
-    db.session.query(Pair).filter(Pair.pairID == pairNum).update(
-        dict(similarity=similarity, modifyDate=datetime.now()))
+    midend_time = time.time()
+    pair = db.session.query(Pair).filter(Pair.pairID == pairNum).first()
+    pair.similarity = similarity
+    pair.modifyDate = datetime.now()
+    end_time = time.time()
     db.session.commit()
-
+    print 'midend-exit'+str(end_time - midend_time)
 
     # for u in db.session.query(Result).all():
     # print(u.resultID, u.pairID, u.originLine, u.compLine, u.rType)
