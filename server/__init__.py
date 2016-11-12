@@ -31,7 +31,7 @@ app.permanent_session_lifetime = timedelta(minutes=10)
 # app.session_interface = RedisSessionInterface()
 app.config.update(SESSION_COOKIE_NAME = 'server_session')
 
-db = SQLAlchemy(app, session_options={"autoflush": False})
+db = SQLAlchemy(app, session_options={"autoflush": False, "expire_on_commit": False})
 
 import server.views
 import server.result
