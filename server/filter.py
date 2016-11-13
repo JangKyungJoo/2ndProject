@@ -67,17 +67,20 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
         checkFunction = compare.OrderedCheck()
     elif compareMethod == 2:
         checkFunction = compare.UnorderedCheck()
+    elif compareMethod == 3:
+        checkFunction = compare.EditDistance()
 
     compa = compare.Compare(checkFunction)
     compa.setInput(outputs[0][0], outputs[1][0])
     ret = compa.process()
 
     mid_time = time.time()
-    print 'init-compare'+str(mid_time - start_time)
+    # print 'init-compare'+str(mid_time - start_time)
     # print ret
 
     similLine = 0.0
-    entireLine = len(outputs[0][0])
+    # entireLine = len(outputs[0][0])
+    entireLine = len(originFile.split('\n'))
     similLine += len(ret.keys())
 
     similarity = similLine / entireLine * 100
@@ -94,7 +97,7 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
     pair.modifyDate = datetime.now()
     end_time = time.time()
     db.session.commit()
-    print 'midend-exit'+str(end_time - midend_time)
+    # print 'midend-exit'+str(end_time - midend_time)
 
     # for u in db.session.query(Result).all():
     # print(u.resultID, u.pairID, u.originLine, u.compLine, u.rType)
