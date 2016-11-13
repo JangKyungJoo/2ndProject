@@ -328,7 +328,7 @@ def file_upload():
                     print ("no file", file=sys.stderr)
                     pass
                 else:
-
+                    
                     origin_file = zipfile.ZipFile(origin_file)
                     comp_file = zipfile.ZipFile(comp_file) 
 
@@ -441,14 +441,12 @@ def tuple():
         temp_ori_list = []
         for ori in origin_list:
             if ori.rsplit('.', 1)[1] in extension_list:
-                print ('ori : ' + ori, file=sys.stderr)
                 temp_ori_list.append(ori)
         origin_list = temp_ori_list
 
         temp_comp_list = []
         for comp in comp_list:
             if comp.rsplit('.', 1)[1] in extension_list:
-                print ('comp :' + comp, file=sys.stderr)
                 temp_comp_list.append(comp)
         comp_list = temp_comp_list
 
@@ -501,7 +499,7 @@ def tuple_edit():
         projID = session['projID']
         project_data = Project.query.get(projID)
         projName = project_data.projName
-        
+
     if request.method == 'POST':
 
         for pair in tuple_list:
