@@ -43,7 +43,7 @@ def login_required(f):
     '''
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'email' in session:
+        if 'name' in session:
             pass
         else:
             return redirect(url_for('login', next=request.url))
@@ -68,7 +68,7 @@ def index():
     '''
         서비스 접속 시 세션 상태에 맞게 리다이렉트가 시작되는 페이지
     '''
-    if 'email' not in session or 'auth' not in session:
+    if 'name' not in session or 'auth' not in session:
         return redirect(url_for('login'))
 
 
@@ -78,11 +78,12 @@ def login():
         로그인 페이지
     '''
     error = None
-    # new_u = People('3ncag3', '3ncag3@gmail.com', '1111', True);
-    # db.session.add(new_u)
-    # db.session.commit()
+    admin_u = People('admin', 'admin@admin.com', '1111', True);
+    if not People.query.filter(People.pName==admin_u.pName).first():
+        db.session.add(admin_u)    
+    db.session.commit()
 
-    if 'email' in session and 'auth' in session:
+    if 'name' in session and 'auth' in session:
         if session['auth'] == "true":
             return redirect(url_for('dashboard'))
     if request.method=='GET':
@@ -90,13 +91,13 @@ def login():
     if request.method=='POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        user = People.query.filter(People.pEmail==username).first()
+        user = People.query.filter(People.pName==username).first()
 
         if not user or not user.verify_password(password):
             error = "암호가 틀렸거나 없는 계정입니다"
             return render_template('login.html', error=error)
         else:
-            session['email'] = user.pEmail
+            session['name'] = user.pName
             session['is_admin'] = user.pAuth
             session['auth'] = "true"
             session.permanent = True
@@ -136,7 +137,7 @@ def dashboard():
         session.clear()
         return redirect(url_for('login'))
     else:
-        user_data = People.query.filter(People.pEmail==session['email']).first()
+        user_data = People.query.filter(People.pName==session['name']).first()
         project_list = Project.query.filter(Project.pID==user_data.pID).all()
         session['projID'] = None
 
@@ -327,7 +328,7 @@ def file_upload():
                     print ("no file", file=sys.stderr)
                     pass
                 else:
-
+                    
                     origin_file = zipfile.ZipFile(origin_file)
                     comp_file = zipfile.ZipFile(comp_file) 
 
@@ -361,7 +362,7 @@ def file_upload():
 
 
 tuple_list = []
-
+ext_list = []
 
 @app.route('/tuple', methods=['GET', 'POST'])
 @login_required
@@ -371,6 +372,7 @@ def tuple():
         비교쌍 생성
     '''
 
+    global ext_list
 
     if not session['projID'] or session['projID'] is None:
         return redirect(url_for('dashboard'))
@@ -386,7 +388,6 @@ def tuple():
         if file_data is None:
             return redirect(url_for('file_upload'))
 
-
         origin_path = file_data.originPath
         comp_path = file_data.compPath
 
@@ -394,9 +395,14 @@ def tuple():
         comp_file_list = []
         origin_list = []
         comp_list = []
+        ext_list = [] # file extension list
 
         for path, subdirs, files in walk(origin_path):
             for name in files:
+                ext = name.rsplit('.', 1)[1]
+                if ext not in ext_list:
+                    ext_list.append(ext)
+
                 origin_file_list.append(name)
                 origin_list.append(join(path,name))
                 original = open(join(path,name))
@@ -408,6 +414,10 @@ def tuple():
 
         for path, subdirs, files in walk(comp_path):
             for name in files:
+                ext = name.rsplit('.', 1)[1]
+                if ext not in ext_list:
+                    ext_list.append(ext)
+
                 comp_file_list.append(name)
                 comp_list.append(join(path,name))
                 compare = open(join(path,name))
@@ -424,6 +434,21 @@ def tuple():
         global tuple_list
 
         tuple_list = []
+        extension_list = []
+
+        extension_list = request.form.getlist('extensions')
+
+        temp_ori_list = []
+        for ori in origin_list:
+            if ori.rsplit('.', 1)[1] in extension_list:
+                temp_ori_list.append(ori)
+        origin_list = temp_ori_list
+
+        temp_comp_list = []
+        for comp in comp_list:
+            if comp.rsplit('.', 1)[1] in extension_list:
+                temp_comp_list.append(comp)
+        comp_list = temp_comp_list
 
         tuple_type = request.form.get('tuple_type')
 
@@ -431,7 +456,7 @@ def tuple():
         if tuple_type == 'same':
             for ori in origin_list:
                 for comp in comp_list:
-                    if ori.replace(join(app.config['UPLOAD_FOLDER'], projID, 'origin', 'files'), '') == comp.replace(join(app.config['UPLOAD_FOLDER'], projID, 'compare', 'files'), ''):
+                    if ori.rsplit('/', 1)[1] == comp.rsplit('/', 1)[1]:
                         tuple_list.append((ori.encode('ascii'), comp.encode('ascii')))
                     else:
                         continue
@@ -443,17 +468,18 @@ def tuple():
                 for comp in comp_list:
                     tuple_list.append((ori.encode('ascii'), comp.encode('ascii')))
             return redirect(url_for('tuple_edit'))
-        # 사용자가 지정
-        elif tuple_type == 'user':
+        # 같은 확장자끼리 비교
+        elif tuple_type == 'ext':
             for ori in origin_list:
                 for comp in comp_list:
-                    tuple_list.append((ori.encode('ascii'), comp.encode('ascii')))
+                    if ori.rsplit('.', 1)[1] == comp.rsplit('.', 1)[1]:
+                        tuple_list.append((ori.encode('ascii'), comp.encode('ascii')))
             return redirect(url_for('tuple_edit'))
         else:
             pass
 
     return render_template('/tuple.html', projName=projName, origin_list=origin_list, comp_list=comp_list, 
-        origin_file_list=origin_file_list, comp_file_list=comp_file_list)
+        origin_file_list=origin_file_list, comp_file_list=comp_file_list, ext_list=ext_list)
 
 
 @app.route('/tuple_edit', methods=['GET', 'POST'])
@@ -474,6 +500,8 @@ def tuple_edit():
         project_data = Project.query.get(projID)
         projName = project_data.projName
 
+    if request.method == 'POST':
+
         for pair in tuple_list:
             origin_path = pair[0].rsplit('/',1)[0]
             origin_file = pair[0].rsplit('/',1)[1]
@@ -490,8 +518,6 @@ def tuple_edit():
                 db.session.add(new_pair)
 
         db.session.commit()
-
-    if request.method == 'POST':
 
         return redirect(url_for('compare'))
 

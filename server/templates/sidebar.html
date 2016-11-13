@@ -116,7 +116,7 @@
               <ul class="nav navbar-nav navbar-right">
                 <li class="">
                   <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                    {{session['email']}}
+                    {{session['name']}}
                     <span class=" fa fa-angle-down"></span>
                   </a>
                   <ul class="dropdown-menu dropdown-usermenu pull-right">
@@ -154,7 +154,7 @@
   <script src="{{url_for('static', filename='gentelella/vendors/nprogress/nprogress.js')}}"></script>
   <!-- Dropzone.js -->
   <script src="{{url_for('static', filename='gentelella/vendors/dropzone/dist/min/dropzone.min.js')}}"></script>
-
+  
   <!-- Custom Theme Scripts -->
   <script src="{{url_for('static', filename='gentelella/build/js/custom.min.js')}}"></script>
 

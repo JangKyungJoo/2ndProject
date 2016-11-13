@@ -201,11 +201,11 @@ class JavaTokenizer(Tokenizing):
 class PythonTokenizer(Tokenizing):
     def tokenize(self, line):
         tokenList = []
-        print line
+        # print line
         for t in tokenize.generate_tokens(io.StringIO(unicode(line.decode("ISO-8859-1"))).readline):
             tokenList.append(t)
 
-        print tokenList
+        # print tokenList
         return tokenList
 
 

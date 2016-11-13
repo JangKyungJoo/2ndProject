@@ -165,8 +165,8 @@
             </div>
 
             <div class="row">
-              <div class="col-md-12 col-sm-12 col-xs-12">
-                <form role="form" method="POST" submit="/tuple">
+              <form role="form" method="POST" submit="/tuple">
+                <div class="col-md-3 col-sm-3 col-xs-12">
                   <div class="radio">
                     <label>
                       <input type="radio" checked="" value="same" id="optionsRadios1" name="tuple_type"> 같은 이름 파일 비교
@@ -179,13 +179,21 @@
                   </div>
                   <div class="radio">
                     <label>
-                      <input type="radio" value="user" id="optionsRadios3" name="tuple_type"> 사용자 지정 비교
+                      <input type="radio" value="ext" id="optionsRadios3" name="tuple_type"> 같은 확장자 파일 비교
                     </label>
                   </div>
                   <button id="btn_create_tuple" type="submit" class="btn btn-primary btn-xs">비교쌍 생성</button>
-                </form>
+                </div>
+                <div class="col-md-9 col-sm-9 col-xs-12">
+                  {% for ext in ext_list %}
+                  <div class="checkbox">
+                    <input type="checkbox" name="extensions" id="{{ext}}" value="{{ext}}" data-parsley-mincheck="0" class="flat" /> {{ext}}
+                  <br />
+                  </div>
+                  {% endfor %}
+                </div>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       </div>
