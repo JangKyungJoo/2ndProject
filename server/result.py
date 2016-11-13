@@ -125,10 +125,10 @@ def detail(projectid, pairid):
 
         pair = Pair.query.get(pairid)
         origin = Origin.query.filter(Origin.originID == pair.originID).first()
-        originLine = origin.lineNum
+        lineNum = origin.lineNum
         count = Result.query.filter(Result.pairID == pair.pairID).count()
 
-        pair.similarity = count * 100.0 / originLine
+        pair.similarity = count * 100.0 / lineNum
         pair.modifyDate = datetime.now()
         db.session.add(pair)
         db.session.commit()

@@ -406,7 +406,11 @@ def tuple():
                 origin_file_list.append(name)
                 origin_list.append(join(path,name))
                 original = open(join(path,name))
-                original_lineNum = len(original.readlines())
+                original_lineNum = 0
+                for line in original.readlines():
+                    if len(line) > 2:
+                        original_lineNum+=1
+                #original_lineNum = len(original.readlines())
                 origin_file = Origin(name, path, original_lineNum, projID)
 
                 if not Origin.query.filter(Origin.originName==name).filter(Origin.originPath==path).filter(Origin.lineNum==original_lineNum).filter(Origin.projID==projID).first():
@@ -421,7 +425,11 @@ def tuple():
                 comp_file_list.append(name)
                 comp_list.append(join(path,name))
                 compare = open(join(path,name))
-                compare_lineNum = len(compare.readlines())
+                compare_lineNum = 0
+                for line in compare.readlines():
+                    if len(line) > 2:
+                        compare_lineNum += 1
+                #compare_lineNum = len(compare.readlines())
                 comp_file = Compare(name, path, compare_lineNum, projID)
 
                 if not Compare.query.filter(Compare.compName==name).filter(Compare.compPath==path).filter(Compare.lineNum==compare_lineNum).filter(Compare.projID==projID).first():
