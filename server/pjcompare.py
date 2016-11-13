@@ -118,6 +118,7 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
         originExt = origin.rsplit('.')[0]
         tokenizerList.append(tokenizers.get(originExt, tokenizers['c']))
         commentList.append(comments.get(originExt, comments['c']))
+        originLineNumber = originFile.lineNum
 
         compFile = db.session.query(Compare).filter(Compare.compID == pair.compID).first()
         comp = join(compFile.compPath, compFile.compName)
@@ -132,7 +133,7 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
             commentList = []
 
         filter.compareOnePair(origin, comp, pair.pairID, compareMethod, commentList
-                              , tokenizerList)
+                              , tokenizerList, originLineNumber)
         db.session.query(Project).filter(Project.projID == projectId).update(
             dict(lastPair=pair.pairID))
         db.session.commit()

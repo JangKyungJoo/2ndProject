@@ -19,7 +19,7 @@ sys.setdefaultencoding("utf-8")
 
 # pair 수 만큼 호출
 def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
-                   , tokenizerList):
+                   , tokenizerList, originLineNumber):
     global output
     opath = originFile.rsplit('/')[0]
     cpath = compFile.rsplit('/')[0]
@@ -76,11 +76,12 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
 
     mid_time = time.time()
     # print 'init-compare'+str(mid_time - start_time)
-    print ret
+    # print ret
 
     similLine = 0.0
     # entireLine = len(outputs[0][0])
-    entireLine = len(outputs[0][0])
+    entireLine = originLineNumber
+    # print 'entireline: '+str(entireLine)
     similLine += len(ret.keys())
 
     similarity = similLine / entireLine * 100
