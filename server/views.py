@@ -82,7 +82,7 @@ def login():
     if not People.query.filter(People.pName==admin_u.pName).first():
         db.session.add(admin_u)    
     db.session.commit()
-    
+
     if 'email' in session and 'auth' in session:
         if session['auth'] == "true":
             return redirect(url_for('dashboard'))
@@ -91,7 +91,7 @@ def login():
     if request.method=='POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        user = People.query.filter(People.pName==username).first()
+        user = People.query.filter(People.pEmail==username).first()
 
         if not user or not user.verify_password(password):
             error = "암호가 틀렸거나 없는 계정입니다"
