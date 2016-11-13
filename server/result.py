@@ -53,14 +53,19 @@ def result(projectid):
 
     json_list = []
     for item in pair:
-        json_list.append(Pair.serialize(item, origin_list[item.originID - origin_flag].originName, compare_list[item.compID - compare_flag].compName))
+        origin_range = item.originID - origin_flag
+        compare_range = item.compID - compare_flag
+        if origin_range >= 0 and origin_range < len(origin_list) and compare_range >=0 and compare_range < len(compare_list):
+            json_list.append(Pair.serialize(item, origin_list[origin_range].originName, compare_list[compare_range].compName))
 
 
     pair = Pair.query.filter(Pair.projID == projectid).order_by(Pair.similarity.desc(), Pair.modifyDate.desc()).all()
     json_list2 = []
     for item in pair:
-        json_list2.append(Pair.serialize(item, origin_list[item.originID - origin_flag].originName,
-                                        compare_list[item.compID - compare_flag].compName))
+        origin_range = item.originID - origin_flag
+        compare_range = item.compID - compare_flag
+        if origin_range >= 0 and origin_range < len(origin_list) and compare_range >=0 and compare_range < len(compare_list):
+            json_list2.append(Pair.serialize(item, origin_list[origin_range].originName, compare_list[compare_range].compName))
 
     return render_template("result.html", dateByAsc=json.dumps(json_list), dateByDesc=json.dumps(json_list2), pairCount=len(pair), projectid=projectid, projName = projName)
 
@@ -120,7 +125,7 @@ def detail(projectid, pairid):
         originLine = origin.lineNum
         count = Result.query.filter(Result.pairID == pair.pairID).count()
 
-        pair.similarity = count * 100 / originLine
+        pair.similarity = count * 100.0 / originLine
         pair.modifyDate = datetime.now()
         db.session.add(pair)
         db.session.commit()
@@ -146,10 +151,13 @@ def save(projectid):
     compare_flag = compare_list[0].compID
 
     for item in pair:
-        origin.append(origin_list[item.originID - origin_flag].originName)
-        compare.append(compare_list[item.compID - compare_flag].compName)
-        similarity.append(format(item.similarity, '.2f'))
-        modify.append(str(item.modifyDate.strftime("%Y-%m-%d %H:%M")))
+        origin_range = item.originID - origin_flag
+        compare_range = item.compID - compare_flag
+        if origin_range >= 0 and origin_range < len(origin_list) and compare_range >=0 and compare_range < len(compare_list):
+            origin.append(origin_list[origin_range].originName)
+            compare.append(compare_list[compare_range].compName)
+            similarity.append(format(item.similarity, '.2f'))
+            modify.append(str(item.modifyDate.strftime("%Y-%m-%d %H:%M")))
 
     result.append(origin)
     result.append(compare)
