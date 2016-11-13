@@ -90,7 +90,10 @@ def detail(projectid, pairid):
         compareList = []
 
         lines = originFile.readlines()
+        cnt = 0
         for line in lines:
+            if len(line) > 2:
+                cnt+=1
             originList.append(line)
 
         lines = compFile.readlines()
@@ -101,7 +104,7 @@ def detail(projectid, pairid):
         list = [i.serialize for i in result]
 
         # 원본소스코드 / 비교본 소스코드 / 원본 기준 결과
-        return render_template("detail.html", origin=originList, originCount=len(originList), compare=compareList, list=json.dumps(list), pairid = pairid, originPath = getPath(originPath), compPath = getPath(comparePath))
+        return render_template("detail.html", origin=originList, originCount=cnt, compare=compareList, list=json.dumps(list), pairid = pairid, originPath = getPath(originPath), compPath = getPath(comparePath))
 
     if request.method == 'POST':
 

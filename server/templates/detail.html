@@ -31,15 +31,23 @@
                 <div class="panel panel-summary panel-default">
                         <div class="summary">
                             <table class="summary-table">
+                                {% set cnt = 1 %}
                                 {% for line in origin %}
-                                <tr><td id="os_{{loop.index}}"></td></tr>
+                                    {% if line|length > 2 %}
+                                        <tr><td id="os_{{loop.index}}"></td></tr>
+                                        {% set cnt = cnt + 1 %}
+                                    {% endif %}
                                 {% endfor %}
                             </table>
                         </div>
                         <div class="summary">
                             <table class="summary-table">
+                                {% set cnt = 1 %}
                                 {% for line in compare %}
-                                <tr><td id="cs_{{loop.index}}"></td></tr>
+                                    {% if line|length > 2 %}
+                                        <tr><td id="cs_{{loop.index}}"></td></tr>
+                                        {% set cnt = cnt + 1 %}
+                                    {% endif %}
                                 {% endfor %}
                             </table>
                         </div>
@@ -85,9 +93,13 @@
                 </div>
                 <div class="panel-body" id="origin">
                     <table class="unselectable">
+                    {% set cnt = 1 %}
                     {% for line in origin %}
-                        <tr><td id="ol_{{loop.index}}" class="index"><font color="#999999">{{loop.index}}</font></td><td id="o_{{loop.index}}" style="padding-left:3px">{{line}}</td></tr>
-                        {% endfor %}
+                        {% if line|length > 2 %}
+                            <tr><td id="ol_{{loop.index}}" class="index"><font color="#999999">{{cnt}}</font></td><td id="o_{{loop.index}}" style="padding-left:3px">{{line}}</td></tr>
+                            {% set cnt = cnt + 1 %}
+                        {% endif %}
+                    {% endfor %}
                     </table>
                 </div>
             </div>
@@ -98,9 +110,13 @@
                 </div>
                 <div class="panel-body" id="compare">
                     <table class="unselectable">
+                    {% set cnt = 1 %}
                     {% for line in compare %}
-                        <tr><td id="cl_{{loop.index}}" class="index"><font color="#999999">{{loop.index}}</font></td><td id="c_{{loop.index}}" style="padding-left:3px">{{line}}</td></tr>
-                        {% endfor %}
+                        {% if line|length > 2 %}
+                            <tr><td id="cl_{{loop.index}}" class="index"><font color="#999999">{{cnt}}</font></td><td id="c_{{loop.index}}" style="padding-left:3px">{{line}}</td></tr>
+                            {% set cnt = cnt + 1 %}
+                        {% endif %}
+                    {% endfor %}
                     </table>
                 </div>
             </div>
