@@ -524,6 +524,16 @@ def tuple_edit():
     return render_template('/tuple_edit.html', projName=projName, tuple_list=tuple_list)
 
 
+@app.route('/tuple_edit/save', methods=['GET', 'POST'])
+@login_required
+def pair_save():
+    # pair 테이블 모두 불러온 다음 origin, comp 테이블의 절대경로를 모두 매핑.
+    # originID, compID로 전체경로를 불러와 딕셔너리에 캐싱할 것.
+
+    pairs = Pair.query.filter(Pair.projID == session['projID']).all()
+    for pair in pairs:
+        print (pair.originID, pair.compID)
+    return ''
 
 
 @app.route('/logout', methods=['GET',   'POST'])

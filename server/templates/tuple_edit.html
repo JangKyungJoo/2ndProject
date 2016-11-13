@@ -128,6 +128,15 @@
                 </form>
               </div>
             </div>
+            <div style="text-align: right;">
+                    <form id="csv" method="POST" action="/tuple_edit/save">
+                        <input type="hidden" id="list" name="list" value={{ tuple_list }} />
+                        <button class="btn btn-default" type="submit" style="width:100px;">Save as csv</button>
+                    </form>
+                    <form id="csv" method="POST" action="/tuple_edit/load">
+                        <button class="btn btn-default" style="width:100px;">Load csv</button>
+                    </form>
+                </div>
             
           </div>
         </div>

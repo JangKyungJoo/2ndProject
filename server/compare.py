@@ -129,7 +129,8 @@ class Compare:
                 dict[j] = retList
 
                 j += len(retList)
-                j += 1
+                if len(retList) == 0:
+                    j += 1
 
             idx = 0
             maxlen = 0
@@ -141,7 +142,8 @@ class Compare:
                 matrix[i] = [k, dict[k][k-idx]]
                 self.visited[k] = 1
                 i += 1
-            i += 1
+            if maxlen == 0:
+                i += 1
         return matrix
 
     def block(self, i, j, length):

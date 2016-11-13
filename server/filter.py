@@ -29,12 +29,12 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
     originFile = open(originFile)
     compFile = open(compFile)
 
-    originFile = originFile.read()
-    compFile = compFile.read()
+    originCode = originFile.read()
+    compCode = compFile.read()
 
     preprocess_filter = [preprocessor.RemoveBlank(), tokenizerList]
 
-    inputs = [originFile, compFile]
+    inputs = [originCode, compCode]
     outputs = []
 
     for i in range(len(inputs)):
@@ -76,11 +76,11 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
 
     mid_time = time.time()
     # print 'init-compare'+str(mid_time - start_time)
-    # print ret
+    print ret
 
     similLine = 0.0
     # entireLine = len(outputs[0][0])
-    entireLine = len(originFile.split('\n'))
+    entireLine = len(outputs[0][0])
     similLine += len(ret.keys())
 
     similarity = similLine / entireLine * 100
