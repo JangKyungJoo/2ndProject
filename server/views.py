@@ -43,7 +43,7 @@ def login_required(f):
     '''
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'name' in session:
+        if 'email' in session:
             pass
         else:
             return redirect(url_for('login', next=request.url))
@@ -68,7 +68,7 @@ def index():
     '''
         서비스 접속 시 세션 상태에 맞게 리다이렉트가 시작되는 페이지
     '''
-    if 'name' not in session or 'auth' not in session:
+    if 'email' not in session or 'auth' not in session:
         return redirect(url_for('login'))
 
 
@@ -83,7 +83,7 @@ def login():
         db.session.add(admin_u)    
     db.session.commit()
 
-    if 'name' in session and 'auth' in session:
+    if 'email' in session and 'auth' in session:
         if session['auth'] == "true":
             return redirect(url_for('dashboard'))
     if request.method=='GET':
@@ -91,13 +91,13 @@ def login():
     if request.method=='POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        user = People.query.filter(People.pName==username).first()
+        user = People.query.filter(People.pEmail==username).first()
 
         if not user or not user.verify_password(password):
             error = "암호가 틀렸거나 없는 계정입니다"
             return render_template('login.html', error=error)
         else:
-            session['name'] = user.pName
+            session['email'] = user.pEmail
             session['is_admin'] = user.pAuth
             session['auth'] = "true"
             session.permanent = True
@@ -137,7 +137,7 @@ def dashboard():
         session.clear()
         return redirect(url_for('login'))
     else:
-        user_data = People.query.filter(People.pName==session['name']).first()
+        user_data = People.query.filter(People.pEmail==session['email']).first()
         project_list = Project.query.filter(Project.pID==user_data.pID).all()
         session['projID'] = None
 
@@ -328,7 +328,7 @@ def file_upload():
                     print ("no file", file=sys.stderr)
                     pass
                 else:
-                    
+
                     origin_file = zipfile.ZipFile(origin_file)
                     comp_file = zipfile.ZipFile(comp_file) 
 
