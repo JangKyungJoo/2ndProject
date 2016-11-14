@@ -123,7 +123,7 @@
 
             <div class="row">
               <div class="col-md-12 col-sm-12 col-xs-12 pull-right">
-                <form role="form" method="POST" submit="/tuple_edit">  
+                <form role="form" method="POST" action="/tuple_edit">
                   <button id="btn_create_tuple" type="submit" class="btn btn-primary btn-xs">비교 시작</button>
                 </form>
               </div>
@@ -134,16 +134,6 @@
                         <button class="btn btn-default" type="submit" style="width:100px;">Save as csv</button>
                     </form>
 
-                    <script>
-$(function() {
-	$('#myform').ajaxForm({
-		dataType: 'json',
-		complete: function(data) {
-			alert('tlqf');
-		}
-	});
-});
-</script>
 
 <form id='myform' action='/tuple_edit/load' enctype='multipart/form-data' method='post'>
 	<label class="btn btn-primary">

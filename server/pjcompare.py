@@ -182,7 +182,7 @@ def cancelCompare():
     projectId = getProjectId()
 
     pr = process_dict[projectId][0]
-    print pr, pr.is_alive()
+    # print pr, pr.is_alive()
     pr.terminate()
     pr.join()
 

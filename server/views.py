@@ -577,11 +577,50 @@ def pair_load():
     # 우선 가져온 path가 실제로 존재하는지 아닌지 여부 검사
     # 검사하면서 리스트에 originID, compID 각각 저장
     # 정상적으로 검사 완료되면 비교쌍을 모두 지운다음에 다시 insert
+
+    projID = session['projID']
     file = request.files['file']
+    pair_list = []
+    file_list = []
+
     csvReader = csv.reader(file)
     for row in csvReader:
+        row = list(row)
+        file_list.append(row)
         print (row)
-    return ''
+
+        origin_name = row[0].rsplit('/', 1)[1]
+        origin_path = row[0].rsplit('/', 1)[0]
+        comp_name = row[1].rsplit('/', 1)[1]
+        comp_path = row[1].rsplit('/', 1)[0]
+
+        print (origin_path, origin_name)
+
+        origin = Origin.query.filter(Origin.originPath == origin_path).filter(Origin.originName == origin_name).first()
+        comp = Compare.query.filter(Compare.compPath == comp_path).filter(Compare.compName == comp_name).first()
+        if not origin:
+            return '파일 이름이 정확하지 않음..'
+        if not comp:
+            return '파일 이름이 정확하지 않음..'
+
+        pair = Pair(origin.originID, comp.compID, projID)
+        pair_list.append(pair)
+
+    delPair = Pair.query.filter(Pair.projID == projID).all()
+    for item in delPair:
+        result = Result.query.filter(Result.pairID == item.pairID).all()
+        for temp in result:
+            db.session.delete(temp)
+        db.session.delete(item)
+    db.session.commit()
+
+    for pair in pair_list:
+        db.session.add(pair)
+    db.session.commit()
+
+    tuple_list = file_list
+
+    return render_template('/tuple_edit.html', projName=session['project'], tuple_list=file_list)
 
 
 @app.route('/logout', methods=['GET',   'POST'])
