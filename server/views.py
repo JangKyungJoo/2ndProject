@@ -1,6 +1,9 @@
 #-*- coding: utf-8 -*-
 from __future__ import print_function
-from server.models import * 
+
+import shutil
+
+from server.models import *
 from server import app
 from server import db
 from server.models import People
@@ -219,7 +222,10 @@ def dashboard():
                 db.session.delete(project)
 
                 db.session.commit()
-                #os.remove(join(app.config['UPLOAD_FOLDER'], projID))
+
+                path = join(app.config['UPLOAD_FOLDER'], projID)
+                if os.path.exists(path):
+                    shutil.rmtree(path)
 
                 return redirect(url_for('dashboard'))   
 
@@ -631,3 +637,29 @@ def logout():
     '''
     session.clear()
     return redirect(url_for('login'))
+
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    app.logger.error('Server Error: %s', (error))
+    return render_template('page_500.html')
+
+
+@app.errorhandler(400)
+def not_found(error):
+    return render_template('page_403.html')
+
+
+@app.errorhandler(401)
+def not_found(error):
+    return render_template('page_403.html')
+
+
+@app.errorhandler(403)
+def not_found(error):
+    return render_template('page_403.html')
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return render_template('page_403.html')
