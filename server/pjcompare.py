@@ -134,8 +134,8 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
 
         filter.compareOnePair(origin, comp, pair.pairID, compareMethod, commentList
                               , tokenizerList, originLineNumber)
-        db.session.query(Project).filter(Project.projID == projectId).update(
-            dict(lastPair=pair.pairID))
+        # db.session.query(Project).filter(Project.projID == projectId).update(
+            # dict(lastPair=pair.pairID))
         db.session.commit()
 
         # 비교 진행 상황을 파일에 저장

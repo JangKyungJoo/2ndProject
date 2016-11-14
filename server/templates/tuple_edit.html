@@ -133,10 +133,26 @@
                         <input type="hidden" id="list" name="list" value={{ tuple_list }} />
                         <button class="btn btn-default" type="submit" style="width:100px;">Save as csv</button>
                     </form>
-                    <form id="csv" method="POST" action="/tuple_edit/load">
-                        <button class="btn btn-default" style="width:100px;">Load csv</button>
-                    </form>
-                </div>
+
+                    <script>
+$(function() {
+	$('#myform').ajaxForm({
+		dataType: 'json',
+		complete: function(data) {
+			alert('tlqf');
+		}
+	});
+});
+</script>
+
+<form id='myform' action='/tuple_edit/load' enctype='multipart/form-data' method='post'>
+	<label class="btn btn-primary">
+        Browse.. <input type="file" name="file" style="display: none;">
+    </label>
+    <button class="btn btn-primary">Load csv</button>
+</form>
+            </div>
+            </div>
             
           </div>
         </div>
