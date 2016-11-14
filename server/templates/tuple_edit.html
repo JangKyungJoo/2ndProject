@@ -123,7 +123,7 @@
 
             <div class="row">
               <div class="col-md-12 col-sm-12 col-xs-12 pull-right">
-                <form role="form" method="POST" submit="/tuple_edit">  
+                <form role="form" method="POST" action="/tuple_edit">
                   <button id="btn_create_tuple" type="submit" class="btn btn-primary btn-xs">비교 시작</button>
                 </form>
               </div>
@@ -133,10 +133,16 @@
                         <input type="hidden" id="list" name="list" value={{ tuple_list }} />
                         <button class="btn btn-default" type="submit" style="width:100px;">Save as csv</button>
                     </form>
-                    <form id="csv" method="POST" action="/tuple_edit/load">
-                        <button class="btn btn-default" style="width:100px;">Load csv</button>
-                    </form>
-                </div>
+
+
+<form id='myform' action='/tuple_edit/load' enctype='multipart/form-data' method='post'>
+	<label class="btn btn-primary">
+        Browse.. <input type="file" name="file" style="display: none;">
+    </label>
+    <button class="btn btn-primary">Load csv</button>
+</form>
+            </div>
+            </div>
             
           </div>
         </div>

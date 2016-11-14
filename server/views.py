@@ -17,6 +17,7 @@ from flask import abort
 from flask import flash
 from flask import Markup
 from flask import jsonify
+from flask import send_file
 from werkzeug import secure_filename
 from datetime import date, timedelta
 from os import walk
@@ -27,6 +28,7 @@ import sys
 import json
 import requests
 import zipfile
+import csv
 
 """
     ~~~~~~~~~
@@ -532,16 +534,93 @@ def tuple_edit():
     return render_template('/tuple_edit.html', projName=projName, tuple_list=tuple_list)
 
 
-@app.route('/tuple_edit/save', methods=['GET', 'POST'])
+@app.route('/tuple_edit/save', methods=['POST'])
 @login_required
 def pair_save():
     # pair 테이블 모두 불러온 다음 origin, comp 테이블의 절대경로를 모두 매핑.
     # originID, compID로 전체경로를 불러와 딕셔너리에 캐싱할 것.
 
+    origin_dict = {}
+    comp_dict = {}
+    path_list = []
+
     pairs = Pair.query.filter(Pair.projID == session['projID']).all()
     for pair in pairs:
-        print (pair.originID, pair.compID)
-    return ''
+        origin = Origin.query.filter(Origin.originID == pair.originID).first()
+        if origin_dict.get(origin.originID, -1) == -1:
+            origin_path = join(origin.originPath, origin.originName)
+            origin_dict[origin.originID] = origin_path
+        opath = origin_dict[origin.originID]
+
+        comp = Compare.query.filter(Compare.compID == pair.compID).first()
+        if comp_dict.get(comp.compID, -1) == -1:
+            comp_path = join(comp.compPath, comp.compName)
+            comp_dict[comp.compID] = comp_path
+        cpath = comp_dict[comp.compID]
+
+        path_list.append([opath, cpath])
+
+    save_path = os.path.join(os.path.join(app.config['UPLOAD_FOLDER'], session['projID']), 'pair.csv')
+    with open(save_path, "wb") as f:
+        writer = csv.writer(f)
+        writer.writerows(path_list)
+
+    return send_file(save_path,
+                     mimetype='text/csv',
+                     attachment_filename='pair.csv',
+                     as_attachment=True)
+
+
+@app.route('/tuple_edit/load', methods=['POST'])
+@login_required
+def pair_load():
+    # 우선 가져온 path가 실제로 존재하는지 아닌지 여부 검사
+    # 검사하면서 리스트에 originID, compID 각각 저장
+    # 정상적으로 검사 완료되면 비교쌍을 모두 지운다음에 다시 insert
+
+    projID = session['projID']
+    file = request.files['file']
+    pair_list = []
+    file_list = []
+
+    csvReader = csv.reader(file)
+    for row in csvReader:
+        row = list(row)
+        file_list.append(row)
+        print (row)
+
+        origin_name = row[0].rsplit('/', 1)[1]
+        origin_path = row[0].rsplit('/', 1)[0]
+        comp_name = row[1].rsplit('/', 1)[1]
+        comp_path = row[1].rsplit('/', 1)[0]
+
+        print (origin_path, origin_name)
+
+        origin = Origin.query.filter(Origin.originPath == origin_path).filter(Origin.originName == origin_name).first()
+        comp = Compare.query.filter(Compare.compPath == comp_path).filter(Compare.compName == comp_name).first()
+        if not origin:
+            return '파일 이름이 정확하지 않음..'
+        if not comp:
+            return '파일 이름이 정확하지 않음..'
+
+        pair = Pair(origin.originID, comp.compID, projID)
+        pair_list.append(pair)
+
+    delPair = Pair.query.filter(Pair.projID == projID).all()
+    for item in delPair:
+        result = Result.query.filter(Result.pairID == item.pairID).all()
+        for temp in result:
+            db.session.delete(temp)
+        db.session.delete(item)
+    db.session.commit()
+
+    for pair in pair_list:
+        db.session.add(pair)
+    db.session.commit()
+
+    tuple_list = file_list
+
+    return render_template('/tuple_edit.html', projName=session['project'], tuple_list=file_list)
 
 
 @app.route('/logout', methods=['GET',   'POST'])
