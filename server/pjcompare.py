@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from os.path import join
 
+import requests
+from flask import json
+
 from server import app
 from server import db
 from flask import render_template
@@ -132,16 +135,19 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
         if commentRemove == 0:
             commentList = []
 
-        filter.compareOnePair(origin, comp, pair.pairID, compareMethod, commentList
-                              , tokenizerList, originLineNumber)
-        db.session.query(Project).filter(Project.projID == projectId).update(
-            dict(lastPair=pair.pairID))
-        db.session.commit()
+        #filter.compareOnePair(origin, comp, pair.pairID, compareMethod, commentList, tokenizerList, originLineNumber)
+        print 'send : ' + str(origin) + ', ' + str(comp) + ', ' + str(pair.pairID) + ', ' + str(compareMethod) + ', ' + str(originLineNumber)
+        #여기부터
+        compare = {'origin': origin, 'comp': comp, 'pairID': pair.pairID, 'compareMethod' : compareMethod, 'tokenizer' : tokenizer, 'commentRemove' : commentRemove, 'lineNum' : originLineNumber}
+        print 'ask to node'
+        res = requests.post('http://0.0.0.0:8888/work', json=compare)
+        #여기까지
+        #db.session.query(Project).filter(Project.projID == projectId).update(dict(lastPair=pair.pairID))
+        #db.session.commit()
 
         # 비교 진행 상황을 파일에 저장
         f = open(join(app.config['PROGRESS_FOLDER'], str(projectId)), 'w')
-        f.write(str({'lastPair': pair.pairID, 'compareMethod': compareMethod, 'commentRemove': commentRemove,
-                     'tokenizer': tokenizer}))
+        f.write(str({'lastPair': pair.pairID, 'compareMethod': compareMethod, 'commentRemove': commentRemove,'tokenizer': tokenizer}))
 
         # 취소 확인
 
@@ -196,3 +202,17 @@ def getProjectId():
         return redirect(url_for('dashboard'))
     else:
         return session['projID']
+
+
+@app.route("/done", methods=["POST"])
+def done():
+    data = request.get_json(force=True)
+    print 'receive data from node'
+    result = json.loads(data)
+    print result
+
+    # 비교 진행 상황을 파일에 저장
+    #f = open(join(app.config['PROGRESS_FOLDER'], str(projectId)), 'w')
+    #f.write(str({'lastPair': pair.pairID, 'compareMethod': compareMethod, 'commentRemove': commentRemove,'tokenizer': tokenizer}))
+
+    return 'ok'

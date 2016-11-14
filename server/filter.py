@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+import requests
+from flask import json
 
 import preprocessor
 import compare
@@ -87,11 +89,14 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
     similarity = similLine / entireLine * 100
     # print similarity
 
+    result = []
     for key in ret.keys():
         # key : 원본 라인 번호 -1
-        newResult = Result(pairNum, outputs[0][1][key] + 1, outputs[1][1][ret[key][0]] + 1, ret[key][1])
-        db.session.add(newResult)
+        #newResult = Result(pairNum, outputs[0][1][key] + 1, outputs[1][1][ret[key][0]] + 1, ret[key][1])
+        #db.session.add(newResult)
+        result.append({'pairID': pairNum, 'originLine': outputs[0][1][key] + 1, 'compareLine': outputs[1][1][ret[key][0]] + 1, 'rType': ret[key][1]})
 
+    '''
     midend_time = time.time()
     pair = db.session.query(Pair).filter(Pair.pairID == pairNum).first()
     pair.similarity = similarity
@@ -99,6 +104,9 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
     end_time = time.time()
     db.session.commit()
     # print 'midend-exit'+str(end_time - midend_time)
-
+    '''
+    print 'result'
+    print result
+    res = requests.post('http://0.0.0.0:5000/done', json=json.dumps(result))
     # for u in db.session.query(Result).all():
     # print(u.resultID, u.pairID, u.originLine, u.compLine, u.rType)

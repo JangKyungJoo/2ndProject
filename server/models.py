@@ -177,7 +177,7 @@ class Origin(db.Model):
     originPath = db.Column(db.String(255), nullable=False)
     '''원본 파일 경로 '''
     lineNum = db.Column(db.Integer, nullable=True)
-    '''총 라인 수 '''
+    '''공백을 제외한 총 라인 수 '''
     projID = db.Column(db.Integer, db.ForeignKey('project_tbl.projID'), nullable=False)
     '''프로젝트 번호 '''
 
@@ -203,7 +203,7 @@ class Compare(db.Model):
     compPath = db.Column(db.String(255), nullable=False)
     '''비교본 파일 경로 '''
     lineNum = db.Column(db.Integer, nullable=False)
-    '''총 라인 수 '''
+    '''공백을 제외한 총 라인 수 '''
     projID = db.Column(db.Integer, db.ForeignKey('project_tbl.projID'), nullable=False)
     '''프로젝트 번호 '''
 
