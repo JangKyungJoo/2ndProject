@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from os.path import join
 
+from datetime import datetime
 import requests
 from flask import json
+from flask import send_file
 
 from server import app
 from server import db
@@ -244,7 +246,21 @@ def done():
 
     pair = db.session.query(Pair).filter(Pair.pairID == pairId).first()
     pair.similarity = similarity
-    # pair.modifyDate = datetime.now()
+    pair.modifyDate = datetime.now()
     db.session.commit()
 
     return 'ok'
+
+
+@app.route('/origin/<fileid>', methods=["GET"])
+def file(fileid):
+    origin = Origin.query.filter(Origin.originID == fileid).first()
+    path = join(origin.originPath, origin.originName)
+    return send_file(path)
+
+
+@app.route('/compare/<fileid>', methods=["GET"])
+def file(fileid):
+    compare = Compare.query.filter(Compare.compID == fileid).first()
+    path = join(compare.compPath, compare.compName)
+    return send_file(path)

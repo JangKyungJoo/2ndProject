@@ -218,7 +218,9 @@ def dashboard():
                     db.session.delete(item)
 
                 file = File.query.get(project.fileNum)
-                db.session.delete(file)
+                if file:
+                    db.session.delete(file)
+                    
                 db.session.delete(project)
 
                 db.session.commit()

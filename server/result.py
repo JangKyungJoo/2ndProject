@@ -18,7 +18,6 @@ from flask import session
 from server import db
 import codecs
 import csv
-import time
 
 from server.views import login_required
 

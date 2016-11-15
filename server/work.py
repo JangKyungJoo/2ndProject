@@ -40,4 +40,14 @@ def work():
     compareOnePair(data['origin'], data['comp'], data['pairID'], data['compareMethod'], commentList,tokenizerList, data['lineNum'])
     return 'ok'
 
+
+def getOrigin(originID):
+    res = requests.get('http://0.0.0.0:5000/origin/' + str(originID))
+    return res.content
+
+
+def getCompare(compID):
+    res = requests.get('http://0.0.0.0:5000/compare/' + str(compID))
+    return res.content
+
 app.run(debug=True, host='0.0.0.0', port=8888)
