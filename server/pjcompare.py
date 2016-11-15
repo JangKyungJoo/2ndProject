@@ -16,7 +16,7 @@ from server.models import Compare
 from server.models import Project
 from multiprocessing import Process, Queue
 import time
-import datetime
+# from datatime import datetime
 
 import filter
 import sys, os
@@ -28,6 +28,7 @@ process_dict = {}
 # 프로세스 고유 변수
 stageList = {}
 paramList = {}
+pairCount = {}
 
 
 @app.route('/compare', methods=["GET"])
@@ -84,6 +85,7 @@ def compare():
     process_dict[int(projectId)] = [pr, q]
 
     numOfPair = db.session.query(Pair).filter(Pair.projID == projectId).count()
+    pairCount[int(projectId)] = numOfPair
     return jsonify(numOfPair)
     # return render_template("compare.html", projectid=projectid)
 
@@ -180,6 +182,13 @@ def processState():
     currentNumber = len(stageList[int(projectId)])
     print currentNumber
 
+    if pairCount[int(projectId)] == currentNumber:
+        del stageList[int(projectId)]
+        del paramList[int(projectId)]
+        del pairCount[int(projectId)]
+        if os.path.exists(join(app.config['PROGRESS_FOLDER'], str(projectId))):
+            os.remove(join(app.config['PROGRESS_FOLDER'], str(projectId)))
+
     # print currentNumber
     return jsonify(currentNumber)
 
@@ -213,10 +222,13 @@ def done():
     data = request.get_json(force=True)
     # print 'receive data from node'
     result = json.loads(data)
-    # print result
+    print result
 
-    pairId = result[0]
+    pairId = result[0][0]
+    similarity = result[0][1]
     pair = Pair.query.filter(Pair.pairID == pairId).first()
+
+    result = result[1:]
 
     stageList[pair.projID].append(pairId)
 
@@ -225,5 +237,14 @@ def done():
     f.write(str({'stageList': stageList[pair.projID], 'compareMethod': paramList[pair.projID][1],
                  'commentRemove': paramList[pair.projID][2], 'tokenizer': paramList[pair.projID][3]}))
     f.close()
+
+    for r in result:
+        newResult = Result(pairId, r['originLine'], r['compareLine'], r['rType'])
+        db.session.add(newResult)
+
+    pair = db.session.query(Pair).filter(Pair.pairID == pairId).first()
+    pair.similarity = similarity
+    # pair.modifyDate = datetime.now()
+    db.session.commit()
 
     return 'ok'
