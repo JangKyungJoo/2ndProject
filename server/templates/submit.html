@@ -84,7 +84,7 @@
     function compareStart() {
                 $.ajax({
                     url: '/compare',
-                    data: {'lastPair': varLastPair, 'compareMethod': selectedMethod,
+                    data: {'lastPair': JSON.stringify(varLastPair), 'compareMethod': selectedMethod,
                             'commentRemove': document.getElementById("comment").value,
                             'tokenizer': tokenizer},
                     type: 'POST',
@@ -140,13 +140,12 @@
                 return;
             }
             compareStart();
-
         });
     });
 
     $(function() {
         $('#initial').click(function() {
-            varLastPair = 0;
+            varLastPair = [];
             commentRemove = document.getElementById("comment").value;
             tokenizer = document.getElementById("token").value;
             selectedMethod = document.getElementById("method").value;
@@ -256,14 +255,14 @@
     });
 
     function ordered() {
-        varLastPair = 0;
+        varLastPair = [];
         compareMethod = 1;
         commentRemove = document.getElementById("comment").value;
         tokenizer = document.getElementById("token").value;
         compareStart();
     }
     function unordered() {
-        varLastPair = 0;
+        varLastPair = [];
         compareMethod = 2;
         commentRemove = document.getElementById("comment").value;
         tokenizer = document.getElementById("token").value;

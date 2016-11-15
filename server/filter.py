@@ -89,7 +89,7 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
     similarity = similLine / entireLine * 100
     # print similarity
 
-    result = []
+    result = [pairNum]
     for key in ret.keys():
         # key : 원본 라인 번호 -1
         #newResult = Result(pairNum, outputs[0][1][key] + 1, outputs[1][1][ret[key][0]] + 1, ret[key][1])

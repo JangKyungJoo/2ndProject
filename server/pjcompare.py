@@ -25,13 +25,14 @@ import preprocessor
 
 process_dict = {}
 
+# 프로세스 고유 변수
+stageList = {}
+paramList = {}
+
 
 @app.route('/compare', methods=["GET"])
 def comparePageOpen():
     projectId = getProjectId()
-
-    project = db.session.query(Project).filter(Project.projID == projectId).first()
-    print '마지막 중단 지점 : '+str(project.lastPair)
 
     # 초기 옵션 [ 마지막으로 비교한 비교쌍 번호, 비교 알고리즘, 주석 제거 여부, 토크나이저 종류 ]
     lastPair = 0
@@ -47,11 +48,17 @@ def comparePageOpen():
         f = open(join(app.config['PROGRESS_FOLDER'], str(projectId)))
         configFile = f.read()
         configFile = eval(configFile)
-        lastPair = configFile['lastPair']
+        lastPair = configFile['stageList']
         compareMethod = configFile['compareMethod']
         commentRemove = configFile['commentRemove']
         tokenizer = configFile['tokenizer']
-    
+
+        stageList[int(projectId)] = lastPair
+    else:
+        stageList[int(projectId)] = []
+
+    # print lastPair
+
     return render_template("submit.html", projectId=projectId, lastPair=lastPair,
                            compareMethod=compareMethod, commentRemove=commentRemove, tokenizer=tokenizer)
 
@@ -63,17 +70,18 @@ def compare():
     commentRemove = request.form.get('commentRemove')
     tokenizer = request.form.get('tokenizer')
 
-    print commentRemove
+    lastPair = json.loads(lastPair)
 
     projectId = getProjectId()
 
     q = Queue()
-    pr = Process(target=compareWithProcesses, args=(projectId, q, int(lastPair), int(compareMethod),
+    paramList[int(projectId)] = [q, compareMethod, commentRemove, tokenizer]
+    pr = Process(target=compareWithProcesses, args=(projectId, q, lastPair, int(compareMethod),
                 int(commentRemove), int(tokenizer)))
     pr.daemon = True
     pr.start()
 
-    process_dict[projectId] = [pr, q]
+    process_dict[int(projectId)] = [pr, q]
 
     numOfPair = db.session.query(Pair).filter(Pair.projID == projectId).count()
     return jsonify(numOfPair)
@@ -87,10 +95,13 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
     db.session.query(Project).filter(Project.projID == projectId).update(
         dict(compareMethod=compareMethod))
 
-    if lastPair == 0:
-        print '뿅뿅'
+    stage = []
+    if not lastPair:
+        # print '뿅뿅'
         for pair in db.session.query(Pair).filter(Project.projID == Pair.projID).all():
             db.session.query(Result).filter(pair.pairID == Result.pairID).delete()
+    else:
+        stage = lastPair
 
     db.session.commit()
 
@@ -103,14 +114,12 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
 
     comments = {'py': pyComment, 'c': cComment, 'cpp': cComment, 'java': cComment}
 
-    stage = 0
-
+    print stage
     pairs = db.session.query(Pair).filter(Pair.projID == projectId).all()
     for i in range(len(pairs)):
         pair = pairs[i]
 
-        if lastPair >= pair.pairID:
-            stage += 1
+        if pair.pairID in stage:
             continue
 
         tokenizerList = []
@@ -136,36 +145,25 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
             commentList = []
 
         #filter.compareOnePair(origin, comp, pair.pairID, compareMethod, commentList, tokenizerList, originLineNumber)
-        print 'send : ' + str(origin) + ', ' + str(comp) + ', ' + str(pair.pairID) + ', ' + str(compareMethod) + ', ' + str(originLineNumber)
+        # print 'send : ' + str(origin) + ', ' + str(comp) + ', ' + str(pair.pairID) + ', ' + str(compareMethod) + ', ' + str(originLineNumber)
         #여기부터
         compare = {'origin': origin, 'comp': comp, 'pairID': pair.pairID, 'compareMethod' : compareMethod, 'tokenizer' : tokenizer, 'commentRemove' : commentRemove, 'lineNum' : originLineNumber}
-        print 'ask to node'
+        # print 'ask to node'
         res = requests.post('http://0.0.0.0:8888/work', json=compare)
         #여기까지
         #db.session.query(Project).filter(Project.projID == projectId).update(dict(lastPair=pair.pairID))
         #db.session.commit()
 
-        # 비교 진행 상황을 파일에 저장
-        f = open(join(app.config['PROGRESS_FOLDER'], str(projectId)), 'w')
-        f.write(str({'lastPair': pair.pairID, 'compareMethod': compareMethod, 'commentRemove': commentRemove,'tokenizer': tokenizer}))
-
-        # 취소 확인
-
-        q.put(stage)
-        lastPair = pair.pairID
-        stage += 1
         # print "put : " + str(pair.pairID)
-
-    if os.path.exists(join(app.config['PROGRESS_FOLDER'], str(projectId))):
-        os.remove(join(app.config['PROGRESS_FOLDER'], str(projectId)))
+    # if os.path.exists(join(app.config['PROGRESS_FOLDER'], str(projectId))):
+        # os.remove(join(app.config['PROGRESS_FOLDER'], str(projectId)))
     db.session.commit()
-    q.put(stage)
 
 
 @app.route("/compare/state", methods=["GET"])
 def processState():
     projectId = getProjectId()
-
+    '''
     process_set = process_dict.get(projectId, -1)
     if process_set == -1:
         return -1
@@ -178,6 +176,9 @@ def processState():
             currentNumber = q.get(block=False)
         except:
             break
+    '''
+    currentNumber = len(stageList[int(projectId)])
+    print currentNumber
 
     # print currentNumber
     return jsonify(currentNumber)
@@ -187,12 +188,12 @@ def processState():
 def cancelCompare():
     projectId = getProjectId()
 
-    pr = process_dict[projectId][0]
+    pr = process_dict[int(projectId)][0]
     # print pr, pr.is_alive()
     pr.terminate()
     pr.join()
 
-    del (process_dict[projectId])
+    del (process_dict[int(projectId)])
 
     return redirect('/dashboard')
 
@@ -206,13 +207,23 @@ def getProjectId():
 
 @app.route("/done", methods=["POST"])
 def done():
+    global stageList
+    global paramList
+
     data = request.get_json(force=True)
-    print 'receive data from node'
+    # print 'receive data from node'
     result = json.loads(data)
-    print result
+    # print result
+
+    pairId = result[0]
+    pair = Pair.query.filter(Pair.pairID == pairId).first()
+
+    stageList[pair.projID].append(pairId)
 
     # 비교 진행 상황을 파일에 저장
-    #f = open(join(app.config['PROGRESS_FOLDER'], str(projectId)), 'w')
-    #f.write(str({'lastPair': pair.pairID, 'compareMethod': compareMethod, 'commentRemove': commentRemove,'tokenizer': tokenizer}))
+    f = open(join(app.config['PROGRESS_FOLDER'], str(pair.projID)), 'w')
+    f.write(str({'stageList': stageList[pair.projID], 'compareMethod': paramList[pair.projID][1],
+                 'commentRemove': paramList[pair.projID][2], 'tokenizer': paramList[pair.projID][3]}))
+    f.close()
 
     return 'ok'
