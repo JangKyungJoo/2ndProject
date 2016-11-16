@@ -594,13 +594,14 @@ def pair_load():
     csvReader = csv.reader(file)
     for row in csvReader:
         row = list(row)
-        file_list.append(row)
-        print (row)
 
-        origin_name = row[0].rsplit('/', 1)[1]
-        origin_path = row[0].rsplit('/', 1)[0]
-        comp_name = row[1].rsplit('/', 1)[1]
-        comp_path = row[1].rsplit('/', 1)[0]
+        try:
+            origin_name = row[0].rsplit('/', 1)[1]
+            origin_path = row[0].rsplit('/', 1)[0]
+            comp_name = row[1].rsplit('/', 1)[1]
+            comp_path = row[1].rsplit('/', 1)[0]
+        except:
+            return '파일 이름이 정확하지 않음...'
 
         print (origin_path, origin_name)
 
@@ -610,6 +611,8 @@ def pair_load():
             return '파일 이름이 정확하지 않음..'
         if not comp:
             return '파일 이름이 정확하지 않음..'
+
+        file_list.append(row)
 
         pair = Pair(origin.originID, comp.compID, projID)
         pair_list.append(pair)
@@ -621,10 +624,11 @@ def pair_load():
             db.session.delete(temp)
         db.session.delete(item)
     db.session.commit()
-
+    '''
     for pair in pair_list:
         db.session.add(pair)
     db.session.commit()
+    '''
 
     tuple_list = file_list
 
