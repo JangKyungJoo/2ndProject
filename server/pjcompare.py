@@ -253,14 +253,14 @@ def done():
 
 
 @app.route('/origin/<fileid>', methods=["GET"])
-def file(fileid):
+def getOrigin(fileid):
     origin = Origin.query.filter(Origin.originID == fileid).first()
     path = join(origin.originPath, origin.originName)
     return send_file(path)
 
 
 @app.route('/compare/<fileid>', methods=["GET"])
-def file(fileid):
+def getCompare(fileid):
     compare = Compare.query.filter(Compare.compID == fileid).first()
     path = join(compare.compPath, compare.compName)
     return send_file(path)
