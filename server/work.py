@@ -4,10 +4,12 @@ import requests
 import time
 from flask import render_template
 from flask import request
-
 from server import app
 from server import preprocessor
 from server.filter import compareOnePair
+
+port = 3001
+requests.get('http://0.0.0.0:5000/worker/' + str(port))
 
 
 @app.route('/work', methods=["POST"])
@@ -53,4 +55,11 @@ def getCompare(compID):
     res = requests.get('http://0.0.0.0:5000/compare/' + str(compID))
     return res.content
 
-app.run(debug=True, host='0.0.0.0', port=8888)
+
+@app.route('/alive', methods=["GET"])
+def alive():
+    print 'get'
+    return 'ok'
+
+# 포트번호 : 3000 ~ 3004
+app.run(debug=True, host='0.0.0.0', port=port)

@@ -4,15 +4,7 @@ from flask import json
 
 import preprocessor
 import compare
-import os
-from server.models import Result
-from server.models import Pair
-
-from server import db
-from server import app
 import time
-from datetime import datetime
-import lexer.clexer as clexer
 
 import sys
 reload(sys)

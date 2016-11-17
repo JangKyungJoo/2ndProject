@@ -5,7 +5,7 @@ from datetime import datetime
 import requests
 from flask import json
 from flask import send_file
-
+from server import manager
 from server import app
 from server import db
 from flask import render_template
@@ -153,7 +153,9 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
         #여기부터
         compare = {'origin': origin, 'comp': comp, 'pairID': pair.pairID, 'compareMethod' : compareMethod, 'tokenizer' : tokenizer, 'commentRemove' : commentRemove, 'lineNum' : originLineNumber}
         # print 'ask to node'
-        res = requests.post('http://0.0.0.0:8888/work', json=compare)
+        if manager.get_worker() != -1:
+            target = 'http://0.0.0.0:' + str(manager.get_worker()) + '/work'
+            res = requests.post(target, json=compare)
         #여기까지
         #db.session.query(Project).filter(Project.projID == projectId).update(dict(lastPair=pair.pairID))
         #db.session.commit()
