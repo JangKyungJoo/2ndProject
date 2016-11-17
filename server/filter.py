@@ -105,8 +105,9 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
     db.session.commit()
     # print 'midend-exit'+str(end_time - midend_time)
     '''
-    print 'result'
-    print result
-    res = requests.post('http://0.0.0.0:5000/done', json=json.dumps(result))
+    # print 'result'
+    # print result
+    return result
+
     # for u in db.session.query(Result).all():
     # print(u.resultID, u.pairID, u.originLine, u.compLine, u.rType)
