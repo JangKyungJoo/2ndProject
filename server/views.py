@@ -554,8 +554,9 @@ def pair_save():
 
     origin_dict = {}
     comp_dict = {}
-    path_list = []
-
+    projID = session['projID']
+    tuple_list = g_tuple_list.get(projID, list())
+    '''
     pairs = Pair.query.filter(Pair.projID == session['projID']).all()
     for pair in pairs:
         origin = Origin.query.filter(Origin.originID == pair.originID).first()
@@ -571,11 +572,11 @@ def pair_save():
         cpath = comp_dict[comp.compID]
 
         path_list.append([opath, cpath])
-
+    '''
     save_path = os.path.join(os.path.join(app.config['UPLOAD_FOLDER'], session['projID']), 'pair.csv')
     with open(save_path, "wb") as f:
         writer = csv.writer(f)
-        writer.writerows(path_list)
+        writer.writerows(tuple_list)
 
     return send_file(save_path,
                      mimetype='text/csv',
