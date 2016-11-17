@@ -371,7 +371,7 @@ def file_upload():
     return render_template('/file_upload.html', projName=projName, origin_file=origin_file, comp_file=comp_file)
 
 
-tuple_list = []
+g_tuple_list = {}
 ext_list = []
 
 @app.route('/tuple', methods=['GET', 'POST'])
@@ -449,9 +449,6 @@ def tuple():
 
     if request.method == 'POST':
 
-        global tuple_list
-
-        tuple_list = []
         extension_list = []
 
         extension_list = request.form.getlist('extensions')
@@ -478,21 +475,24 @@ def tuple():
                         tuple_list.append((ori.encode('ascii'), comp.encode('ascii')))
                     else:
                         continue
-            
-            return redirect(url_for('tuple_edit'))
+
+            g_tuple_list[projID] = tuple_list
+            return render_template('/tuple_edit.html', tuple_list=tuple_list, projName=projName)
         # 모든 파일 one by one
         elif tuple_type == 'all':
             for ori in origin_list:
                 for comp in comp_list:
                     tuple_list.append((ori.encode('ascii'), comp.encode('ascii')))
-            return redirect(url_for('tuple_edit'))
+            g_tuple_list[projID] = tuple_list
+            return render_template('/tuple_edit.html', tuple_list=tuple_list, projName=projName)
         # 같은 확장자끼리 비교
         elif tuple_type == 'ext':
             for ori in origin_list:
                 for comp in comp_list:
                     if ori.rsplit('.', 1)[1] == comp.rsplit('.', 1)[1]:
                         tuple_list.append((ori.encode('ascii'), comp.encode('ascii')))
-            return redirect(url_for('tuple_edit'))
+            g_tuple_list[projID] = tuple_list
+            return render_template('/tuple_edit.html', tuple_list=tuple_list, projName=projName)
         else:
             pass
 
@@ -507,8 +507,8 @@ def tuple_edit():
     '''
         비교쌍 편집
     '''
-
-    global tuple_list
+    projID = session['projID']
+    tuple_list = g_tuple_list.get(projID, list())
 
     if not session['projID'] or session['projID'] is None:
         return redirect(url_for('dashboard'))
@@ -537,6 +537,8 @@ def tuple_edit():
 
         db.session.commit()
 
+        if g_tuple_list.get(projID, False):
+            del(g_tuple_list[projID])
         return redirect(url_for('compare'))
 
     return render_template('/tuple_edit.html', projName=projName, tuple_list=tuple_list)
@@ -547,6 +549,8 @@ def tuple_edit():
 def pair_save():
     # pair 테이블 모두 불러온 다음 origin, comp 테이블의 절대경로를 모두 매핑.
     # originID, compID로 전체경로를 불러와 딕셔너리에 캐싱할 것.
+
+    print(request.form.getlist('list'))
 
     origin_dict = {}
     comp_dict = {}
@@ -601,16 +605,16 @@ def pair_load():
             comp_name = row[1].rsplit('/', 1)[1]
             comp_path = row[1].rsplit('/', 1)[0]
         except:
-            return '파일 이름이 정확하지 않음...'
+            continue
 
         print (origin_path, origin_name)
 
         origin = Origin.query.filter(Origin.originPath == origin_path).filter(Origin.originName == origin_name).first()
         comp = Compare.query.filter(Compare.compPath == comp_path).filter(Compare.compName == comp_name).first()
         if not origin:
-            return '파일 이름이 정확하지 않음..'
+            continue
         if not comp:
-            return '파일 이름이 정확하지 않음..'
+            continue
 
         file_list.append(row)
 
