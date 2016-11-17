@@ -183,13 +183,3 @@ def save(projectid):
 def getPath(path):
     temp = path[len(app.config['UPLOAD_FOLDER']):]
     return temp.split('files/')[1]
-
-
-# DB 초기화에 대비한 db add 부분. 지울 것
-@app.route('/init', methods=["GET"])
-def init_pair():
-    people = People('KyungJoo', 'rudwn826@naver.com', '1234')
-    db.session.add(people)
-    db.session.commit()
-
-    return redirect(url_for("dashboard"))

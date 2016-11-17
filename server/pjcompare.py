@@ -17,12 +17,7 @@ from server.models import Origin
 from server.models import Compare
 from server.models import Project
 from multiprocessing import Process, Queue
-import time
-# from datatime import datetime
-
-import filter
 import sys, os
-import views
 import preprocessor
 
 process_dict = {}
@@ -89,7 +84,6 @@ def compare():
     numOfPair = db.session.query(Pair).filter(Pair.projID == projectId).count()
     pairCount[int(projectId)] = numOfPair
     return jsonify(numOfPair)
-    # return render_template("compare.html", projectid=projectid)
 
 
 def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, tokenizer):
@@ -101,7 +95,6 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
 
     stage = []
     if not lastPair:
-        # print '뿅뿅'
         for pair in db.session.query(Pair).filter(Project.projID == Pair.projID).all():
             db.session.query(Result).filter(pair.pairID == Result.pairID).delete()
     else:
@@ -148,41 +141,16 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
         if commentRemove == 0:
             commentList = []
 
-        #filter.compareOnePair(origin, comp, pair.pairID, compareMethod, commentList, tokenizerList, originLineNumber)
-        # print 'send : ' + str(origin) + ', ' + str(comp) + ', ' + str(pair.pairID) + ', ' + str(compareMethod) + ', ' + str(originLineNumber)
-        #여기부터
         compare = {'origin': origin, 'comp': comp, 'pairID': pair.pairID, 'compareMethod' : compareMethod, 'tokenizer' : tokenizer, 'commentRemove' : commentRemove, 'lineNum' : originLineNumber}
-        # print 'ask to node'
         if manager.get_worker() != -1:
             target = 'http://0.0.0.0:' + str(manager.get_worker()) + '/work'
             res = requests.post(target, json=compare)
-        #여기까지
-        #db.session.query(Project).filter(Project.projID == projectId).update(dict(lastPair=pair.pairID))
-        #db.session.commit()
-
-        # print "put : " + str(pair.pairID)
-    # if os.path.exists(join(app.config['PROGRESS_FOLDER'], str(projectId))):
-        # os.remove(join(app.config['PROGRESS_FOLDER'], str(projectId)))
     db.session.commit()
 
 
 @app.route("/compare/state", methods=["GET"])
 def processState():
     projectId = getProjectId()
-    '''
-    process_set = process_dict.get(projectId, -1)
-    if process_set == -1:
-        return -1
-    q = process_set[1]
-
-    currentNumber = -1
-
-    while True:
-        try:
-            currentNumber = q.get(block=False)
-        except:
-            break
-    '''
     currentNumber = len(stageList[int(projectId)])
     print currentNumber
 
@@ -193,7 +161,6 @@ def processState():
         if os.path.exists(join(app.config['PROGRESS_FOLDER'], str(projectId))):
             os.remove(join(app.config['PROGRESS_FOLDER'], str(projectId)))
 
-    # print currentNumber
     return jsonify(currentNumber)
 
 
@@ -202,7 +169,6 @@ def cancelCompare():
     projectId = getProjectId()
 
     pr = process_dict[int(projectId)][0]
-    # print pr, pr.is_alive()
     pr.terminate()
     pr.join()
 
@@ -224,9 +190,8 @@ def done():
     global paramList
 
     data = request.get_json(force=True)
-    # print 'receive data from node'
     result = json.loads(data)
-    print result
+    #print result
 
     pairId = result[0][0]
     similarity = result[0][1]
