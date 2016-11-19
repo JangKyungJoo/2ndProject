@@ -148,7 +148,7 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
 
         compare = {'origin': origin, 'comp': comp, 'pairID': pair.pairID, 'compareMethod' : compareMethod,
                    'tokenizer': tokenizer, 'commentRemove' : commentRemove, 'lineNum' : originLineNumber,
-                   'blockSize': blockSize}
+                   'blockSize': blockSize, 'originID' : pair.originID, 'compID' : pair.compID}
         if manager.get_worker() != -1:
             target = 'http://0.0.0.0:' + str(manager.get_worker()) + '/work'
             res = requests.post(target, json=compare)

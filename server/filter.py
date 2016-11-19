@@ -5,18 +5,19 @@ from flask import json
 import preprocessor
 import compare
 import time
-
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
 
 # pair 수 만큼 호출
-def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
+#def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
+def compareOnePair(originCode, compCode, pairNum, compareMethod, commentList
                    , tokenizerList, originLineNumber, blockSize):
     global output
-    opath = originFile.rsplit('/')[0]
-    cpath = compFile.rsplit('/')[0]
+    '''
+    opath = originName.rsplit('/')[0]
+    cpath = compName.rsplit('/')[0]
 
     #start_time = time.time()
 
@@ -25,6 +26,7 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
 
     originCode = originFile.read()
     compCode = compFile.read()
+    '''
 
     preprocess_filter = [preprocessor.RemoveBlank(), tokenizerList]
 
