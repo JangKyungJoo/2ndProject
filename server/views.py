@@ -409,9 +409,12 @@ def tuple():
 
         for path, subdirs, files in walk(origin_path):
             for name in files:
-                ext = name.rsplit('.', 1)[1]
-                if ext not in ext_list:
-                    ext_list.append(ext)
+                temp_ext = name.rsplit('.', 1)
+                if len(temp_ext) > 1:
+                    ext = temp_ext[1]
+
+                    if ext not in ext_list:
+                        ext_list.append(ext)
 
                 origin_file_list.append(name)
                 origin_list.append(join(path,name))
@@ -428,9 +431,11 @@ def tuple():
 
         for path, subdirs, files in walk(comp_path):
             for name in files:
-                ext = name.rsplit('.', 1)[1]
-                if ext not in ext_list:
-                    ext_list.append(ext)
+                temp_ext = name.rsplit('.', 1)
+                if len(temp_ext) > 1:
+                    ext = temp_ext[1]
+                    if ext not in ext_list:
+                        ext_list.append(ext)
 
                 comp_file_list.append(name)
                 comp_list.append(join(path,name))
@@ -455,14 +460,16 @@ def tuple():
 
         temp_ori_list = []
         for ori in origin_list:
-            if ori.rsplit('.', 1)[1] in extension_list:
-                temp_ori_list.append(ori)
+            if len(ori.rsplit('.', 1)) > 1:
+                if ori.rsplit('.', 1)[1] in extension_list:
+                    temp_ori_list.append(ori)
         origin_list = temp_ori_list
 
         temp_comp_list = []
         for comp in comp_list:
-            if comp.rsplit('.', 1)[1] in extension_list:
-                temp_comp_list.append(comp)
+            if len(comp.rsplit('.', 1)) > 1:
+                if comp.rsplit('.', 1)[1] in extension_list:
+                    temp_comp_list.append(comp)
         comp_list = temp_comp_list
 
         tuple_type = request.form.get('tuple_type')
@@ -536,7 +543,7 @@ def tuple_edit():
                 db.session.add(new_pair)
 
         db.session.commit()
-
+        
         if g_tuple_list.get(projID, False):
             del(g_tuple_list[projID])
         return redirect(url_for('compare'))
@@ -636,7 +643,7 @@ def pair_load():
     '''
 
     tuple_list = file_list
-
+    
     return render_template('/tuple_edit.html', projName=session['project'], tuple_list=file_list)
 
 
