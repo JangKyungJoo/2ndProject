@@ -4,6 +4,8 @@ from os.path import join
 from datetime import datetime
 import requests
 from flask import json
+from pywebhdfs.webhdfs import PyWebHdfsClient
+from subprocess import call
 from flask import send_file
 from server import manager
 from server import app
@@ -19,6 +21,7 @@ from server.models import Project
 from multiprocessing import Process, Queue
 import sys, os
 import preprocessor
+
 
 process_dict = {}
 
@@ -38,6 +41,13 @@ def comparePageOpen():
     commentRemove = 1
     tokenizer = 0
     blockSize = 1
+
+    '''
+        sync hdfs storage with local storage
+
+        $ hdfs dfs -put -f 'app.config['UPLOAD_FOLDER'] /
+    '''
+    call(["hdfs", "dfs", "-put", "-f", app.config['UPLOAD_FOLDER'], "/"])
 
     if not os.path.exists(app.config['PROGRESS_FOLDER']):
         os.makedirs(app.config['PROGRESS_FOLDER'])
@@ -242,13 +252,37 @@ def done():
 
 @app.route('/origin/<fileid>', methods=["GET"])
 def getOrigin(fileid):
+    '''
+
+        hdfs applied
+        flask.send_file -> hdfs.read_file
+
+        :param fileid:
+        :return:
+    '''
+    hdfs = PyWebHdfsClient(host='localhost', port='50070')
     origin = Origin.query.filter(Origin.originID == fileid).first()
     path = join(origin.originPath, origin.originName)
-    return send_file(path)
+    path = path.replace(app.config['UPLOAD_FOLDER'], "")
+    path = "/uploads" + str(path)
+    # return send_file(path)
+    return hdfs.read_file(path)
 
 
 @app.route('/compare/<fileid>', methods=["GET"])
 def getCompare(fileid):
+    '''
+
+        hdfs applied
+        flask.send_file -> hdfs.read_file
+
+        :param fileid:
+        :return:
+    '''
+    hdfs = PyWebHdfsClient(host='localhost', port='50070')
     compare = Compare.query.filter(Compare.compID == fileid).first()
     path = join(compare.compPath, compare.compName)
-    return send_file(path)
+    path = path.replace(app.config['UPLOAD_FOLDER'], "")
+    path = "/uploads" + str(path)
+    # return send_file(path)
+    return hdfs.read_file(path)

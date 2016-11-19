@@ -69,7 +69,7 @@ def compareOnePair(originCode, compCode, pairNum, compareMethod, commentList
     compa = compare.Compare(checkFunction)
     compa.setInput(outputs[0][0], outputs[1][0])
     ret = compa.process(blockSize=blockSize)
-
+    
     #mid_time = time.time()
 
     similLine = 0.0
