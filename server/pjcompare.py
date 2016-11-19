@@ -97,10 +97,14 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
     db.session.query(Project).filter(Project.projID == projectId).update(
         dict(compareMethod=compareMethod))
 
+    projectId = getProjectId()
     stage = []
+    print lastPair
     if not lastPair:
         for pair in db.session.query(Pair).filter(Project.projID == Pair.projID).all():
             db.session.query(Result).filter(pair.pairID == Result.pairID).delete()
+        if os.path.exists(join(app.config['PROGRESS_FOLDER'], str(projectId))):
+            os.remove(join(app.config['PROGRESS_FOLDER'], str(projectId)))
     else:
         stage = lastPair
 
@@ -224,6 +228,14 @@ def done():
     pair.similarity = similarity
     pair.modifyDate = datetime.now()
     db.session.commit()
+
+    projectId = int(pair.projID)
+    currentNumber = len(stageList[int(projectId)])
+    # print currentNumber
+
+    if pairCount.get(int(projectId), -1) == currentNumber:
+        if os.path.exists(join(app.config['PROGRESS_FOLDER'], str(projectId))):
+            os.remove(join(app.config['PROGRESS_FOLDER'], str(projectId)))
 
     return 'ok'
 
