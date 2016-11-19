@@ -10,6 +10,12 @@
 #### http://alifejeon.blogspot.kr/2016/02/sphinx-python-api.html
 
 
+# Hadoop
+
+#### sudo pip install pywebhdfs
+#### http://withsmilo.github.io/bigdata/2016/06/01/setup-hadoop-2.7.2-on-osx/
+#### http://www.openwith.net/?p=495
+
 # Requirement
 
 #### sudo pip install -r requirement.txt

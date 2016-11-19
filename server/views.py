@@ -641,7 +641,7 @@ def pair_load():
         db.session.add(pair)
     db.session.commit()
     '''
-
+    
     tuple_list = file_list
     
     return render_template('/tuple_edit.html', projName=session['project'], tuple_list=file_list)
