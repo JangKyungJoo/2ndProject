@@ -107,7 +107,7 @@ class Compare:
         return dict
     '''
 
-    def process(self):
+    def process(self, blockSize):
         i = 0
         matrix = {}
         while i < len(self.originToken):
@@ -125,6 +125,11 @@ class Compare:
                 elif per >= 70.0:
                     retList = self.block(i + 1, j + 1, 0)
                     retList.append(2)
+
+                if len(retList) < blockSize:
+                    j += 1
+                    continue
+
                 retList.reverse()
                 dict[j] = retList
 
@@ -139,7 +144,7 @@ class Compare:
                     maxlen = len(dict[blk])
                     idx = blk
             for k in range(idx, idx+maxlen):
-                matrix[i] = [k, dict[k][k-idx]]
+                matrix[i] = [k, dict[idx][k-idx]]
                 self.visited[k] = 1
                 i += 1
             if maxlen == 0:
@@ -147,7 +152,7 @@ class Compare:
         return matrix
 
     def block(self, i, j, length):
-        if len(self.originToken) >= i or len(self.compToken) >= j:
+        if len(self.originToken) <= i or len(self.compToken) <= j:
             return []
         if self.visited.get(j, 0) == 1:
             return []

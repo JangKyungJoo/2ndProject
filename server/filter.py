@@ -13,7 +13,7 @@ sys.setdefaultencoding("utf-8")
 
 # pair 수 만큼 호출
 def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
-                   , tokenizerList, originLineNumber):
+                   , tokenizerList, originLineNumber, blockSize):
     global output
     opath = originFile.rsplit('/')[0]
     cpath = compFile.rsplit('/')[0]
@@ -66,7 +66,7 @@ def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
 
     compa = compare.Compare(checkFunction)
     compa.setInput(outputs[0][0], outputs[1][0])
-    ret = compa.process()
+    ret = compa.process(blockSize=blockSize)
 
     #mid_time = time.time()
 

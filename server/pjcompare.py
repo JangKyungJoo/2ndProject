@@ -37,6 +37,7 @@ def comparePageOpen():
     compareMethod = 0
     commentRemove = 1
     tokenizer = 0
+    blockSize = 1
 
     if not os.path.exists(app.config['PROGRESS_FOLDER']):
         os.makedirs(app.config['PROGRESS_FOLDER'])
@@ -50,6 +51,7 @@ def comparePageOpen():
         compareMethod = configFile['compareMethod']
         commentRemove = configFile['commentRemove']
         tokenizer = configFile['tokenizer']
+        blockSize = configFile['blockSize']
 
         stageList[int(projectId)] = lastPair
     else:
@@ -58,7 +60,8 @@ def comparePageOpen():
     # print lastPair
 
     return render_template("submit.html", projectId=projectId, lastPair=lastPair,
-                           compareMethod=compareMethod, commentRemove=commentRemove, tokenizer=tokenizer)
+                           compareMethod=compareMethod, commentRemove=commentRemove, tokenizer=tokenizer,
+                           blockSize=blockSize)
 
 
 @app.route('/compare', methods=["POST"])
@@ -67,15 +70,16 @@ def compare():
     compareMethod = request.form.get('compareMethod')
     commentRemove = request.form.get('commentRemove')
     tokenizer = request.form.get('tokenizer')
+    blockSize = request.form.get('blockSize')
 
     lastPair = json.loads(lastPair)
 
     projectId = getProjectId()
 
     q = Queue()
-    paramList[int(projectId)] = [q, compareMethod, commentRemove, tokenizer]
+    paramList[int(projectId)] = [q, compareMethod, commentRemove, tokenizer, blockSize]
     pr = Process(target=compareWithProcesses, args=(projectId, q, lastPair, int(compareMethod),
-                int(commentRemove), int(tokenizer)))
+                int(commentRemove), int(tokenizer), int(blockSize)))
     pr.daemon = True
     pr.start()
 
@@ -86,7 +90,7 @@ def compare():
     return jsonify(numOfPair)
 
 
-def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, tokenizer):
+def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, tokenizer, blockSize):
     # 프로젝트 내에 있는 비교쌍들을 불러온다.
     # 비교쌍 리스트 갯수만큼 filter를 돌림.
 
@@ -114,6 +118,7 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
     print stage
     pairs = db.session.query(Pair).filter(Pair.projID == projectId).all()
     for i in range(len(pairs)):
+        print '단계 : ', i
         pair = pairs[i]
 
         if pair.pairID in stage:
@@ -141,10 +146,13 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
         if commentRemove == 0:
             commentList = []
 
-        compare = {'origin': origin, 'comp': comp, 'pairID': pair.pairID, 'compareMethod' : compareMethod, 'tokenizer' : tokenizer, 'commentRemove' : commentRemove, 'lineNum' : originLineNumber}
+        compare = {'origin': origin, 'comp': comp, 'pairID': pair.pairID, 'compareMethod' : compareMethod,
+                   'tokenizer': tokenizer, 'commentRemove' : commentRemove, 'lineNum' : originLineNumber,
+                   'blockSize': blockSize}
         if manager.get_worker() != -1:
             target = 'http://0.0.0.0:' + str(manager.get_worker()) + '/work'
             res = requests.post(target, json=compare)
+    print '끝'
     db.session.commit()
 
 
@@ -152,7 +160,7 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
 def processState():
     projectId = getProjectId()
     currentNumber = len(stageList[int(projectId)])
-    print currentNumber
+    # print currentNumber
 
     if pairCount[int(projectId)] == currentNumber:
         del stageList[int(projectId)]
@@ -204,7 +212,8 @@ def done():
     # 비교 진행 상황을 파일에 저장
     f = open(join(app.config['PROGRESS_FOLDER'], str(pair.projID)), 'w')
     f.write(str({'stageList': stageList[pair.projID], 'compareMethod': paramList[pair.projID][1],
-                 'commentRemove': paramList[pair.projID][2], 'tokenizer': paramList[pair.projID][3]}))
+                 'commentRemove': paramList[pair.projID][2], 'tokenizer': paramList[pair.projID][3],
+                 'blockSize': paramList[pair.projID][4]}))
     f.close()
 
     for r in result:

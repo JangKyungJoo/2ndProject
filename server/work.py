@@ -25,10 +25,10 @@ def work():
     data = request.get_json(force=True)
     taskQueue.put(data)
     global a
-    print a
+    # print a
     a += 1
 
-    for i in range(0, 10):
+    for i in range(0, 1):
         threadList[i][1].set()
 
     return 'ok'
@@ -69,11 +69,12 @@ def process(e):
 
         #print 'receive : ' + str(data['origin']) + ', ' + str(data['comp']) + ', ' + str(data['pairID']) + ', ' + str(data['compareMethod']) + ', ' + str(data['lineNum'])
         # result를 리턴값으로 받아와서 이 함수 내에서 post전송
-        result = compareOnePair(data['origin'], data['comp'], data['pairID'], data['compareMethod'], commentList,tokenizerList, data['lineNum'])
+        result = compareOnePair(data['origin'], data['comp'], data['pairID'], data['compareMethod'],
+                                commentList, tokenizerList, data['lineNum'], data['blockSize'])
         res = requests.post('http://0.0.0.0:5000/done', json=json.dumps(result))
 
 
-for i in range(0, 10):
+for i in range(0, 1):
     event = Event()
     t = Thread(target=process, args=(event,))
     threadList.append([t, event])

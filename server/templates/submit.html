@@ -73,6 +73,11 @@
     		</div>
     	</div>
               <br /><br />
+        <div class="form-group">
+        	<label for="fun" class="col-sm-2 col-md-2 control-label text-left">최소 유사 블록 크기</label>
+            <input type="text" id="quantity" name="quantity">
+        </div>
+              <br /><br />
 
     <button id="relay" class="btn btn-default">마지막 중단 지점부터 비교하기</button>
     <button id="initial" class="btn btn-default">처음부터 비교하기</button>
@@ -86,7 +91,7 @@
                     url: '/compare',
                     data: {'lastPair': JSON.stringify(varLastPair), 'compareMethod': selectedMethod,
                             'commentRemove': document.getElementById("comment").value,
-                            'tokenizer': tokenizer},
+                            'tokenizer': tokenizer, 'blockSize': blockSize},
                     type: 'POST',
                     success: function (response) {
                         console.log(response);
@@ -125,6 +130,7 @@
     var compareMethod = {{ compareMethod }};
     var tokenizer = {{ tokenizer }};
     var commentRemove = {{ commentRemove }};
+    var blockSize = {{ blockSize }};
 
     var selectedMethod = 1;
     var completed = 0;
@@ -149,6 +155,11 @@
             commentRemove = document.getElementById("comment").value;
             tokenizer = document.getElementById("token").value;
             selectedMethod = document.getElementById("method").value;
+            blockSize = document.getElementById("quantity").value;
+            if(isNaN(blockSize) || blockSize == '') {
+                alert("최소 유사 블록 크기 란은 숫자로만 작성해 주세요.");
+                return;
+            }
 
             compareStart();
         });
