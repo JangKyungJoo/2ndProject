@@ -12,8 +12,9 @@ from threading import Thread, Lock, Event
 from Queue import Queue
 
 lock = Lock()
-taskQueue = Queue()
-threadList = []
+taskQueueList = {}
+threadList = {}
+
 a = 0
 
 port = 3000
@@ -23,25 +24,21 @@ requests.get('http://0.0.0.0:5000/worker/' + str(port))
 @app.route('/work', methods=["POST"])
 def work():
     data = request.get_json(force=True)
-    taskQueue.put(data)
+    taskQueueList[data['projectId']].put(data)
     global a
     # print a
     a += 1
-
-    for i in range(0, 1):
-        threadList[i][1].set()
+    threadList[data['projectId']][1].set()
 
     return 'ok'
 
 
-def process(e):
+def process(e, projectId):
     global lock
     while True:
-        lock.acquire()
-        if taskQueue.empty():
+        if taskQueueList[projectId].empty():
             e.wait()
-        data = taskQueue.get()
-        lock.release()
+        data = taskQueueList[projectId].get()
 
         tokenizers = {'py': preprocessor.PythonTokenizer(), 'java': preprocessor.JavaTokenizer(),
                     'c': preprocessor.CTokenizer(), 'cpp': preprocessor.CTokenizer()}
@@ -74,12 +71,8 @@ def process(e):
                                 commentList, tokenizerList, data['lineNum'], data['blockSize'])
         res = requests.post('http://0.0.0.0:5000/done', json=json.dumps(result))
 
-
-for i in range(0, 1):
-    event = Event()
-    t = Thread(target=process, args=(event,))
-    threadList.append([t, event])
-    t.start()
+        if threadList[projectId][2] == 1:
+            break
 
 
 def getOrigin(originID):
@@ -90,6 +83,28 @@ def getOrigin(originID):
 def getCompare(compID):
     res = requests.get('http://0.0.0.0:5000/compare/' + str(compID))
     return res.content
+
+
+@app.route('/work_start', methods=["POST"])
+def workStart():
+    projectId = request.get_data()
+
+    taskQueueList[int(projectId)] = Queue()
+    event = Event()
+    t = Thread(target=process, args=(event, int(projectId)))
+    # 각각 스레드 객체, 이벤트 객체, 종료 플래그
+    threadList[int(projectId)] = [t, event, 0]
+    t.start()
+
+    return 'ok'
+
+
+@app.route('/work_cancel', methods=["POST"])
+def workCancel():
+    projectId = request.get_data()
+    threadList[int(projectId)][2] = 1
+
+    return 'ok'
 
 
 # 포트번호 : 3000 ~ 3004

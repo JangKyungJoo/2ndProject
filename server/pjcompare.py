@@ -119,10 +119,14 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
 
     comments = {'py': pyComment, 'c': cComment, 'cpp': cComment, 'java': cComment}
 
-    print stage
+    workerList = manager.worker_list
+    for worker in workerList:
+        target = 'http://0.0.0.0:' + str(worker) + '/work_start'
+        res = requests.post(target, data=projectId)
+
     pairs = db.session.query(Pair).filter(Pair.projID == projectId).all()
     for i in range(len(pairs)):
-        print '단계 : ', i
+        # print '단계 : ', i
         pair = pairs[i]
 
         if pair.pairID in stage:
@@ -152,7 +156,7 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
 
         compare = {'origin': origin, 'comp': comp, 'pairID': pair.pairID, 'compareMethod' : compareMethod,
                    'tokenizer': tokenizer, 'commentRemove' : commentRemove, 'lineNum' : originLineNumber,
-                   'blockSize': blockSize, 'originID' : pair.originID, 'compID' : pair.compID}
+                   'blockSize': blockSize, 'originID' : pair.originID, 'compID' : pair.compID, 'projectId': pair.projID}
         if manager.get_worker() != -1:
             target = 'http://0.0.0.0:' + str(manager.get_worker()) + '/work'
             res = requests.post(target, json=compare)
@@ -183,6 +187,11 @@ def cancelCompare():
     pr = process_dict[int(projectId)][0]
     pr.terminate()
     pr.join()
+
+    workerList = manager.worker_list
+    for worker in workerList:
+        target = 'http://0.0.0.0:' + str(worker) + '/work_cancel'
+        res = requests.post(target, data=projectId)
 
     del (process_dict[int(projectId)])
 
