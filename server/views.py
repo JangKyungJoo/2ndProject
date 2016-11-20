@@ -114,12 +114,12 @@ def login():
 @login_required
 def dashboard():
     '''
-    테스트용 코드 by Sang-jin Moon
-    db.session.query(Pair).delete()
-    db.session.query(Origin).delete()
-    db.session.query(Compare).delete()
-    db.session.query(Result).delete()
-    db.session.commit()
+        테스트용 코드 by Sang-jin Moon
+        db.session.query(Pair).delete()
+        db.session.query(Origin).delete()
+        db.session.query(Compare).delete()
+        db.session.query(Result).delete()
+        db.session.commit()
     '''
 
     '''
@@ -380,6 +380,10 @@ def tuple():
 
     '''
         비교쌍 생성
+
+        1. zip 파일 내 모든 파일의 확장자 수집 및 카운트
+        2. 확장자 별 비교 기능 제공
+        3. 같은 이름의 파일 비교, 같은 확장자만 비교, 전체 파일 비교 기능
     '''
 
     global ext_list
@@ -513,6 +517,9 @@ def tuple_edit():
 
     '''
         비교쌍 편집
+
+        - 생성된 비교쌍 확인 페이지
+        - csv save, load로 비교쌍 편집 가능
     '''
     projID = session['projID']
     tuple_list = g_tuple_list.get(projID, list())
