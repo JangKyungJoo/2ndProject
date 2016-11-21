@@ -246,6 +246,10 @@ def done():
         if os.path.exists(join(app.config['PROGRESS_FOLDER'], str(projectId))):
             os.remove(join(app.config['PROGRESS_FOLDER'], str(projectId)))
 
+        del (process_dict[int(projectId)])
+
+        return 'end'
+
     return 'ok'
 
 
