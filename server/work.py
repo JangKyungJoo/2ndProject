@@ -16,7 +16,7 @@ taskQueue = Queue()
 threadList = []
 a = 0
 
-port = 3000
+port = 3001
 requests.get('http://0.0.0.0:5000/worker/' + str(port))
 
 
