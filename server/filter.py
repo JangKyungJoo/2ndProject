@@ -11,22 +11,9 @@ sys.setdefaultencoding("utf-8")
 
 
 # pair 수 만큼 호출
-#def compareOnePair(originFile, compFile, pairNum, compareMethod, commentList
 def compareOnePair(originCode, compCode, pairNum, compareMethod, commentList
                    , tokenizerList, originLineNumber, blockSize):
     global output
-    '''
-    opath = originName.rsplit('/')[0]
-    cpath = compName.rsplit('/')[0]
-
-    #start_time = time.time()
-
-    originFile = open(originFile)
-    compFile = open(compFile)
-
-    originCode = originFile.read()
-    compCode = compFile.read()
-    '''
 
     preprocess_filter = [preprocessor.RemoveBlank(), tokenizerList]
 
@@ -58,19 +45,12 @@ def compareOnePair(originCode, compCode, pairNum, compareMethod, commentList
 
     # ori, comp = preprocessor.numberMapping(outputs[0][0], outputs[1][0])
 
-    checkFunction = ''
-    if compareMethod == 1:
-        checkFunction = compare.OrderedCheck()
-    elif compareMethod == 2:
-        checkFunction = compare.UnorderedCheck()
-    elif compareMethod == 3:
-        checkFunction = compare.EditDistance()
+    compareClass = ['', compare.LCS(), compare.TokenMatching(), compare.EditDistance()]
+    checkFunction = compareClass[compareMethod]
 
     compa = compare.Compare(checkFunction)
     compa.setInput(outputs[0][0], outputs[1][0])
     ret = compa.process(blockSize=blockSize)
-
-    #mid_time = time.time()
 
     similLine = 0.0
     entireLine = originLineNumber
@@ -81,6 +61,7 @@ def compareOnePair(originCode, compCode, pairNum, compareMethod, commentList
     result = [[pairNum, similarity]]
     for key in ret.keys():
         # key : 원본 라인 번호 -1
-        result.append({'pairID': pairNum, 'originLine': outputs[0][1][key] + 1, 'compareLine': outputs[1][1][ret[key][0]] + 1, 'rType': ret[key][1]})
+        result.append({'pairID': pairNum, 'originLine': outputs[0][1][key] + 1,
+                       'compareLine': outputs[1][1][ret[key][0]] + 1, 'rType': ret[key][1]})
 
     return result

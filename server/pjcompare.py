@@ -78,6 +78,7 @@ def compare():
 
     q = Queue()
     paramList[int(projectId)] = [q, compareMethod, commentRemove, tokenizer, blockSize]
+    # 각 노드에 분배하는 부분은 별도 프로세스에서 수행
     pr = Process(target=compareWithProcesses, args=(projectId, q, lastPair, int(compareMethod),
                 int(commentRemove), int(tokenizer), int(blockSize)))
     pr.daemon = True
@@ -93,9 +94,6 @@ def compare():
 def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, tokenizer, blockSize):
     # 프로젝트 내에 있는 비교쌍들을 불러온다.
     # 비교쌍 리스트 갯수만큼 filter를 돌림.
-
-    db.session.query(Project).filter(Project.projID == projectId).update(
-        dict(compareMethod=compareMethod))
 
     projectId = getProjectId()
     stage = []
@@ -148,12 +146,7 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
         tokenizerList.append(tokenizers.get(compExt, tokenizers['c']))
         commentList.append(comments.get(compExt, comments['c']))
 
-        # 옵션 인자들과 함께 원본과 비교본의 경로를 넘겨 두 파일을 실제 비교하게 함.
-        if tokenizer == 0:
-            tokenizerList = [preprocessor.SpaceTokenizer(), preprocessor.SpaceTokenizer()]
-        if commentRemove == 0:
-            commentList = []
-
+        # 각 노드에
         compare = {'origin': origin, 'comp': comp, 'pairID': pair.pairID, 'compareMethod' : compareMethod,
                    'tokenizer': tokenizer, 'commentRemove' : commentRemove, 'lineNum' : originLineNumber,
                    'blockSize': blockSize, 'originID' : pair.originID, 'compID' : pair.compID, 'projectId': pair.projID}
@@ -167,9 +160,11 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
 @app.route("/compare/state", methods=["GET"])
 def processState():
     projectId = getProjectId()
+    # 몇개 비교했는지 리턴
     currentNumber = len(stageList[int(projectId)])
     # print currentNumber
 
+    # 비교가 끝났을 경우, 자원 해제하고 파일 제거
     if pairCount[int(projectId)] == currentNumber:
         del stageList[int(projectId)]
         del paramList[int(projectId)]
