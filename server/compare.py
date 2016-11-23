@@ -16,7 +16,7 @@ class Check:
         pass
 
 
-class OrderedCheck(Check):
+class LCS(Check):
 
     def process(self, origin, comp):
         dp = [[0 for col in range(len(comp) + 1)] for row in range(len(origin) + 1)]
@@ -31,7 +31,7 @@ class OrderedCheck(Check):
         return float(dp[len(origin)][len(comp)]) / (len(origin) if len(origin) >= len(comp) else len(comp)) * 100
 
 
-class UnorderedCheck(Check):
+class TokenMatching(Check):
     def mapping(self, data):
         dict = {}
 
@@ -51,13 +51,15 @@ class UnorderedCheck(Check):
 
         sum = 0.0
         originTokenCount = 0
+        compTokenCount = 0
         for token in tokenList:
             originCount = origin.get(token, 0)
             compCount = comp.get(token, 0)
             sum += originCount if compCount > originCount else compCount
             originTokenCount += originCount
+            compTokenCount += compCount
 
-        return (sum / originTokenCount) * 100
+        return (sum / (originTokenCount if originTokenCount > compTokenCount else compTokenCount)) * 100
 
 
 class EditDistance(Check):
@@ -74,7 +76,7 @@ class EditDistance(Check):
                 else:
                     dp[i][j] = min(dp[i - 1][j - 1], min(dp[i - 1][j], dp[i][j - 1])) + 1
 
-        return 100.0-(dp[len(origin)][len(comp)]*20)
+        return (1 - float(dp[len(origin)][len(comp)]) / (len(origin) if len(origin) >= len(comp) else len(comp))) * 100
 
 
 class Compare:
@@ -90,22 +92,6 @@ class Compare:
     def setInput(self, originFile, compFile):
         self.originToken = originFile
         self.compToken = compFile
-    '''
-    def process(self):
-        dict = {}
-
-        for i in range(len(self.originToken)):
-            for j in range(len(self.compToken)):
-                per = self.method.process(self.originToken[i], self.compToken[j])
-                if per == 100.0:
-                    dict[i] = dict.get(i, [])
-                    dict[i].append([j, 1])
-                elif per >= 70.0:
-                    dict[i] = dict.get(i, [])
-                    dict[i].append([j, 2])
-
-        return dict
-    '''
 
     def process(self, blockSize):
         i = 0

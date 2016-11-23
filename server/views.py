@@ -613,6 +613,7 @@ def pair_load():
     csvReader = csv.reader(file)
     for row in csvReader:
         row = list(row)
+        print (row)
 
         try:
             origin_name = row[0].rsplit('/', 1)[1]
@@ -636,6 +637,7 @@ def pair_load():
         pair = Pair(origin.originID, comp.compID, projID)
         pair_list.append(pair)
 
+    '''
     delPair = Pair.query.filter(Pair.projID == projID).all()
     for item in delPair:
         result = Result.query.filter(Result.pairID == item.pairID).all()
@@ -643,13 +645,14 @@ def pair_load():
             db.session.delete(temp)
         db.session.delete(item)
     db.session.commit()
-    '''
+
     for pair in pair_list:
         db.session.add(pair)
     db.session.commit()
     '''
     
     tuple_list = file_list
+    g_tuple_list[projID] = file_list
     
     return render_template('/tuple_edit.html', projName=session['project'], tuple_list=file_list)
 

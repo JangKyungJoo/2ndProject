@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import requests
 import time
@@ -11,9 +11,13 @@ from server.filter import compareOnePair
 from threading import Thread, Lock, Event
 from Queue import Queue
 
+from signal import signal, SIGPIPE, SIG_IGN
+signal(SIGPIPE, SIG_IGN)
+
 lock = Lock()
-taskQueue = Queue()
-threadList = []
+taskQueueList = {}
+threadList = {}
+
 a = 0
 
 port = 3001
@@ -23,42 +27,37 @@ requests.get('http://0.0.0.0:5000/worker/' + str(port))
 @app.route('/work', methods=["POST"])
 def work():
     data = request.get_json(force=True)
-    taskQueue.put(data)
-    global a
-    # print a
-    a += 1
-
-    for i in range(0, 1):
-        threadList[i][1].set()
+    taskQueueList[data['projectId']].put(data)
+    threadList[data['projectId']][1].set()
 
     return 'ok'
 
 
-def process(e):
+def process(e, projectId):
     global lock
     while True:
-        lock.acquire()
-        if taskQueue.empty():
+        if taskQueueList[projectId].empty():
             e.wait()
-        data = taskQueue.get()
-        lock.release()
+        if threadList[projectId][2] == 1:
+            break
+        data = taskQueueList[projectId].get()
 
         tokenizers = {'py': preprocessor.PythonTokenizer(), 'java': preprocessor.JavaTokenizer(),
-                    'c': preprocessor.CTokenizer(), 'cpp': preprocessor.CTokenizer()}
+                      'c': preprocessor.CTokenizer(), 'cpp': preprocessor.CTokenizer()}
 
         cComment = [preprocessor.RemoveComment(token=['/*', '*/']), preprocessor.RemoveComment(token=['//', '\n'])]
         pyComment = [preprocessor.RemoveComment(token=["'''", "'''"]), preprocessor.RemoveComment(token=['"""', '"""']),
-                    preprocessor.RemoveComment(token=['#', '\n'])]
+                     preprocessor.RemoveComment(token=['#', '\n'])]
 
         comments = {'py': pyComment, 'c': cComment, 'cpp': cComment, 'java': cComment}
 
         tokenizerList = []
         commentList = []
 
-        originExt = data['origin'].rsplit('.')[0]
+        originExt = data['origin'].rsplit('.')[1]
         tokenizerList.append(tokenizers.get(originExt, tokenizers['c']))
         commentList.append(comments.get(originExt, comments['c']))
-        compExt = data['comp'].rsplit('.')[0]
+        compExt = data['comp'].rsplit('.')[1]
         tokenizerList.append(tokenizers.get(compExt, tokenizers['c']))
         commentList.append(comments.get(compExt, comments['c']))
 
@@ -67,19 +66,17 @@ def process(e):
         if data['commentRemove'] == 0:
             commentList = []
 
-        #print 'receive : ' + str(data['origin']) + ', ' + str(data['comp']) + ', ' + str(data['pairID']) + ', ' + str(data['compareMethod']) + ', ' + str(data['lineNum'])
-        # result를 리턴값으로 받아와서 이 함수 내에서 post전송
-        #result = compareOnePair(data['origin'], data['comp'], data['pairID'], data['compareMethod'],
-        result = compareOnePair(getOrigin(data['originID']), getCompare(data['compID']), data['pairID'], data['compareMethod'],
+        result = compareOnePair(getOrigin(data['originID']), getCompare(data['compID']), data['pairID'],
+                                data['compareMethod'],
                                 commentList, tokenizerList, data['lineNum'], data['blockSize'])
         res = requests.post('http://0.0.0.0:5000/done', json=json.dumps(result))
+        if res == 'end':
+            break
 
-
-for i in range(0, 1):
-    event = Event()
-    t = Thread(target=process, args=(event,))
-    threadList.append([t, event])
-    t.start()
+        if threadList[projectId][2] == 1:
+            del (threadList[projectId])
+            del (taskQueueList[projectId])
+            break
 
 
 def getOrigin(originID):
@@ -90,6 +87,31 @@ def getOrigin(originID):
 def getCompare(compID):
     res = requests.get('http://0.0.0.0:5000/compare/' + str(compID))
     return res.content
+
+
+@app.route('/work_start', methods=["POST"])
+def workStart():
+    projectId = request.get_data()
+
+    taskQueueList[int(projectId)] = Queue()
+    event = Event()
+    t = Thread(target=process, args=(event, int(projectId)))
+    # 각각 스레드 객체, 이벤트 객체, 종료 플래그
+    threadList[int(projectId)] = [t, event, 0]
+    t.start()
+
+    return 'ok'
+
+
+@app.route('/work_cancel', methods=["POST"])
+def workCancel():
+    projectId = request.get_data()
+
+    threadList[int(projectId)][1].set()
+    threadList[int(projectId)][2] = 1
+    # threadList[int(projectId)][0].join()
+
+    return 'ok'
 
 
 # 포트번호 : 3000 ~ 3004

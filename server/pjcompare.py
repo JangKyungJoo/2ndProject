@@ -88,6 +88,7 @@ def compare():
 
     q = Queue()
     paramList[int(projectId)] = [q, compareMethod, commentRemove, tokenizer, blockSize]
+    # 각 노드에 분배하는 부분은 별도 프로세스에서 수행
     pr = Process(target=compareWithProcesses, args=(projectId, q, lastPair, int(compareMethod),
                 int(commentRemove), int(tokenizer), int(blockSize)))
     pr.daemon = True
@@ -103,9 +104,6 @@ def compare():
 def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, tokenizer, blockSize):
     # 프로젝트 내에 있는 비교쌍들을 불러온다.
     # 비교쌍 리스트 갯수만큼 filter를 돌림.
-
-    db.session.query(Project).filter(Project.projID == projectId).update(
-        dict(compareMethod=compareMethod))
 
     projectId = getProjectId()
     stage = []
@@ -129,10 +127,14 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
 
     comments = {'py': pyComment, 'c': cComment, 'cpp': cComment, 'java': cComment}
 
-    print stage
+    workerList = manager.worker_list
+    for worker in workerList:
+        target = 'http://0.0.0.0:' + str(worker) + '/work_start'
+        res = requests.post(target, data=projectId)
+
     pairs = db.session.query(Pair).filter(Pair.projID == projectId).all()
     for i in range(len(pairs)):
-        print '단계 : ', i
+        # print '단계 : ', i
         pair = pairs[i]
 
         if pair.pairID in stage:
@@ -154,15 +156,10 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
         tokenizerList.append(tokenizers.get(compExt, tokenizers['c']))
         commentList.append(comments.get(compExt, comments['c']))
 
-        # 옵션 인자들과 함께 원본과 비교본의 경로를 넘겨 두 파일을 실제 비교하게 함.
-        if tokenizer == 0:
-            tokenizerList = [preprocessor.SpaceTokenizer(), preprocessor.SpaceTokenizer()]
-        if commentRemove == 0:
-            commentList = []
-
+        # 각 노드에
         compare = {'origin': origin, 'comp': comp, 'pairID': pair.pairID, 'compareMethod' : compareMethod,
                    'tokenizer': tokenizer, 'commentRemove' : commentRemove, 'lineNum' : originLineNumber,
-                   'blockSize': blockSize, 'originID' : pair.originID, 'compID' : pair.compID}
+                   'blockSize': blockSize, 'originID' : pair.originID, 'compID' : pair.compID, 'projectId': pair.projID}
         if manager.get_worker() != -1:
             target = 'http://0.0.0.0:' + str(manager.get_worker()) + '/work'
             res = requests.post(target, json=compare)
@@ -173,9 +170,11 @@ def compareWithProcesses(projectId, q, lastPair, compareMethod, commentRemove, t
 @app.route("/compare/state", methods=["GET"])
 def processState():
     projectId = getProjectId()
+    # 몇개 비교했는지 리턴
     currentNumber = len(stageList[int(projectId)])
     # print currentNumber
 
+    # 비교가 끝났을 경우, 자원 해제하고 파일 제거
     if pairCount[int(projectId)] == currentNumber:
         del stageList[int(projectId)]
         del paramList[int(projectId)]
@@ -193,6 +192,11 @@ def cancelCompare():
     pr = process_dict[int(projectId)][0]
     pr.terminate()
     pr.join()
+
+    workerList = manager.worker_list
+    for worker in workerList:
+        target = 'http://0.0.0.0:' + str(worker) + '/work_cancel'
+        res = requests.post(target, data=projectId)
 
     del (process_dict[int(projectId)])
 
@@ -246,6 +250,10 @@ def done():
     if pairCount.get(int(projectId), -1) == currentNumber:
         if os.path.exists(join(app.config['PROGRESS_FOLDER'], str(projectId))):
             os.remove(join(app.config['PROGRESS_FOLDER'], str(projectId)))
+
+        del (process_dict[int(projectId)])
+
+        return 'end'
 
     return 'ok'
 
