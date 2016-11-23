@@ -51,13 +51,15 @@ class TokenMatching(Check):
 
         sum = 0.0
         originTokenCount = 0
+        compTokenCount = 0
         for token in tokenList:
             originCount = origin.get(token, 0)
             compCount = comp.get(token, 0)
             sum += originCount if compCount > originCount else compCount
             originTokenCount += originCount
+            compTokenCount += compCount
 
-        return (sum / originTokenCount) * 100
+        return (sum / (originTokenCount if originTokenCount > compTokenCount else compTokenCount)) * 100
 
 
 class EditDistance(Check):
