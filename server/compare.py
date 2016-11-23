@@ -76,7 +76,7 @@ class EditDistance(Check):
                 else:
                     dp[i][j] = min(dp[i - 1][j - 1], min(dp[i - 1][j], dp[i][j - 1])) + 1
 
-        return 100.0-(dp[len(origin)][len(comp)]*20)
+        return (1 - float(dp[len(origin)][len(comp)]) / (len(origin) if len(origin) >= len(comp) else len(comp))) * 100
 
 
 class Compare:

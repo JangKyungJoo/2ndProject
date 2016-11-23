@@ -11,8 +11,8 @@ from server.filter import compareOnePair
 from threading import Thread, Lock, Event
 from Queue import Queue
 
-# from signal import signal, SIGPIPE, SIG_IGN
-# signal(SIGPIPE, SIG_IGN)
+from signal import signal, SIGPIPE, SIG_IGN
+signal(SIGPIPE, SIG_IGN)
 
 lock = Lock()
 taskQueueList = {}
@@ -28,9 +28,6 @@ requests.get('http://0.0.0.0:5000/worker/' + str(port))
 def work():
     data = request.get_json(force=True)
     taskQueueList[data['projectId']].put(data)
-    global a
-    # print a
-    a += 1
     threadList[data['projectId']][1].set()
 
     return 'ok'
@@ -69,9 +66,6 @@ def process(e, projectId):
         if data['commentRemove'] == 0:
             commentList = []
 
-        # print 'receive : ' + str(data['origin']) + ', ' + str(data['comp']) + ', ' + str(data['pairID']) + ', ' + str(data['compareMethod']) + ', ' + str(data['lineNum'])
-        # result를 리턴값으로 받아와서 이 함수 내에서 post전송
-        # result = compareOnePair(data['origin'], data['comp'], data['pairID'], data['compareMethod'],
         result = compareOnePair(getOrigin(data['originID']), getCompare(data['compID']), data['pairID'],
                                 data['compareMethod'],
                                 commentList, tokenizerList, data['lineNum'], data['blockSize'])
