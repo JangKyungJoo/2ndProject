@@ -129,7 +129,7 @@ class Tokenizing(PreProcessor):
         self.lineNumList = lineNumList
 
     def process(self):
-        stopWords = ['', ' ', '{', '}', '(', ')', ',', '.', ':', ';']
+        stopWords = ['', ' ', '{', '}', '(', ')', '[', ']', ',', '.', ':', ';']
         retList = []
         blankList = []
         lineList = []

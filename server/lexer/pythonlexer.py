@@ -14,9 +14,6 @@ tokens = [
     'EQUALS', 'TIMESEQUAL', 'DIVEQUAL', 'MODEQUAL', 'PLUSEQUAL', 'MINUSEQUAL',
     'LSHIFTEQUAL', 'RSHIFTEQUAL', 'ANDEQUAL', 'XOREQUAL', 'OREQUAL',
 
-    # Structure dereference (->)
-    'ARROW',
-
     # Ternary operator (?)
     'TERNARY',
 
@@ -29,7 +26,7 @@ tokens = [
     # Ellipsis (...)
     'ELLIPSIS',
 
-    'COMMENT'
+    'COMMENT', 'COMMENT2'
 ]
 
 # Operators
@@ -44,9 +41,9 @@ t_NOT = r'~'
 t_XOR = r'\^'
 t_LSHIFT = r'<<'
 t_RSHIFT = r'>>'
-t_LOR = r'\|\|'
-t_LAND = r'&&'
-t_LNOT = r'!'
+t_LOR = r'\|\||or'
+t_LAND = r'&&|and'
+t_LNOT = r'!|not'
 t_LT = r'<'
 t_GT = r'>'
 t_LE = r'<='
@@ -67,9 +64,6 @@ t_RSHIFTEQUAL = r'>>='
 t_ANDEQUAL = r'&='
 t_OREQUAL = r'\|='
 t_XOREQUAL = r'\^='
-
-# ->
-t_ARROW = r'->'
 
 # ?
 t_TERNARY = r'\?'
@@ -108,6 +102,10 @@ def t_COMMENT(t):
     t.lexer.lineno += t.value.count('\n')
     return t
 
+def t_COMMENT2(t):
+    r"\'''(.|\n)*?\'''"
+    t.lexer.lineno += t.value.count('\n')
+    return t
 
 t_ignore = ' \t\n'
 
