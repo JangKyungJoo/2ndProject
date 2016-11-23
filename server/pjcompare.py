@@ -98,6 +98,8 @@ def compare():
 
     numOfPair = db.session.query(Pair).filter(Pair.projID == projectId).count()
     pairCount[int(projectId)] = numOfPair
+    if not lastPair:
+        stageList[int(projectId)] = []
     return jsonify(numOfPair)
 
 
